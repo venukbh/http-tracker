@@ -1,7 +1,9 @@
 if (window.browser) {
-    webEventConsumer = window.browser; // firefox
+  webEventConsumer = window.browser; // firefox
+  browserName = "firefox"
 } else {
-    webEventConsumer = window.chrome; // chrome
+  webEventConsumer = window.chrome; // chrome
+  browserName = "chrome"
 }
 
 addOnWindowId = null;
@@ -43,44 +45,54 @@ addOnWindowId = null;
 // open the addon window, or if already opened, bring to front
 // this will not open multiple windows when the addon icon is clicked
 function OpenAddonWindow() {
-    // console.debug("addOnWindowId" + addOnWindowId);
-    if (addOnWindowId) {
-        webEventConsumer.windows.get(addOnWindowId, focusExistingWindow);
-    } else {
-        createNewAddonPopupWindow();
-    }
+  // console.debug("addOnWindowId" + addOnWindowId);
+  if (addOnWindowId) {
+    webEventConsumer.windows.get(addOnWindowId, focusExistingWindow);
+  } else {
+    createNewAddonPopupWindow();
+  }
 }
 
 function focusExistingWindow(addOnWindow) {
-    if (webEventConsumer.runtime.lastError) {
-        console.debug("Could not bring back the existing addOnWindow as it might be closed");
-    }
-    if (addOnWindow) {
-        let updateInfo = {
-            focused: true
-        };
-        // console.debug("addOnWindow.id" + addOnWindow.id);
-        webEventConsumer.windows.update(addOnWindow.id, updateInfo);
-    } else {
-        createNewAddonPopupWindow();
-    }
+  if (webEventConsumer.runtime.lastError) {
+    console.debug("Could not bring back the existing addOnWindow as it might be closed");
+  }
+  if (addOnWindow) {
+    let updateInfo = {
+      focused: true
+    };
+    // console.debug("addOnWindow.id" + addOnWindow.id);
+    webEventConsumer.windows.update(addOnWindow.id, updateInfo);
+  } else {
+    createNewAddonPopupWindow();
+  }
 }
 
 function createNewAddonPopupWindow() {
-    let createData = {
-        height: (window.screen.height) / 2,
-        width: (window.screen.width) / 2,
-        left: (window.screen.width) / 4,
-        top: (window.screen.height) / 4,
-        type: "popup",
-        url: webEventConsumer.extension.getURL("my-page.html")
+  // console.log(browserName);
+  let createWindowDimensions = {}
+  if (browserName == "chrome") { // state maximized is not working for chrome
+    createWindowDimensions = {
+      height: (window.screen.height) * 3 / 4,
+      width: (window.screen.width) * 3 / 4,
+      left: (window.screen.width) * 3 / 4,
+      top: (window.screen.height) * 3 / 4,
+      type: "popup",
+      url: webEventConsumer.extension.getURL("my-page.html")
     };
-    webEventConsumer.windows.create(createData, captureAddonWindowId);
+  } else {
+    createWindowDimensions = {
+      state: "maximized",
+      type: "popup",
+      url: webEventConsumer.extension.getURL("my-page.html")
+    };
+  }
+  webEventConsumer.windows.create(createWindowDimensions, captureAddonWindowId);
 }
 
 function captureAddonWindowId(windowDetails) {
-    // console.debug(windowDetails);
-    addOnWindowId = windowDetails.id;
+  // console.debug(windowDetails);
+  addOnWindowId = windowDetails.id;
 }
 
 webEventConsumer.browserAction.onClicked.addListener(OpenAddonWindow);
