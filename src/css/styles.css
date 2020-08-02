@@ -58,7 +58,7 @@
 
 .web_event_list_method {
     float: left;
-    width: 4%;
+    width: 5%;
     text-align: center;
     border-right: 1px solid;
     border-color: black;
@@ -67,7 +67,7 @@
 
 .web_event_list_status {
     float: left;
-    width: 3%;
+    width: 5%;
     text-align: center;
     border-right: 1px solid;
     border-color: black;
@@ -76,7 +76,7 @@
 
 .web_event_list_date_time {
     float: left;
-    width: 11%;
+    width: 15%;
     text-align: center;
     border-right: 1px solid;
     border-color: black;
@@ -92,6 +92,7 @@
 .web_event_detail_header_key {
     width: 30%;
     word-break: break-all;
+    vertical-align: top;
 }
 
 .web_event_detail_header_value {
