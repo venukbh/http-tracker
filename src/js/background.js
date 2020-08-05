@@ -1,13 +1,10 @@
 var eventTracker = (function() {
-  var requestIdURL = new Map();
-  var redirectRequestIdCount = new Map();
-  var requestHeaders = new Map();
-  var responseHeaders = new Map();
+  var requestIdRedirectCount = new Map();
+  var allRequestHeaders = new Map();
+  var allResponseHeaders = new Map();
   var requestFormData = new Map();
   var addedRequestId = [];
-  var containerContent = "";
   var selectedWebEventRequestId = "";
-  var ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "requestId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced"];
   var hideFormDataAttributes = []; // "password", "username", "userid"
   var filterWithKey = "";
   var filterWithValue = "";
@@ -15,25 +12,27 @@ var eventTracker = (function() {
   var excludeURLList;
   var captureFormDataCheckboxValue = false;
   var decoder = new TextDecoder("UTF-8");
-  var date = new Date(0);
-  var redirectCounter = 1;
-  var delimOR = "|";
-  var delimAND = "&";
-  var stringUnderScore = "_";
   var filterInputBoxDelay = 500;
   var filterWithValueTimeout = null;
   var filterPatternsToIncludeTimeout = null;
   var filterPatternsToExcludeTimeout = null;
 
-  // comment-1
+  const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
+  const DELIMITER_OR = "|";
+  const DELIMITER_AND = "&";
+  const STRING_UNDERSCORE = "_";
+  const CLASS_LIST_TO_ADD = "web_event_list_blank web_event_list_style";
+  const DELIMITER_REQUEST_COOKIE = "; ";
+  const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
+  const DELIMITER_RESPONSE_COOKIE = "\n";
+  const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
+  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
+
   function logRequestDetails(webEvent) {
-    // if(webEvent.callerName === "onSendHeaders") {
-    // console.log(JSON.stringify(webEvent));
-    // }
+    // console.log("Before Event processing: " + JSON.stringify(webEvent));
     var inserted = insertEventUrls(webEvent);
     if (inserted) {
-      addUpdateUrlListToPage(webEvent);
-      insertEventDetails(webEvent);
+      addOrUpdateUrlListToPage(webEvent);
       displaySelectedEventDetails(webEvent);
     }
   }
@@ -41,37 +40,105 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     var captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
-      //  comment-2
-      if (webEvent.callerName === "onBeforeRedirect" || webEvent.callerName === "onAuthRequired") {
-        //comment-3
-        let redirectCount = redirectRequestIdCount.get(webEvent.requestId);
-        if (redirectCount) {
-          webEvent.requestIdEnhanced = webEvent.requestId + stringUnderScore + redirectCount;
-        } else {
-          redirectCount = 0;
-        }
-        // insertEventDetails(webEvent); // this should technically insert response only.
-        // -p- check if we can directly call insertResponse
-        insertResponseHeaders(webEvent);
-        displaySelectedEventDetails(webEvent);
-        redirectCount = redirectCount + 1;
-        redirectRequestIdCount.set(webEvent.requestId, redirectCount);
-        webEvent.requestIdEnhanced = webEvent.requestId + stringUnderScore + redirectCount;
-        return false;
-      } else {
-        // comment-4
-        let redirectCount = redirectRequestIdCount.get(webEvent.requestId);
-        if (redirectCount) {
-          webEvent.requestIdEnhanced = webEvent.requestId + stringUnderScore + redirectCount;
-        }
-        requestIdURL.set(webEvent.requestIdEnhanced, webEvent.url);
-      }
+      setRedirectCount(webEvent)
+      actionOnBeforeRequest(webEvent)
+      actionOnBeforeSendHeaders(webEvent)
+      actionOnSendHeaders(webEvent)
+      actionOnBeforeRedirect(webEvent)
+      actionOnAuthRequired(webEvent)
+      actionOnHeadersReceived(webEvent)
+      actionOnResponseStarted(webEvent)
+      actionOnCompleted(webEvent)
+      actionOnErrorOccurred(webEvent)
       return true;
     }
     return false;
   }
 
+  function setRedirectCount(webEvent) {
+    let redirectCount = requestIdRedirectCount.get(webEvent.requestId); // undefined here
+    if (redirectCount === undefined) {
+      redirectCount = 0
+      requestIdRedirectCount.set(webEvent.requestId, redirectCount);
+    } else if (redirectCount) {
+      webEvent.requestIdEnhanced = webEvent.requestId + STRING_UNDERSCORE + redirectCount;
+    }
+  }
+
+  function actionOnBeforeRequest(webEvent) {
+    if (webEvent.callerName === "onBeforeRequest") {
+      // This event is triggered when a request is about to be made, and before headers are available
+      // console.log("onBeforeRequest: " + JSON.stringify(webEvent));
+      insertRequestBody(webEvent);
+    }
+  }
+
+  function actionOnBeforeSendHeaders(webEvent) {
+    if (webEvent.callerName === "onBeforeSendHeaders") {
+      // triggered before sending HTTP data, but after all HTTP headers are available. good place to modify HTTP request headers
+      // console.log("onBeforeSendHeaders: " + JSON.stringify(webEvent));
+      insertRequestHeaders(webEvent);
+    }
+  }
+
+  function actionOnSendHeaders(webEvent) {
+    if (webEvent.callerName === "onSendHeaders") {
+      // fired just before sending modified version (if any) headers. This event is informational only
+      // console.log("onSendHeaders: " + JSON.stringify(webEvent));
+      insertRequestHeaders(webEvent);
+    }
+  }
+
+  function actionOnBeforeRedirect(webEvent) {
+    if (webEvent.callerName === "onBeforeRedirect") {
+      // console.log("onBeforeRedirect: " + JSON.stringify(webEvent));
+      let x = requestIdRedirectCount.get(webEvent.requestId);
+      requestIdRedirectCount.set(webEvent.requestId, ++x);
+      insertResponseHeaders(webEvent);
+      displaySelectedEventDetails(webEvent);
+    }
+  }
+
+  function actionOnAuthRequired(webEvent) {
+    if (webEvent.callerName === "onAuthRequired") {
+      // console.log("onAuthRequired: " + JSON.stringify(webEvent));
+      insertResponseHeaders(webEvent);
+    }
+  }
+
+  function actionOnHeadersReceived(webEvent) {
+    if (webEvent.callerName === "onHeadersReceived") {
+      // console.log("onHeadersReceived: " + JSON.stringify(webEvent));
+      insertResponseHeaders(webEvent);
+    }
+  }
+
+  function actionOnResponseStarted(webEvent) {
+    if (webEvent.callerName === "onResponseStarted") {
+      // console.log("onResponseStarted: " + JSON.stringify(webEvent));
+      insertResponseHeaders(webEvent);
+    }
+  }
+
+  function actionOnCompleted(webEvent) {
+    if (webEvent.callerName === "onCompleted") {
+      // console.log("onCompleted: " + JSON.stringify(webEvent));
+      insertResponseHeaders(webEvent);
+    }
+  }
+
+  function actionOnErrorOccurred(webEvent) {
+    if (webEvent.callerName === "onErrorOccurred") {
+      // console.log("onErrorOccurred: " + JSON.stringify(webEvent));
+      insertResponseHeaders(webEvent);
+    }
+  }
+
+  // finds out whether the url will be captured or not
   function isEventToCapture(webEvent) {
+    // if includeUrlList != empty && excludeURLList = empty : capture only includeURLList patterns
+    // if includeUrlList != empty && excludeURLList != empty : capture all except excludeURLList patterns
+    // if includeURLList != empty && excludeURLList != empty : then precedence is for excludeURLList
     var captureEventInclude = urlMatchIncludePattern(webEvent);
     var captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
     return (captureEventInclude && !captureEventExclude);
@@ -105,46 +172,62 @@ var eventTracker = (function() {
     }
   }
 
-  // Just to generate the url div containers : based on to show or not show and add to the parent div
-  function addUpdateUrlListToPage(webEvent) {
-    // console.log(JSON.stringify(webEvent));
-    let classListToAdd = "web_event_list_blank web_event_list_style";
+  // To populate the url list by either adding a new one, or updating the existing one
+  function addOrUpdateUrlListToPage(webEvent) {
+    // adding a new url to page using the request events
+    // check if we can change the condition to callerName "onBeforeRequest"
+    // let classListToAdd = "web_event_list_blank web_event_list_style";
     if (addedRequestId.indexOf(webEvent.requestIdEnhanced) === -1) {
       addedRequestId.push(webEvent.requestIdEnhanced);
       if (filterWithValue && filterWithValue.length > 2 && !webEvent.url.toLowerCase().includes(filterWithValue)) {
-        classListToAdd += " web_event_list_hide";
+        CLASS_LIST_TO_ADD += " web_event_list_hide";
       }
-      let containerContent = "<div class='" + classListToAdd + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
-        "<div class='web_event_list_url' id='web_event_url_" + webEvent.requestIdEnhanced + "'>" + webEvent.url + "</div>" +
-        "<div class='web_event_list_method' id='web_event_method_" + webEvent.requestIdEnhanced + "'>" + webEvent.method + "</div>" +
-        "<div class='web_event_list_status' id='web_event_status_" + webEvent.requestIdEnhanced + "'>" + (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;") + "</div>" +
-        "<div class='web_event_list_date_time' id='web_event_time_" + webEvent.requestIdEnhanced + "'>" + (webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;") + "</div>" +
-        "<div class='web_event_list_cache' id='web_event_cache_" + webEvent.requestIdEnhanced + "'>" + "NA" + "</div>" +
+      let containerContent = "<div class='" + CLASS_LIST_TO_ADD + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
+        generateURLContent(webEvent) +
+        generateMETHODContent(webEvent) +
+        generateSTATUSContent(webEvent) +
+        generateDATETIMEContent(webEvent) +
+        generateCACHEContent(webEvent) +
         "</div>";
       document.getElementById("urls_list").insertAdjacentHTML("beforeend", containerContent);
-    } else {
-      // coming from response. So update the already url with response code
-      // if (webEvent.error) {
+    }
+    // updating an existing url using the response events
+    else {
+      // coming from response, so update the already captured url with response details
       if (webEvent.callerName === "onErrorOccurred") {
+        // do not update the cache state as it is error and the cache state is not applicable
         document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).style.color = "red";
         document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = "ERROR";
       } else {
-        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.statusCode ? webEvent.statusCode : "&nbsp;");
+        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.statusCode ? webEvent.statusCode : webEvent.redirectUrl ? "REDIRECT" : "&nbsp;");
+        document.getElementById("web_event_cache_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.fromCache ? webEvent.fromCache : "false");
       }
-      // document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;");
-      document.getElementById("web_event_cache_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.fromCache ? webEvent.fromCache : "false");
     }
+  }
+
+  function generateURLContent(webEvent) {
+    return "<div class='web_event_list_url' id='web_event_url_" + webEvent.requestIdEnhanced + "'>" + webEvent.url + "</div>"
+  }
+
+  function generateMETHODContent(webEvent) {
+    return "<div class='web_event_list_method' id='web_event_method_" + webEvent.requestIdEnhanced + "'>" + webEvent.method + "</div>"
+  }
+
+  function generateSTATUSContent(webEvent) {
+    return "<div class='web_event_list_status' id='web_event_status_" + webEvent.requestIdEnhanced + "'>" + (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;") + "</div>"
+  }
+
+  function generateDATETIMEContent(webEvent) {
+    return "<div class='web_event_list_date_time' id='web_event_time_" + webEvent.requestIdEnhanced + "'>" + (webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;") + "</div>"
+  }
+
+  function generateCACHEContent(webEvent) {
+    return "<div class='web_event_list_cache' id='web_event_cache_" + webEvent.requestIdEnhanced + "'>" + "NA" + "</div>"
   }
 
   function getReadableDate(timestamp) {
     let date = new Date(timestamp);
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
-  }
-
-  function insertEventDetails(webEvent) {
-    insertRequestBody(webEvent);
-    insertRequestHeaders(webEvent);
-    insertResponseHeaders(webEvent);
   }
 
   // update this method to not store sensitive form data attributes pending
@@ -156,20 +239,13 @@ var eventTracker = (function() {
 
   function insertRequestHeaders(webEvent) {
     if (webEvent.requestHeaders) {
-      requestHeaders.set(webEvent.requestIdEnhanced, webEvent);
+      allRequestHeaders.set(webEvent.requestIdEnhanced, webEvent);
     }
   }
 
   // update this method to check if it has response headers pending
   function insertResponseHeaders(webEvent) {
-    if (!webEvent.requestHeaders) {
-      responseHeaders.set(webEvent.requestIdEnhanced, webEvent);
-    }
-  }
-
-  function identifyRequestOrResponse(webEvent) {
-    // Every request will contain default headers, when ever a browser sends.
-    console.log(webEvent.requestHeaders ? "request" : "response");
+    allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
   }
 
   function displaySelectedEventDetails(webEvent) {
@@ -181,8 +257,8 @@ var eventTracker = (function() {
 
   function displayEventProperties(webEventId) {
     selectedWebEventRequestId = webEventId;
-    let webEventIdRequest = requestHeaders.get(webEventId);
-    let webEventIdResponse = responseHeaders.get(webEventId);
+    let webEventIdRequest = allRequestHeaders.get(webEventId);
+    let webEventIdResponse = allResponseHeaders.get(webEventId);
     let webEventIdRequestForm = requestFormData.get(webEventId);
 
     // sort object keys
@@ -229,7 +305,17 @@ var eventTracker = (function() {
       for (let key of sortedResponseKeys) {
         if (key !== "responseHeaders") {
           if (!ignoreHeaders.includes(key) && webEventIdResponse[key]) {
-            tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + webEventIdResponse[key] + "</td></tr>";
+            if (typeof webEventIdResponse[key] !== "object") {
+              tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + webEventIdResponse[key] + "</td></tr>";
+            } else { // then an object
+              // this else block was added for firefox to pretty print the urlClassification object
+              let content = ""
+              for (const property in webEventIdResponse[key]) {
+                content += property + ": " + JSON.stringify(webEventIdResponse[key][property]) + ", ";
+              }
+              content = content.substring(0, content.length - 2); // removing last ", " from the above loop
+              tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + content + "</td></tr>";
+            }
           }
         } else {
           let sortedHeaderKeys = sortObjectByName(webEventIdResponse[key]);
@@ -285,35 +371,27 @@ var eventTracker = (function() {
   }
 
   function generateHeaderDetails(sortedHeaderKeys) {
-    let requestCookieDelim = "; ";
-    let requestCookieKeyName = "Cookie";
-
-    let responseCookieDelim = "\n";
-    let responseCookieKeyName = "set-cookie";
-
     let generalHeadersContent = "";
-    let cookieContent = "";
-
+    let cookieContent = ""
     for (let key of sortedHeaderKeys) {
-      if (key.name === requestCookieKeyName) {
-        cookieContent = generateCookieDetails(key.value, requestCookieDelim);
-      } else if (key.name.toLowerCase() === responseCookieKeyName) {
-        // cookieContent = generateCookieDetails(key.value, responseCookieDelim);
-        cookieContent = generateResponseCookieDetails(key.value, responseCookieDelim);
+      if (key.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
+        cookieContent += generateRequestCookieDetails(key.value, DELIMITER_REQUEST_COOKIE);
+      } else if (key.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
+        cookieContent += generateResponseCookieDetails(key.value, DELIMITER_RESPONSE_COOKIE);
       } else {
         generalHeadersContent += "<tr><td class='web_event_detail_header_key'>" + key.name + "</td><td class='web_event_detail_header_value'>" + key.value + "</td></tr>";
       }
     }
+    if (cookieContent) {
+      cookieContent = COOKIE_CONTENT_BANNER + cookieContent;
+    }
     return generalHeadersContent + cookieContent;
   }
 
-
-
-  function generateCookieDetails(cookieValue, cookieDelim) {
+  function generateRequestCookieDetails(cookieValue, cookieDelim) {
     let cookieList = cookieValue.split(cookieDelim).sort();
     let cookieContent = "";
     if (cookieList.length > 0) {
-      cookieContent = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
       for (let eachCookie of cookieList) {
         let firstOccurance = eachCookie.indexOf("=");
         if (firstOccurance > -1) {
@@ -329,7 +407,7 @@ var eventTracker = (function() {
   function generateResponseCookieDetails(cookieValue, cookieDelim) {
     let cookieList = cookieValue.split(cookieDelim);
     let cookieVal = "";
-    let cookieContent = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
+    let cookieContent = "";
     let cookieListMap = new Map();
     for (let eachCookie of cookieList) {
       let firstOccurance = eachCookie.indexOf("=");
@@ -347,7 +425,7 @@ var eventTracker = (function() {
   function hideUnHideUrlList() {
     let allUrlList = document.querySelectorAll(".web_event_list_blank");
     let multipleSearchPatterns = "";
-    if (!filterWithValue || filterWithValue.length <= 2 || (filterWithValue.includes(delimOR) && filterWithValue.includes(delimAND))) {
+    if (!filterWithValue || filterWithValue.length <= 2 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
       // dont hide any thing as the search string has issues
       for (element of allUrlList) {
         if (element.classList.contains("web_event_list_hide")) {
@@ -356,10 +434,10 @@ var eventTracker = (function() {
       }
     } else {
       let isOrSplit = true;
-      multipleSearchPatterns = filterWithValue.split(delimOR).filter(Boolean);
+      multipleSearchPatterns = filterWithValue.split(DELIMITER_OR).filter(Boolean);
       // remove all empty values
       if (multipleSearchPatterns.length === 1) {
-        multipleSearchPatterns = multipleSearchPatterns[0].split(delimAND).filter(Boolean);
+        multipleSearchPatterns = multipleSearchPatterns[0].split(DELIMITER_AND).filter(Boolean);
         if (multipleSearchPatterns.length > 1) {
           isOrSplit = false;
         }
@@ -401,10 +479,9 @@ var eventTracker = (function() {
 
   function removeEntry(node) {
     let requestIdToRemove = node.id.substring(16, node.id.length);
-    requestIdURL.delete(requestIdToRemove);
-    redirectRequestIdCount.delete(requestIdToRemove);
-    requestHeaders.delete(requestIdToRemove);
-    responseHeaders.delete(requestIdToRemove);
+    requestIdRedirectCount.delete(requestIdToRemove);
+    allRequestHeaders.delete(requestIdToRemove);
+    allResponseHeaders.delete(requestIdToRemove);
     requestFormData.delete(requestIdToRemove);
     node.remove();
   }
@@ -436,9 +513,8 @@ var eventTracker = (function() {
 
   function clearAllEvents() {
     requestFormData.clear();
-    requestIdURL.clear();
-    requestHeaders.clear();
-    responseHeaders.clear();
+    allRequestHeaders.clear();
+    allResponseHeaders.clear();
     addedRequestId.length = 0;
     document.getElementById("web_event_details_selected_request").style.border = "none";
     document.getElementById("web_event_details_selected_response").style.border = "none";
@@ -495,8 +571,7 @@ var eventTracker = (function() {
     if (selectedEvent) {
       removeEntry(selectedEvent);
     }
-    // write code to auto select next element if available, else previous element, else disable the button
-    document.getElementById("web_event_cache_" + selectedEvent.id.substring(16, selectedEvent.id.length)).nextSibling;
+    document.getElementById("web_event_cache_" + selectedEvent.id.substring(16, selectedEvent.id.length)).nextSibling; // this is throwing error on console. so fix it
   }
 
   function setEventRowAsSelected(event) {

@@ -1,13 +1,19 @@
+//  this cannot be referred in browser.js
+// But when ever this below code is changed, make sure the same copy is updated in detectBrowser.js and vice-versa
 if (window.browser) {
-  webEventConsumer = window.browser; // firefox
-  browserName = "firefox"
+  httpTracker = {
+    webEventConsumer: window.browser,
+    browserName: "firefox",
+    isFirefoxBrowser: true
+  }
 } else {
-  webEventConsumer = window.chrome; // chrome
-  browserName = "chrome"
+  httpTracker = {
+    webEventConsumer: window.chrome,
+    browserName: "chrome"
+  }
 }
 
 addOnWindowId = null;
-
 
 // // open in a new tab functionality
 // function tabOpeningSuccess(result) {
@@ -19,42 +25,43 @@ addOnWindowId = null;
 // }
 
 // function openInNewTab() {
-//     let extensionUUIDManifestURL = webEventConsumer.extension.getURL("manifest.json");
+//     let extensionUUIDManifestURL = httpTracker.webEventConsumer.extension.getURL("manifest.json");
 //     let extensionUUID = extensionUUIDManifestURL.split("/manifest.json")[0];
 //     console.debug(extensionUUID.split("manifest.json")[0]);
-//     webEventConsumer.tabs.query({
+//     httpTracker.webEventConsumer.tabs.query({
 //         "url": extensionUUID + "/my-page.html"
 //     }, function(tabs) {
 //         if (tabs && tabs.length > 0) {
 //             var tabIndex = tabs[0].index;
-//             webEventConsumer.tabs.query({}, function(tabs) {
+//             httpTracker.webEventConsumer.tabs.query({}, function(tabs) {
 //                 chrome.tabs.update(tabs[tabIndex].id, {
 //                     active: true
 //                 });
 //             });
 //         } else {
-//             webEventConsumer.tabs.create({
-//                 "url": webEventConsumer.extension.getURL("/my-page.html")
+//             httpTracker.webEventConsumer.tabs.create({
+//                 "url": httpTracker.webEventConsumer.extension.getURL("/my-page.html")
 //             });
 //         }
 //     });
 // }
 
-// webEventConsumer.browserAction.onClicked.addListener(openInNewTab);
+// httpTracker.webEventConsumer.browserAction.onClicked.addListener(openInNewTab);
 
 // open the addon window, or if already opened, bring to front
 // this will not open multiple windows when the addon icon is clicked
 function OpenAddonWindow() {
   // console.debug("addOnWindowId" + addOnWindowId);
   if (addOnWindowId) {
-    webEventConsumer.windows.get(addOnWindowId, focusExistingWindow);
+    httpTracker.webEventConsumer.windows.get(addOnWindowId, focusExistingWindow);
   } else {
     createNewAddonPopupWindow();
   }
+  // console.log(httpTracker)
 }
 
 function focusExistingWindow(addOnWindow) {
-  if (webEventConsumer.runtime.lastError) {
+  if (httpTracker.webEventConsumer.runtime.lastError) {
     console.debug("Could not bring back the existing addOnWindow as it might be closed");
   }
   if (addOnWindow) {
@@ -62,32 +69,32 @@ function focusExistingWindow(addOnWindow) {
       focused: true
     };
     // console.debug("addOnWindow.id" + addOnWindow.id);
-    webEventConsumer.windows.update(addOnWindow.id, updateInfo);
+    httpTracker.webEventConsumer.windows.update(addOnWindow.id, updateInfo);
   } else {
     createNewAddonPopupWindow();
   }
 }
 
 function createNewAddonPopupWindow() {
-  // console.log(browserName);
+  // console.log(httpTracker.webEventConsumer);
   let createWindowDimensions = {}
-  if (browserName == "chrome") { // state maximized is not working for chrome
+  if (httpTracker.browserName == "chrome") { // state maximized is not working for chrome
     createWindowDimensions = {
       height: (window.screen.height) * 3 / 4,
       width: (window.screen.width) * 3 / 4,
       left: (window.screen.width) * 3 / 4,
       top: (window.screen.height) * 3 / 4,
       type: "popup",
-      url: webEventConsumer.extension.getURL("my-page.html")
+      url: httpTracker.webEventConsumer.extension.getURL("my-page.html")
     };
   } else {
     createWindowDimensions = {
       state: "maximized",
       type: "popup",
-      url: webEventConsumer.extension.getURL("my-page.html")
+      url: httpTracker.webEventConsumer.extension.getURL("my-page.html")
     };
   }
-  webEventConsumer.windows.create(createWindowDimensions, captureAddonWindowId);
+  httpTracker.webEventConsumer.windows.create(createWindowDimensions, captureAddonWindowId);
 }
 
 function captureAddonWindowId(windowDetails) {
@@ -95,4 +102,4 @@ function captureAddonWindowId(windowDetails) {
   addOnWindowId = windowDetails.id;
 }
 
-webEventConsumer.browserAction.onClicked.addListener(OpenAddonWindow);
+httpTracker.webEventConsumer.browserAction.onClicked.addListener(OpenAddonWindow);

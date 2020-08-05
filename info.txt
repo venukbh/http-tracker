@@ -1,53 +1,45 @@
 Should we have seperate methods to access seperate events?
-	No, since seperate methods will blow the data holder elements. So every request will flow through the same methods.
-	With all events in place, found that redirects will use same requestId but the urls will be different and the response codes will be different. However, when the onBeforeRedirect event is fired, the response will be a response for the previous request. So associate the response in this event to previous request and treat the request as a new request
+    Yes, that way we will execute same code (unwanted) for each action, there by reducing the load on the addon and browser. This will help better the performance and speed of data rendering.
 
-pending:
---------
-Provide a number to each url box : but if the middle once are deleted, then it will be difficult to manage the below once. So optional
-Provide checkbox for each url so that it can be selected
-Provide delete All or Delete selected button, which will delete the selected ursl from cache
-* Include fake requests
-* The response payload (js or html) can be captured only on developer tools. So addons cannot display
-
+    With all events in place, found that redirects will use same requestId but the urls will be different and the response codes will be different. However, when the onBeforeRedirect event is fired, the response will be a response for the previous request. So associate the response in this event to previous request and treat the request as a new request
 
 Performace Enhancements:
-	Change all querySelectors to getElementBy (https://blog.garstasio.com/you-dont-need-jquery/selectors/)
-
+    Change all querySelectors to getElementBy (https://blog.garstasio.com/you-dont-need-jquery/selectors/)
     var nodes = document.querySelectorAll( selector+':not([class="no-flip"])' );
 
-    // of inside for loop on an array gives key.
-    // in inside for loop on an array gives index.
-
-    In the onHeadersReceived listener you can access the TLS properties of a request by calling getSecurityInfo(). To do this you must also pass "blocking" in the extraInfoSpec argument to the event's addListener().
-
-    You can read details of the TLS handshake, but can't modify them or override the browser's trust decisions.
+// of inside for loop on an array gives key.
+// in inside for loop on an array gives index.
 
 https://developers.google.com/web/updates/2014/08/Easier-ArrayBuffer-String-conversion-with-the-Encoding-API
 https://www.moesif.com/blog/technical/apirequest/How-We-Captured-AJAX-Requests-with-a-Chrome-Extension/
-
 https://stackoverflow.com/questions/3149362/capture-key-press-or-keydown-event-on-div-element
 https://css-tricks.com/almanac/selectors/e/empty/
 
 For every request:
-	onBeforeRequest		: Generates a unique requestId and captures url, requested method, request Body (if any)
-	onBeforeSendHeaders	: Request is about to occur and the initial headers have been prepared. The event is intended to allow extensions to add, modify, and delete request headers
-	onSendHeaders		: Fired just before a request is going to be sent to server after all modifications if any by other addons complete. It does not allow modifying or cancelling the request any more.
-	onHeadersReceived	: Fires each time that an HTTP(S) response header is received. Due to redirects and authentication requests this can happen multiple times per request.
-	onAuthRequired		: Fires when a request requires authentication of the user
-	onBeforeRedirect	: Fires when a redirect is about to be executed. A redirection can be triggered by an HTTP response code or by an extension. It does not allow you to modify or cancel the request.
-	onResponseStarted	: Fires when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available
-	onCompleted			: Fires when a request has been processed successfully.
-	onErrorOccurred		: Fires when a request could not be processed successfully.
+    onBeforeRequest:
+        This event is triggered when a request is about to be made, and before headers are available. So no need to think of headers at this event.
+        - Generates a unique requestId and captures url, requested method, request Body (if any)
+    onBeforeSendHeaders:
+        This event is triggered before sending any HTTP data, but after all HTTP headers are available. This is a good place to listen if you want to modify HTTP request headers. Request is about to occur and the initial headers have been prepared. The event is intended to allow extensions to add, modify, and delete request headers.
+        - Capture all the headers here
+    onSendHeaders:
+        Fired just before a request is going to be sent to server after all modifications if any by other addons complete. It does not allow modifying or cancelling the request any more. This event is fired just before sending headers. If your extension or some other extension modified headers in onBeforeSendHeaders, you'll see the modified version here. This event is informational only.
+        - Capture all the headers here as these will be the final versions to leave the browser
+    onHeadersReceived:
+        Fires each time that an HTTP(S) response header is received. Due to redirects and authentication requests this can happen multiple times per request. Fired when the HTTP response headers for a request are received. Use this event to modify HTTP response headers. To have the response headers passed into the listener, along with the rest of the request data, pass "responseHeaders" in the extraInfoSpec array.
+        - Capture all the response headers here
+    onAuthRequired:
+        Fires when a request requires authentication of the user
+    onBeforeRedirect:
+        Fired when a server-initiated redirect is about to occur. Note that you can't pass "blocking" for this event, so you can't modify or cancel the request from this event: it's informational only.
+    onResponseStarted:
+        Fired when the first byte of the response body is received. This event is informational only. For HTTP requests, this means that the status line and response headers are available
+    onCompleted:
+        Fired when a request has completed.This event is informational only.
+    onErrorOccurred:
+        Fired when a request could not be processed due to an error: for example, a lack of Internet connectivity. The error is passed to the listener as the error property of the details object. Note that this event is not fired for HTTP errors (4XX or 5XX responses): these will go through the normal stages of a request, calling any event listeners, and setting details.statusCode to report the error. This event is informational only.
 
-comment-1:
-	Treating HttpRequest and HttpResponse as a webEvent. requestHeaders will be there for HttpRequest and responseHeaders for HttpResponse
-    Besides requestHeaders and responseHeaders, there are a few other parameters.
-    Cookies set in a request does not have expiry. They are just cookie name and values -- Recheck on this statement
-
-comment-2:
-	If not a redirect event, then insert to the map and return true, so that the object graph and dom will be update
-    Else, just update the object graph by calling insertEventDetails(webEvent); and displaySelectedEventDetails(webEvent);
+Cookies set in a request does not have expiry. They are just cookie name and values -- Recheck on this statement
 
 comment-3:
     For a redirect or auth event, the response of this event corresponds to the previous request.
@@ -60,18 +52,9 @@ comment-3:
          update the requestIdEnhanced property with the redirect count
     Since this is not a new event captured, no need to return true
 
-comment-4
-    If no redirects ever happened for this requestId, then the object graph is always updated to the actual requestId, since requestIdEnhanced is same as requestId
-    If redirects happened, then get the heighest redirect value for the given requestId and assign the response to that requestIdEnhanced
 
-comment-5
-    if include list is empty, then capture everything
-    if include is not empty, then capture only matching domains
-    if exclude list is empty, then don't exclude any thing = include every thing, so return true
-    if exclude list is not empty, then exclude all matching patterns
-    if a same pattern is both in include and exclude, then exclude will take precedence. So pattern will be excluded
-    if the string match in both include and exclude pattern, then exclude takes precedence So event will not be captured
-
+javascript basics:
+------------------
 Fetch: extensions using fetch cannot access headers. Only browser can handle
     var myHeaders = new Headers();
         var myInit = {
@@ -85,6 +68,39 @@ Fetch: extensions using fetch cannot access headers. Only browser can handle
             console.log(response);
         });
 
+In JavaScript “0” equals to false.
+
+Generating the zip file for review:
+    zip -r track-web-requests.zip . -x "\.*" -x "__MACOSX" -x info.txt -x LICENSE -x README.md -x screenshots/\* -x "*.zip" -x \*.DS_Store
+
+Links:
+    Firefox:
+        https://developer.mozilla.org/en-US/docs/Web/API
+        https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/windows
+        https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest
+
+    Chrome:
+        https://developer.chrome.com/extensions/windows
+        https://developer.chrome.com/extensions/webRequest
+        https://chromium.googlesource.com/chromium/src/+/master/extensions/common/api/web_request.json
+
+pending:
+--------
+* The response payload (js or html) can be captured only on developer tools. So addons cannot display
+* In the onHeadersReceived listener you can access the TLS properties of a request by calling getSecurityInfo(). To do this you must also pass "blocking" in the extraInfoSpec argument to the event's addListener(). You can read details of the TLS handshake, but can't modify them or override the browser's trust decisions.
 
 
-zip -r track-web-requests.zip . -x ".*" -x "__MACOSX" -x info.txt
+
+Test scenarios:
+---------------
+    Check if the addon is opened in single window instead of multiple windows upon addon icon click
+    Check include pattern is working
+    check exclude pattern is working
+    check both include and exclude pattern are working together
+    check if delete complete cache is working
+    check if delete selected event is working
+    check if clear filter is working
+    check if delete all filtered urls working
+    check if selecting an entry is showing request headers pane (request details,s cookies, body), response headers pane
+    check if while filter is on, backend requests are getting captured (not working)
+    in firefox, for few actions, get response is also showing as error. eg : load stackoverflow account page
