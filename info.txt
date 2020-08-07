@@ -23,7 +23,7 @@ For every request:
         This event is triggered before sending any HTTP data, but after all HTTP headers are available. This is a good place to listen if you want to modify HTTP request headers. Request is about to occur and the initial headers have been prepared. The event is intended to allow extensions to add, modify, and delete request headers.
         - Capture all the headers here
     onSendHeaders:
-        Fired just before a request is going to be sent to server after all modifications if any by other addons complete. It does not allow modifying or cancelling the request any more. This event is fired just before sending headers. If your extension or some other extension modified headers in onBeforeSendHeaders, you'll see the modified version here. This event is informational only.
+        Fired just before a request is going to be sent to server after all modifications (if any) by other addons complete. It does not allow modifying or cancelling the request any more. This event is fired just before sending headers. If your extension or some other extension modified headers in onBeforeSendHeaders, you'll see the modified version here. This event is informational only.
         - Capture all the headers here as these will be the final versions to leave the browser
     onHeadersReceived:
         Fires each time that an HTTP(S) response header is received. Due to redirects and authentication requests this can happen multiple times per request. Fired when the HTTP response headers for a request are received. Use this event to modify HTTP response headers. To have the response headers passed into the listener, along with the rest of the request data, pass "responseHeaders" in the extraInfoSpec array.
@@ -88,8 +88,11 @@ pending:
 --------
 * The response payload (js or html) can be captured only on developer tools. So addons cannot display
 * In the onHeadersReceived listener you can access the TLS properties of a request by calling getSecurityInfo(). To do this you must also pass "blocking" in the extraInfoSpec argument to the event's addListener(). You can read details of the TLS handshake, but can't modify them or override the browser's trust decisions.
-
-
+* options page
+    option to enable copy
+    option to exclude urls by default before so that they can be shared across addon openings
+    option to open in a new popup or tab
+* Add manifest version in title bar
 
 Test scenarios:
 ---------------
@@ -104,3 +107,18 @@ Test scenarios:
     check if selecting an entry is showing request headers pane (request details,s cookies, body), response headers pane
     check if while filter is on, backend requests are getting captured (not working)
     in firefox, for few actions, get response is also showing as error. eg : load stackoverflow account page
+
+
+Features:
+Single instance addon - no matter how many times you click on the addon, it always loads a single instance popup window or a single tab which gets activated on further clicks
+Non blocking (async) monitoring of the browser traffic, there by not introducing additional delay to the actual request-response pair
+
+To run JavaScript performance:
+    https://jsperf.com/empty-vs-check
+
+Flow:
+domEvents.js:
+    There are 3 ways to display the list of urls.
+        1. Right after the add-on is loaded by start tracking the httpTracker.webEventConsumer requests
+        2. When the search box input changes
+        3. When ever the requestIdURL map changes
