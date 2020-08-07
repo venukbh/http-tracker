@@ -5,7 +5,7 @@ httpTracker.webEventConsumer.webRequest.onBeforeRequest.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestBody"] : ["requestBody", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["requestBody"] : ["requestBody"]
 );
 
 httpTracker.webEventConsumer.webRequest.onBeforeSendHeaders.addListener(
@@ -15,7 +15,7 @@ httpTracker.webEventConsumer.webRequest.onBeforeSendHeaders.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onSendHeaders.addListener(
@@ -25,7 +25,7 @@ httpTracker.webEventConsumer.webRequest.onSendHeaders.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onHeadersReceived.addListener(
@@ -35,7 +35,7 @@ httpTracker.webEventConsumer.webRequest.onHeadersReceived.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onAuthRequired.addListener(
@@ -45,7 +45,7 @@ httpTracker.webEventConsumer.webRequest.onAuthRequired.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onBeforeRedirect.addListener(
@@ -55,7 +55,7 @@ httpTracker.webEventConsumer.webRequest.onBeforeRedirect.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onResponseStarted.addListener(
@@ -65,7 +65,7 @@ httpTracker.webEventConsumer.webRequest.onResponseStarted.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
 httpTracker.webEventConsumer.webRequest.onCompleted.addListener(
@@ -75,33 +75,37 @@ httpTracker.webEventConsumer.webRequest.onCompleted.addListener(
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
 );
 
+httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+  function(details) {
+    details.callerName = "onErrorOccurred";
+    details.requestIdEnhanced = details.requestId;
+    eventTracker.logRequestDetails(details);
+  }, {
+    urls: ["<all_urls>"]
+  }
+);
 
-if (httpTracker.isFirefoxBrowser) {
-  httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
-    function(details) {
-      details.callerName = "onErrorOccurred";
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, {
-      urls: ["<all_urls>"]
-    }
-  );
-} else {
-  httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
-    function(details) {
-      details.callerName = "onErrorOccurred";
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, {
-      urls: ["<all_urls>"]
-    }, ["extraHeaders"]
-  );
-}
-
-// There are 3 ways to display the list of urls.
-// 1. Right after the add-on is loaded by start tracking the httpTracker.webEventConsumer requests
-// 2. When the search box input changes
-// 3. When ever the requestIdURL map changes
+// if (httpTracker.isFirefoxBrowser) {
+//   httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+//     function(details) {
+//       details.callerName = "onErrorOccurred";
+//       details.requestIdEnhanced = details.requestId;
+//       eventTracker.logRequestDetails(details);
+//     }, {
+//       urls: ["<all_urls>"]
+//     }
+//   );
+// } else {
+//   httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+//     function(details) {
+//       details.callerName = "onErrorOccurred";
+//       details.requestIdEnhanced = details.requestId;
+//       eventTracker.logRequestDetails(details);
+//     }, {
+//       urls: ["<all_urls>"]
+//     }, ["extraHeaders"]
+//   );
+// }
