@@ -5,10 +5,10 @@ if (window.browser) {
     webEventConsumer: window.browser,
     browserName: "firefox",
     isFirefoxBrowser: true
-  }
+  };
 } else {
   httpTracker = {
     webEventConsumer: window.chrome,
     browserName: "chrome"
-  }
+  };
 }
