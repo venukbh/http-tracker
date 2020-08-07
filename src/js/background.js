@@ -40,16 +40,16 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     var captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
-      setRedirectCount(webEvent)
-      actionOnBeforeRequest(webEvent)
-      actionOnBeforeSendHeaders(webEvent)
-      actionOnSendHeaders(webEvent)
-      actionOnBeforeRedirect(webEvent)
-      actionOnAuthRequired(webEvent)
-      actionOnHeadersReceived(webEvent)
-      actionOnResponseStarted(webEvent)
-      actionOnCompleted(webEvent)
-      actionOnErrorOccurred(webEvent)
+      setRedirectCount(webEvent);
+      actionOnBeforeRequest(webEvent);
+      actionOnBeforeSendHeaders(webEvent);
+      actionOnSendHeaders(webEvent);
+      actionOnBeforeRedirect(webEvent);
+      actionOnAuthRequired(webEvent);
+      actionOnHeadersReceived(webEvent);
+      actionOnResponseStarted(webEvent);
+      actionOnCompleted(webEvent);
+      actionOnErrorOccurred(webEvent);
       return true;
     }
     return false;
@@ -58,7 +58,7 @@ var eventTracker = (function() {
   function setRedirectCount(webEvent) {
     let redirectCount = requestIdRedirectCount.get(webEvent.requestId); // undefined here
     if (redirectCount === undefined) {
-      redirectCount = 0
+      redirectCount = 0;
       requestIdRedirectCount.set(webEvent.requestId, redirectCount);
     } else if (redirectCount) {
       webEvent.requestIdEnhanced = webEvent.requestId + STRING_UNDERSCORE + redirectCount;
@@ -67,31 +67,24 @@ var eventTracker = (function() {
 
   function actionOnBeforeRequest(webEvent) {
     if (webEvent.callerName === "onBeforeRequest") {
-      // This event is triggered when a request is about to be made, and before headers are available
-      // console.log("onBeforeRequest: " + JSON.stringify(webEvent));
       insertRequestBody(webEvent);
     }
   }
 
   function actionOnBeforeSendHeaders(webEvent) {
     if (webEvent.callerName === "onBeforeSendHeaders") {
-      // triggered before sending HTTP data, but after all HTTP headers are available. good place to modify HTTP request headers
-      // console.log("onBeforeSendHeaders: " + JSON.stringify(webEvent));
       insertRequestHeaders(webEvent);
     }
   }
 
   function actionOnSendHeaders(webEvent) {
     if (webEvent.callerName === "onSendHeaders") {
-      // fired just before sending modified version (if any) headers. This event is informational only
-      // console.log("onSendHeaders: " + JSON.stringify(webEvent));
       insertRequestHeaders(webEvent);
     }
   }
 
   function actionOnBeforeRedirect(webEvent) {
     if (webEvent.callerName === "onBeforeRedirect") {
-      // console.log("onBeforeRedirect: " + JSON.stringify(webEvent));
       let x = requestIdRedirectCount.get(webEvent.requestId);
       requestIdRedirectCount.set(webEvent.requestId, ++x);
       insertResponseHeaders(webEvent);
@@ -101,44 +94,37 @@ var eventTracker = (function() {
 
   function actionOnAuthRequired(webEvent) {
     if (webEvent.callerName === "onAuthRequired") {
-      // console.log("onAuthRequired: " + JSON.stringify(webEvent));
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnHeadersReceived(webEvent) {
     if (webEvent.callerName === "onHeadersReceived") {
-      // console.log("onHeadersReceived: " + JSON.stringify(webEvent));
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnResponseStarted(webEvent) {
     if (webEvent.callerName === "onResponseStarted") {
-      // console.log("onResponseStarted: " + JSON.stringify(webEvent));
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnCompleted(webEvent) {
     if (webEvent.callerName === "onCompleted") {
-      // console.log("onCompleted: " + JSON.stringify(webEvent));
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnErrorOccurred(webEvent) {
     if (webEvent.callerName === "onErrorOccurred") {
-      // console.log("onErrorOccurred: " + JSON.stringify(webEvent));
       insertResponseHeaders(webEvent);
     }
   }
 
   // finds out whether the url will be captured or not
   function isEventToCapture(webEvent) {
-    // if includeUrlList != empty && excludeURLList = empty : capture only includeURLList patterns
-    // if includeUrlList != empty && excludeURLList != empty : capture all except excludeURLList patterns
-    // if includeURLList != empty && excludeURLList != empty : then precedence is for excludeURLList
+    // excludeURLList always takes precedence
     var captureEventInclude = urlMatchIncludePattern(webEvent);
     var captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
     return (captureEventInclude && !captureEventExclude);
@@ -176,13 +162,13 @@ var eventTracker = (function() {
   function addOrUpdateUrlListToPage(webEvent) {
     // adding a new url to page using the request events
     // check if we can change the condition to callerName "onBeforeRequest"
-    // let classListToAdd = "web_event_list_blank web_event_list_style";
     if (addedRequestId.indexOf(webEvent.requestIdEnhanced) === -1) {
       addedRequestId.push(webEvent.requestIdEnhanced);
+      let hideClass = "";
       if (filterWithValue && filterWithValue.length > 2 && !webEvent.url.toLowerCase().includes(filterWithValue)) {
-        CLASS_LIST_TO_ADD += " web_event_list_hide";
+        hideClass = " web_event_list_hide";
       }
-      let containerContent = "<div class='" + CLASS_LIST_TO_ADD + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
+      let containerContent = "<div class='" + CLASS_LIST_TO_ADD + hideClass + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
         generateURLContent(webEvent) +
         generateMETHODContent(webEvent) +
         generateSTATUSContent(webEvent) +
@@ -190,9 +176,7 @@ var eventTracker = (function() {
         generateCACHEContent(webEvent) +
         "</div>";
       document.getElementById("urls_list").insertAdjacentHTML("beforeend", containerContent);
-    }
-    // updating an existing url using the response events
-    else {
+    } else {
       // coming from response, so update the already captured url with response details
       if (webEvent.callerName === "onErrorOccurred") {
         // do not update the cache state as it is error and the cache state is not applicable
@@ -206,23 +190,23 @@ var eventTracker = (function() {
   }
 
   function generateURLContent(webEvent) {
-    return "<div class='web_event_list_url' id='web_event_url_" + webEvent.requestIdEnhanced + "'>" + webEvent.url + "</div>"
+    return "<div class='web_event_list_url' id='web_event_url_" + webEvent.requestIdEnhanced + "'>" + webEvent.url + "</div>";
   }
 
   function generateMETHODContent(webEvent) {
-    return "<div class='web_event_list_method' id='web_event_method_" + webEvent.requestIdEnhanced + "'>" + webEvent.method + "</div>"
+    return "<div class='web_event_list_method' id='web_event_method_" + webEvent.requestIdEnhanced + "'>" + webEvent.method + "</div>";
   }
 
   function generateSTATUSContent(webEvent) {
-    return "<div class='web_event_list_status' id='web_event_status_" + webEvent.requestIdEnhanced + "'>" + (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;") + "</div>"
+    return "<div class='web_event_list_status' id='web_event_status_" + webEvent.requestIdEnhanced + "'>" + (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;") + "</div>";
   }
 
   function generateDATETIMEContent(webEvent) {
-    return "<div class='web_event_list_date_time' id='web_event_time_" + webEvent.requestIdEnhanced + "'>" + (webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;") + "</div>"
+    return "<div class='web_event_list_date_time' id='web_event_time_" + webEvent.requestIdEnhanced + "'>" + (webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;") + "</div>";
   }
 
   function generateCACHEContent(webEvent) {
-    return "<div class='web_event_list_cache' id='web_event_cache_" + webEvent.requestIdEnhanced + "'>" + "NA" + "</div>"
+    return "<div class='web_event_list_cache' id='web_event_cache_" + webEvent.requestIdEnhanced + "'>" + "NA" + "</div>";
   }
 
   function getReadableDate(timestamp) {
@@ -230,7 +214,6 @@ var eventTracker = (function() {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   }
 
-  // update this method to not store sensitive form data attributes pending
   function insertRequestBody(webEvent) {
     if (webEvent.method === "POST" && webEvent.requestBody && captureFormDataCheckboxValue) {
       requestFormData.set(webEvent.requestIdEnhanced, webEvent.requestBody);
@@ -243,7 +226,6 @@ var eventTracker = (function() {
     }
   }
 
-  // update this method to check if it has response headers pending
   function insertResponseHeaders(webEvent) {
     allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
   }
@@ -307,9 +289,9 @@ var eventTracker = (function() {
           if (!ignoreHeaders.includes(key) && webEventIdResponse[key]) {
             if (typeof webEventIdResponse[key] !== "object") {
               tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + webEventIdResponse[key] + "</td></tr>";
-            } else { // then an object
-              // this else block was added for firefox to pretty print the urlClassification object
-              let content = ""
+            } else { // then its an object
+              // this else block was added for firefox to pretty print the urlClassification object, but can be used for any object
+              let content = "";
               for (const property in webEventIdResponse[key]) {
                 content += property + ": " + JSON.stringify(webEventIdResponse[key][property]) + ", ";
               }
@@ -372,7 +354,7 @@ var eventTracker = (function() {
 
   function generateHeaderDetails(sortedHeaderKeys) {
     let generalHeadersContent = "";
-    let cookieContent = ""
+    let cookieContent = "";
     for (let key of sortedHeaderKeys) {
       if (key.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
         cookieContent += generateRequestCookieDetails(key.value, DELIMITER_REQUEST_COOKIE);
@@ -571,7 +553,7 @@ var eventTracker = (function() {
     if (selectedEvent) {
       removeEntry(selectedEvent);
     }
-    document.getElementById("web_event_cache_" + selectedEvent.id.substring(16, selectedEvent.id.length)).nextSibling; // this is throwing error on console. so fix it
+    document.getElementById("web_event_cache_" + selectedEvent.id.substring(16, selectedEvent.id.length)).nextSibling; // console error
   }
 
   function setEventRowAsSelected(event) {
