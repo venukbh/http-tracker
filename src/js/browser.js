@@ -1,16 +1,16 @@
-//  this cannot be referred in browser.js
-// But when ever this below code is changed, make sure the same copy is updated in detectBrowser.js and vice-versa
+// this cannot be referred in browser.js
+// when ever this below code is changed, make sure the same copy is updated in detectBrowser.js and vice-versa
 if (window.browser) {
   httpTracker = {
     webEventConsumer: window.browser,
     browserName: "firefox",
     isFirefoxBrowser: true
-  }
+  };
 } else {
   httpTracker = {
     webEventConsumer: window.chrome,
     browserName: "chrome"
-  }
+  };
 }
 
 addOnWindowId = null;
@@ -25,28 +25,26 @@ addOnWindowId = null;
 // }
 
 // function openInNewTab() {
-//     let extensionUUIDManifestURL = httpTracker.webEventConsumer.extension.getURL("manifest.json");
-//     let extensionUUID = extensionUUIDManifestURL.split("/manifest.json")[0];
-//     console.debug(extensionUUID.split("manifest.json")[0]);
-//     httpTracker.webEventConsumer.tabs.query({
-//         "url": extensionUUID + "/my-page.html"
-//     }, function(tabs) {
-//         if (tabs && tabs.length > 0) {
-//             var tabIndex = tabs[0].index;
-//             httpTracker.webEventConsumer.tabs.query({}, function(tabs) {
-//                 chrome.tabs.update(tabs[tabIndex].id, {
-//                     active: true
-//                 });
-//             });
-//         } else {
-//             httpTracker.webEventConsumer.tabs.create({
-//                 "url": httpTracker.webEventConsumer.extension.getURL("/my-page.html")
-//             });
-//         }
-//     });
+//   let extensionUUIDManifestURL = httpTracker.webEventConsumer.extension.getURL("manifest.json");
+//   let extensionUUID = extensionUUIDManifestURL.split("/manifest.json")[0];
+//   console.debug(extensionUUID.split("manifest.json")[0]);
+//   httpTracker.webEventConsumer.tabs.query({
+//     "url": extensionUUID + "/my-page.html"
+//   }, function(tabs) {
+//     if (tabs && tabs.length > 0) {
+//       var tabIndex = tabs[0].index;
+//       httpTracker.webEventConsumer.tabs.query({}, function(tabs) {
+//         httpTracker.webEventConsumer.tabs.update(tabs[tabIndex].id, {
+//           active: true
+//         });
+//       });
+//     } else {
+//       httpTracker.webEventConsumer.tabs.create({
+//         "url": httpTracker.webEventConsumer.extension.getURL("/my-page.html")
+//       });
+//     }
+//   });
 // }
-
-// httpTracker.webEventConsumer.browserAction.onClicked.addListener(openInNewTab);
 
 // open the addon window, or if already opened, bring to front
 // this will not open multiple windows when the addon icon is clicked
@@ -102,4 +100,5 @@ function captureAddonWindowId(windowDetails) {
   addOnWindowId = windowDetails.id;
 }
 
+// httpTracker.webEventConsumer.browserAction.onClicked.addListener(openInNewTab);
 httpTracker.webEventConsumer.browserAction.onClicked.addListener(OpenAddonWindow);
