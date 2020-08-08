@@ -1,28 +1,28 @@
 {
-    "background":
+  "background":
+  {
+    "scripts": [
+      "src/js/browser.js"
+    ]
+  },
+  "description": "Monitoring the browser network for all tabs and pages in a single page",
+  "manifest_version": 2,
+  "name": "http tracker",
+  "permissions": [
+    "webRequest",
+    "cookies",
+    "<all_urls>",
+    "tabs"
+  ],
+  "version": "2.0.1",
+  "browser_action":
+  {
+    "browser_style": true,
+    "default_icon":
     {
-        "scripts": [
-            "src/js/browser.js"
-        ]
+      "16": "src/assets/icon.png",
+      "32": "src/assets/icon.png"
     },
-    "description": "Monitoring the browser network for all tabs and pages in a single page",
-    "manifest_version": 2,
-    "name": "http tracker",
-    "permissions": [
-        "webRequest",
-        "cookies",
-        "<all_urls>",
-        "tabs"
-    ],
-    "version": "2.0.1",
-    "browser_action":
-    {
-        "browser_style": true,
-        "default_icon":
-        {
-            "16": "src/assets/icon.png",
-            "32": "src/assets/icon.png"
-        },
-        "default_title": "Track http request and response headers and data from your browser"
-    }
+    "default_title": "Track http request and response headers and data from your browser"
+  }
 }

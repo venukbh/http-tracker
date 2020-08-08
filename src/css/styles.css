@@ -1,155 +1,155 @@
 .web_event_list_blank {}
 
 .web_event_list_blank:hover {
-    background-color: #DCDCDC;
+  background-color: #DCDCDC;
 }
 
 .web_event_list_style:first-child {
-    border-top: none;
+  border-top: none;
 }
 
 .web_event_list_style {
-    /*margin-left: 5%;*/
-    word-wrap: break-word;
-    /*width: 80%;*/
-    border-top: 1px solid;
-    border-right: 1px solid;
-    border-left: 1px solid;
-    /*overflow: hidden;*/
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    border-color: black;
+  /*margin-left: 5%;*/
+  word-wrap: break-word;
+  /*width: 80%;*/
+  border-top: 1px solid;
+  border-right: 1px solid;
+  border-left: 1px solid;
+  /*overflow: hidden;*/
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-color: black;
 }
 
 .web_event_list_hide {
-    display: none;
+  display: none;
 }
 
 .web_event_list_selected {
-    background-color: #CBE4EC;
+  background-color: #CBE4EC;
 }
 
 .web_event_list_container {
-    max-height: 350px;
-    overflow-y: auto;
-    border-bottom: 1px solid;
-    font-family: Courier New;
-    outline: none;
-    cursor: pointer;
+  max-height: 350px;
+  overflow-y: auto;
+  border-bottom: 1px solid;
+  font-family: Courier New;
+  outline: none;
+  cursor: pointer;
 }
 
 .web_event_list_container:empty {
-    display: none;
+  display: none;
 }
 
 .web_event_list_filtered {
-    display: none;
+  display: none;
 }
 
 .web_event_list_url {
-    float: left;
-    width: 70%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    border-right: 1px solid;
-    border-color: black;
-    /*color: #666;*/
+  float: left;
+  width: 70%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  border-right: 1px solid;
+  border-color: black;
+  /*color: #666;*/
 }
 
 .web_event_list_method {
-    float: left;
-    width: 5%;
-    text-align: center;
-    border-right: 1px solid;
-    border-color: black;
-    /*color: #666;*/
+  float: left;
+  width: 5%;
+  text-align: center;
+  border-right: 1px solid;
+  border-color: black;
+  /*color: #666;*/
 }
 
 .web_event_list_status {
-    float: left;
-    width: 5%;
-    text-align: center;
-    border-right: 1px solid;
-    border-color: black;
-    /*color: #666;*/
+  float: left;
+  width: 5%;
+  text-align: center;
+  border-right: 1px solid;
+  border-color: black;
+  /*color: #666;*/
 }
 
 .web_event_list_date_time {
-    float: left;
-    width: 15%;
-    text-align: center;
-    border-right: 1px solid;
-    border-color: black;
-    /*color: #666;*/
+  float: left;
+  width: 15%;
+  text-align: center;
+  border-right: 1px solid;
+  border-color: black;
+  /*color: #666;*/
 }
 
 .web_event_list_cache {
-    text-align: center;
-    border-color: black;
-    /*color: #666;*/
+  text-align: center;
+  border-color: black;
+  /*color: #666;*/
 }
 
 .web_event_detail_header_key {
-    width: 30%;
-    word-break: break-all;
-    vertical-align: top;
+  width: 30%;
+  word-break: break-all;
+  vertical-align: top;
 }
 
 .web_event_detail_header_value {
-    word-break: break-all;
+  word-break: break-all;
 }
 
 .web_event_detail_cookie {
-    text-align: center;
-    background-color: cadetblue;
-    border: 1px solid;
+  text-align: center;
+  background-color: cadetblue;
+  border: 1px solid;
 }
 
 .web_event_detail_td {
-    vertical-align: top;
-    width: 50%;
-    /*border: 1px solid;*/
-    border-collapse: collapse;
-    border-top: 0px;
+  vertical-align: top;
+  width: 50%;
+  /*border: 1px solid;*/
+  border-collapse: collapse;
+  border-top: 0px;
 }
 
 .web_event_details {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: Courier New;
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Courier New;
 }
 
 .web_event_detail_request_heading {
-    text-align: center;
-    background: #DCDCDC;
-    border-top: 1px solid;
-    border-left: 1px solid;
-    border-right: 1px solid;
-    border-bottom: 1px solid;
-    width: 50%;
+  text-align: center;
+  background: #DCDCDC;
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  width: 50%;
 }
 
 .web_event_detail_response_heading {
-    text-align: center;
-    background: #DCDCDC;
-    border-top: 1px solid;
-    border-right: 1px solid;
-    border-bottom: 1px solid;
+  text-align: center;
+  background: #DCDCDC;
+  border-top: 1px solid;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
 }
 
 .urls_list_heading {
-    text-align: center;
-    border: 1px solid;
-    background-color: #DCDCDC;
+  text-align: center;
+  border: 1px solid;
+  background-color: #DCDCDC;
 }
 
 .plus {
-    border: 1px dotted white;
-    width: 3px;
-    height: 3px;
-    background-color: black;
-    box-sizing: border-box;
-    transform: scale(3);
-    float: left;
-    margin: 8px 13px 0px 0px;
+  border: 1px dotted white;
+  width: 3px;
+  height: 3px;
+  background-color: black;
+  box-sizing: border-box;
+  transform: scale(3);
+  float: left;
+  margin: 8px 13px 0px 0px;
 }

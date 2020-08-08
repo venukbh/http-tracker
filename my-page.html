@@ -1,80 +1,80 @@
 <!DOCTYPE html>
 
 <head>
-    <meta charset="utf-8" />
-    <title>HTTP-TRACKER : Track HTTP Request headers, data and Response Headers</title>
-    <link rel="stylesheet" type="text/css" href="src/css/styles.css">
-    <script type="text/javascript" src="src/js/detectBrowser.js"></script>
-    <script type="text/javascript" src="src/js/background.js"></script>
-    <script type="text/javascript" src="src/js/domEvents.js"></script>
+  <meta charset="utf-8" />
+  <title>HTTP-TRACKER : Track HTTP Request headers, data and Response Headers</title>
+  <link rel="stylesheet" type="text/css" href="src/css/styles.css">
+  <script type="text/javascript" src="src/js/detectBrowser.js"></script>
+  <script type="text/javascript" src="src/js/background.js"></script>
+  <script type="text/javascript" src="src/js/domEvents.js"></script>
 </head>
 
 <body>
-    <div id="web_events_tracking" style="width: 90%; margin: 2% 5% 2% 5%; height: 100%">
-        <div>
-            <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Include url patterns :</div>
-            <div style="float:left; width: 40%; overflow: hidden;height: 30px;">
-                <input id="include_urls_pattern" type="text" placeholder="include urls matching pattern (comma-separated). Leave blank to include all urls" style="width: 60%">
-                <label style="margin-left: 3%;">
-                    <input id="include_form_data" type="checkbox" checked>Capture form data</label>
-            </div>
-            <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Exclude urls patterns</div>
-            <div style="height: 30px; overflow: hidden;">
-                <!-- <input id="exclude_urls_pattern" type="text" placeholder="Do not Capture urls containing patterns (separated by comma)" style="width: 95%" value="js, jpg, jpeg, img, bmp, png, css, gif, woff, svg, ico, .mail., microsoft, .lync., adservice, snapchat, notifications.google, gstatic, doubleclick, pagead, avatar, facebook.com, fbcdn, google.com/complete/search, sandbox, twitter, google.com, data:, bing, pinterest, optimizely, tealiumiq, flashtalking, akamai" /> -->
-                <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching pattern (comma-separated)" style="width: 95%" value="" />
-            </div>
-        </div>
-        <div style="height: 15px;">&nbsp;</div>
-        <div>
-            <div style="float: left; overflow: hidden; height: 30px;">Filter list by&nbsp;&nbsp;</div>
-            <div style="float: left; overflow: hidden; height: 30px; padding-right: 10px;">
-                <select id="web_event_filter_key">
-                    <option value="0" selected="selected">URL</option>
-                    <option value="1">METHOD</option>
-                    <option value="2">STATUS</option>
-                    <option value="3">DATE</option>
-                    <option value="4">CACHE</option>
-                </select>
-            </div>
-            <div style="float:left; width: 30%; overflow: hidden; height: 30px; padding-right: 10px">
-                <input id="web_events_filter_box" type="text" placeholder="Filter string (min 3 chars)" style="width: 95%" />
-            </div>
-            <!-- <div class="plus"></div> -->
-            <div style="overflow: hidden;height: 30px;">
-                <button id="clear_web_events_filter_box" type="button">Clear filter</button>
-                <button id="clear_web_events_filtered_list_all" type="button" class="web_event_list_filtered">Delete all filtered urls</button>
-                <button id="clear_web_events_filtered_list_selected" type="button" class="web_event_list_filtered">Delete selected event</button>
-                <button id="clear_web_events_complete_list" type="button">Delete complete cache</button>
-            </div>
-        </div>
-        <div id="urls_list_heading" class="urls_list_heading">
-            <div class="web_event_list_url">URL</div>
-            <div class="web_event_list_method">Method</div>
-            <div class="web_event_list_status">Status</div>
-            <div class="web_event_list_date_time">Date time</div>
-            <div class="web_event_list_cache">Cache</div>
-        </div>
-        <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
-        <div style="height: 15px;">&nbsp;</div>
-        <div style="padding-top: 5px;">
-            <table class="web_event_details">
-                <tr>
-                    <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
-                    <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
-                </tr>
-            </table>
-        </div>
-        <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
-            <table class="web_event_details">
-                <tr>
-                    <td id="web_event_details_selected_request" class="web_event_detail_td">
-                        <table id="request_headers_details"></table>
-                    </td>
-                    <td id="web_event_details_selected_response" class="web_event_detail_td">
-                        <table id="response_headers_details"></table>
-                    </td>
-                </tr>
-            </table>
-        </div>
+  <div id="web_events_tracking" style="width: 90%; margin: 2% 5% 2% 5%; height: 100%">
+    <div>
+      <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Include url patterns :</div>
+      <div style="float:left; width: 40%; overflow: hidden;height: 30px;">
+        <input id="include_urls_pattern" type="text" placeholder="include urls matching pattern (comma-separated). Leave blank to include all urls" style="width: 60%">
+        <label style="margin-left: 3%;">
+          <input id="include_form_data" type="checkbox" checked>Capture form data</label>
+      </div>
+      <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Exclude urls patterns</div>
+      <div style="height: 30px; overflow: hidden;">
+        <!-- <input id="exclude_urls_pattern" type="text" placeholder="Do not Capture urls containing patterns (separated by comma)" style="width: 95%" value="js, jpg, jpeg, img, bmp, png, css, gif, woff, svg, ico, .mail., microsoft, .lync., adservice, snapchat, notifications.google, gstatic, doubleclick, pagead, avatar, facebook.com, fbcdn, google.com/complete/search, sandbox, twitter, google.com, data:, bing, pinterest, optimizely, tealiumiq, flashtalking, akamai" /> -->
+        <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching pattern (comma-separated)" style="width: 95%" value="" />
+      </div>
     </div>
+    <div style="height: 15px;">&nbsp;</div>
+    <div>
+      <div style="float: left; overflow: hidden; height: 30px;">Filter list by&nbsp;&nbsp;</div>
+      <div style="float: left; overflow: hidden; height: 30px; padding-right: 10px;">
+        <select id="web_event_filter_key">
+          <option value="0" selected="selected">URL</option>
+          <option value="1">METHOD</option>
+          <option value="2">STATUS</option>
+          <option value="3">DATE</option>
+          <option value="4">CACHE</option>
+        </select>
+      </div>
+      <div style="float:left; width: 30%; overflow: hidden; height: 30px; padding-right: 10px">
+        <input id="web_events_filter_box" type="text" placeholder="Filter string (min 3 chars)" style="width: 95%" />
+      </div>
+      <!-- <div class="plus"></div> -->
+      <div style="overflow: hidden;height: 30px;">
+        <button id="clear_web_events_filter_box" type="button">Clear filter</button>
+        <button id="clear_web_events_filtered_list_all" type="button" class="web_event_list_filtered">Delete all filtered urls</button>
+        <button id="clear_web_events_filtered_list_selected" type="button" class="web_event_list_filtered">Delete selected event</button>
+        <button id="clear_web_events_complete_list" type="button">Delete complete cache</button>
+      </div>
+    </div>
+    <div id="urls_list_heading" class="urls_list_heading">
+      <div class="web_event_list_url">URL</div>
+      <div class="web_event_list_method">Method</div>
+      <div class="web_event_list_status">Status</div>
+      <div class="web_event_list_date_time">Date time</div>
+      <div class="web_event_list_cache">Cache</div>
+    </div>
+    <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
+    <div style="height: 15px;">&nbsp;</div>
+    <div style="padding-top: 5px;">
+      <table class="web_event_details">
+        <tr>
+          <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
+          <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
+        </tr>
+      </table>
+    </div>
+    <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
+      <table class="web_event_details">
+        <tr>
+          <td id="web_event_details_selected_request" class="web_event_detail_td">
+            <table id="request_headers_details"></table>
+          </td>
+          <td id="web_event_details_selected_response" class="web_event_detail_td">
+            <table id="response_headers_details"></table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
 </body>

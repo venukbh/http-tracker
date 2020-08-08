@@ -105,7 +105,7 @@ Test scenarios:
     check if clear filter is working
     check if delete all filtered urls working
     check if selecting an entry is showing request headers pane (request details,s cookies, body), response headers pane
-    check if while filter is on, backend requests are getting captured (not working)
+    check if while filter is on, backend requests are getting captured
     in firefox, for few actions, get response is also showing as error. eg : load stackoverflow account page
 
 
