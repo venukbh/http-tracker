@@ -71,7 +71,7 @@ Fetch: extensions using fetch cannot access headers. Only browser can handle
 In JavaScript “0” equals to false.
 
 Generating the zip file for review:
-    zip -r track-web-requests.zip . -x "\.*" -x "__MACOSX" -x info.txt -x LICENSE -x README.md -x screenshots/\* -x "*.zip" -x \*.DS_Store
+    zip -r track-web-requests.zip . -x "\.*" -x "__MACOSX" -x info.txt -x LICENSE -x README.md -x screenshots/\* -x "*.zip" -x \*.DS_Store -x archives/\*
 
 Links:
     Firefox:

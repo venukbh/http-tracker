@@ -12,7 +12,7 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.0.2", // also change version in the browser title
+  "version": "2.0.2",
   "browser_action":
   {
     "browser_style": true,
@@ -21,6 +21,6 @@
       "16": "src/assets/icon.png",
       "32": "src/assets/icon.png"
     },
-    "default_title": "HTTP-TRACKER : Track HTTP request headers, cookies, data and response Headers, cookies" // this title is for the addon icon
+    "default_title": "HTTP-TRACKER : Track HTTP request headers, cookies, data and response Headers, cookies"
   }
 }
