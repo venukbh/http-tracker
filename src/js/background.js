@@ -39,7 +39,7 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     var captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
-      console.log("Before Event processing: " + JSON.stringify(webEvent));
+      // console.log("Before Event processing: " + JSON.stringify(webEvent));
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
       actionOnBeforeSendHeaders(webEvent);
