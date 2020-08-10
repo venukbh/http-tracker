@@ -29,7 +29,6 @@ var eventTracker = (function() {
   const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
 
   function logRequestDetails(webEvent) {
-    // console.log("Before Event processing: " + JSON.stringify(webEvent));
     var inserted = insertEventUrls(webEvent);
     if (inserted) {
       addOrUpdateUrlListToPage(webEvent);
@@ -40,6 +39,7 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     var captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
+      console.log("Before Event processing: " + JSON.stringify(webEvent));
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
       actionOnBeforeSendHeaders(webEvent);
@@ -85,10 +85,21 @@ var eventTracker = (function() {
 
   function actionOnBeforeRedirect(webEvent) {
     if (webEvent.callerName === "onBeforeRedirect") {
-      let x = requestIdRedirectCount.get(webEvent.requestId);
-      requestIdRedirectCount.set(webEvent.requestId, ++x);
-      insertResponseHeaders(webEvent);
-      displaySelectedEventDetails(webEvent);
+      // A defect in latest firefox versions (tested on 79.0)
+      // Firefox is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
+      // {
+      //   "method": "GET",
+      //   "redirectUrl": "https://secure-www.gap.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
+      //   "url": "https://secure-www.gap.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
+      //   "urlClassification": "firstParty: [], thirdParty: []"
+      // }
+      if (webEvent.ip) { // for now reducing the conditions as getting the expected result
+        // if (webEvent.ip && webEvent.statusCode && webEvent.statusLine && webEvent.redirectUrl) {
+        let redirectCount = requestIdRedirectCount.get(webEvent.requestId);
+        requestIdRedirectCount.set(webEvent.requestId, ++redirectCount);
+        insertResponseHeaders(webEvent);
+        displaySelectedEventDetails(webEvent);
+      }
     }
   }
 
@@ -126,7 +137,7 @@ var eventTracker = (function() {
   function isEventToCapture(webEvent) {
     // excludeURLList always takes precedence
     var captureEventInclude = urlMatchIncludePattern(webEvent);
-    var captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
+    var captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true; // last false or true has no impact
     return (captureEventInclude && !captureEventExclude);
   }
 

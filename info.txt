@@ -99,15 +99,16 @@ Test scenarios:
     Check if the addon is opened in single window instead of multiple windows upon addon icon click
     Check include pattern is working
     check exclude pattern is working
-    check both include and exclude pattern are working together
+    check both include and exclude pattern are working together (always exclude takes precedence)
     check if delete complete cache is working
     check if delete selected event is working
     check if clear filter is working
     check if delete all filtered urls working
-    check if selecting an entry is showing request headers pane (request details,s cookies, body), response headers pane
+    check if selecting an entry is showing request headers pane (request details, headers, cookies, body), response headers pane
     check if while filter is on, backend requests are getting captured
     in firefox, for few actions, get response is also showing as error. eg : load stackoverflow account page
-
+    check if redirects are showing exactly as they are showing in browser network tab (working fine in chrome, firefox-private, but not in firefox regular window)
+    exclude patterns not working if ending with comma
 
 Features:
 Single instance addon - no matter how many times you click on the addon, it always loads a single instance popup window or a single tab which gets activated on further clicks
@@ -122,3 +123,7 @@ domEvents.js:
         1. Right after the add-on is loaded by start tracking the httpTracker.webEventConsumer requests
         2. When the search box input changes
         3. When ever the requestIdURL map changes
+
+
+js, png, gif,html, svg, jpg,ico,css,assets,woff,otf,bam.nr-data.net,click,tealium, akam
+https://secure-www.gap.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do
