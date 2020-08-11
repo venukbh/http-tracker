@@ -29,7 +29,7 @@ addOnWindowId = null;
 //   let extensionUUID = extensionUUIDManifestURL.split("/manifest.json")[0];
 //   console.debug(extensionUUID.split("manifest.json")[0]);
 //   httpTracker.webEventConsumer.tabs.query({
-//     "url": extensionUUID + "/my-page.html"
+//     "url": extensionUUID + "/src/html/my-page.html"
 //   }, function(tabs) {
 //     if (tabs && tabs.length > 0) {
 //       var tabIndex = tabs[0].index;
@@ -40,7 +40,7 @@ addOnWindowId = null;
 //       });
 //     } else {
 //       httpTracker.webEventConsumer.tabs.create({
-//         "url": httpTracker.webEventConsumer.extension.getURL("/my-page.html")
+//         "url": httpTracker.webEventConsumer.extension.getURL("/src/html/my-page.html")
 //       });
 //     }
 //   });
@@ -83,13 +83,13 @@ function createNewAddonPopupWindow() {
       left: (window.screen.width) * 3 / 4,
       top: (window.screen.height) * 3 / 4,
       type: "popup",
-      url: httpTracker.webEventConsumer.extension.getURL("my-page.html")
+      url: httpTracker.webEventConsumer.extension.getURL("/src/html/my-page.html")
     };
   } else {
     createWindowDimensions = {
       state: "maximized",
       type: "popup",
-      url: httpTracker.webEventConsumer.extension.getURL("my-page.html")
+      url: httpTracker.webEventConsumer.extension.getURL("/src/html/my-page.html")
     };
   }
   httpTracker.webEventConsumer.windows.create(createWindowDimensions, captureAddonWindowId);
