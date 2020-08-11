@@ -1,4 +1,4 @@
-// this cannot be referred in browser.js
+// this cannot be referred in detectBrowser.js
 // when ever this below code is changed, make sure the same copy is updated in detectBrowser.js and vice-versa
 if (window.browser) {
   httpTracker = {
