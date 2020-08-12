@@ -75,9 +75,9 @@ function focusExistingWindow(addOnWindow) {
 
 function createNewAddonPopupWindow() {
   // console.log(httpTracker.webEventConsumer);
-  let createWindowDimensions = {}
-  if (httpTracker.browserName == "chrome") { // state maximized is not working for chrome
-    createWindowDimensions = {
+  let createWindowProperties = {};
+  if (httpTracker.browserName == "chrome") {
+    createWindowProperties = {
       height: (window.screen.height) * 3 / 4,
       width: (window.screen.width) * 3 / 4,
       left: (window.screen.width) * 3 / 4,
@@ -86,13 +86,13 @@ function createNewAddonPopupWindow() {
       url: httpTracker.webEventConsumer.extension.getURL("/src/html/http-tracker.html")
     };
   } else {
-    createWindowDimensions = {
+    createWindowProperties = {
       state: "maximized",
       type: "popup",
       url: httpTracker.webEventConsumer.extension.getURL("/src/html/http-tracker.html")
     };
   }
-  httpTracker.webEventConsumer.windows.create(createWindowDimensions, captureAddonWindowId);
+  httpTracker.webEventConsumer.windows.create(createWindowProperties, captureAddonWindowId);
 }
 
 function captureAddonWindowId(windowDetails) {
