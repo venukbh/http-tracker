@@ -646,6 +646,8 @@ var eventTracker = (function() {
   }
 
   document.addEventListener("DOMContentLoaded", function() {
+    let manifest = httpTracker.webEventConsumer.runtime.getManifest();
+    document.title = manifest.browser_action.default_title + " (version : " + manifest.version + ")";
     bindDefaultEvents();
     captureInitialFilters();
   });

@@ -1,4 +1,5 @@
 {
+  "author": "Venu Madhav",
   "background":
   {
     "scripts": [
@@ -12,7 +13,7 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.1.2",
+  "version": "2.1.3",
   "browser_action":
   {
     "browser_style": true,
