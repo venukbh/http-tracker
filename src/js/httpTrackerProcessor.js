@@ -56,7 +56,7 @@ var eventTracker = (function() {
   }
 
   function setRedirectCount(webEvent) {
-    let redirectCount = requestIdRedirectCount.get(webEvent.requestId); // undefined here
+    let redirectCount = requestIdRedirectCount.get(webEvent.requestId); // this value can be undefined here
     if (redirectCount === undefined) {
       redirectCount = 0;
       requestIdRedirectCount.set(webEvent.requestId, redirectCount);
@@ -89,8 +89,8 @@ var eventTracker = (function() {
       // Firefox is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
       // {
       //   "method": "GET",
-      //   "redirectUrl": "https://secure-www.gap.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
-      //   "url": "https://secure-www.gap.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
+      //   "redirectUrl": "https://secure-www.test.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
+      //   "url": "https://secure-www.test.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
       //   "urlClassification": "firstParty: [], thirdParty: []"
       // }
       if (webEvent.ip) { // for now reducing the conditions as getting the expected result
@@ -188,14 +188,17 @@ var eventTracker = (function() {
         "</div>";
       document.getElementById("urls_list").insertAdjacentHTML("beforeend", containerContent);
     } else {
-      // coming from response, so update the already captured url with response details
+      // update the already captured url with details
       if (webEvent.callerName === "onErrorOccurred") {
-        // do not update the cache state as it is error and the cache state is not applicable
+        // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
         document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).style.color = "red";
         document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = "ERROR";
-      } else {
-        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.statusCode ? webEvent.statusCode : webEvent.redirectUrl ? "REDIRECT" : "&nbsp;");
-        document.getElementById("web_event_cache_" + webEvent.requestIdEnhanced).innerHTML = (webEvent.fromCache ? webEvent.fromCache : "false");
+      } else if (webEvent.statusCode) {
+        // do not update if statusCode is not available (ex: service workers in firefox are missing response events)
+        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = webEvent.statusCode;
+      }
+      if (webEvent.fromCache !== undefined && webEvent.fromCache !== null) {
+        document.getElementById("web_event_cache_" + webEvent.requestIdEnhanced).innerHTML = webEvent.fromCache;
       }
     }
   }
@@ -316,7 +319,8 @@ var eventTracker = (function() {
         }
       }
     } else {
-      console.debug("response is null");
+      tableContent = "Could not capture response for various reasons";
+      // console.debug("response is null");
     }
     return tableContent + headersContent;
   }

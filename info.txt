@@ -109,6 +109,7 @@ Test scenarios:
     in firefox, for few actions, get response is also showing as error. eg : load stackoverflow account page
     check if redirects are showing exactly as they are showing in browser network tab (working fine in chrome, firefox-private, but not in firefox regular window)
     exclude patterns not working if ending with comma
+    for urls of type "service worker", request is being captured but not the response in firefox
 
 Features:
 Single instance addon - no matter how many times you click on the addon, it always loads a single instance popup window or a single tab which gets activated on further clicks
