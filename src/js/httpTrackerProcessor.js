@@ -191,10 +191,11 @@ var eventTracker = (function() {
       // update the already captured url with details
       if (webEvent.callerName === "onErrorOccurred") {
         // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
-        document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).style.color = "red";
+        document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).classList.add("web_event_style_error");
         document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = "ERROR";
       } else if (webEvent.statusCode) {
         // do not update if statusCode is not available (ex: service workers in firefox are missing response events)
+        document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).classList.remove("web_event_style_error");
         document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = webEvent.statusCode;
       }
       if (webEvent.fromCache !== undefined && webEvent.fromCache !== null) {
@@ -319,8 +320,7 @@ var eventTracker = (function() {
         }
       }
     } else {
-      tableContent = "Could not capture response for various reasons";
-      // console.debug("response is null");
+      tableContent = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
     }
     return tableContent + headersContent;
   }
