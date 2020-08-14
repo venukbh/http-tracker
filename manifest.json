@@ -23,5 +23,15 @@
       "32": "/src/assets/icon.png"
     },
     "default_title": "HTTP-TRACKER : Track HTTP request headers, cookies, data and response Headers, cookies"
+  },
+  "commands":
+  {
+    "_execute_browser_action":
+    {
+      "suggested_key":
+      {
+        "default": "Ctrl+Shift+1"
+      }
+    }
   }
 }
