@@ -21,6 +21,10 @@
   border-color: black;
 }
 
+.web_event_style_error {
+  color: #FF0000;
+}
+
 .web_event_list_hide {
   display: none;
 }
@@ -135,6 +139,10 @@
   border-top: 1px solid;
   border-right: 1px solid;
   border-bottom: 1px solid;
+}
+
+.web_event_response_header_details {
+  width: 100%;
 }
 
 .urls_list_heading {

@@ -49,7 +49,7 @@ addOnWindowId = null;
 // open the addon window, or if already opened, bring to front
 // this will not open multiple windows when the addon icon is clicked
 function OpenAddonWindow() {
-  // console.debug("addOnWindowId" + addOnWindowId);
+  // console.debug("addOnWindowId: " + addOnWindowId);
   if (addOnWindowId) {
     httpTracker.webEventConsumer.windows.get(addOnWindowId, focusExistingWindow);
   } else {
