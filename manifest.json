@@ -13,7 +13,7 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.1.3",
+  "version": "2.1.4",
   "browser_action":
   {
     "browser_style": true,
@@ -31,7 +31,8 @@
       "suggested_key":
       {
         "default": "Ctrl+Shift+1"
-      }
+      },
+      "description": "Open the add-on window if not opened, or bring to front if already opened"
     }
   }
 }

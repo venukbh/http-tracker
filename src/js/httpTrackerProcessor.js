@@ -8,8 +8,8 @@ var eventTracker = (function() {
   var hideFormDataAttributes = []; // "password", "username", "userid"
   var filterWithKey = "";
   var filterWithValue = "";
-  var includeURLList;
-  var excludeURLList;
+  var includeURLsList;
+  var excludeURLsList;
   var captureFormDataCheckboxValue = false;
   var decoder = new TextDecoder("UTF-8");
   var filterInputBoxDelay = 500;
@@ -29,7 +29,7 @@ var eventTracker = (function() {
   const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
 
   function logRequestDetails(webEvent) {
-    var inserted = insertEventUrls(webEvent);
+    let inserted = insertEventUrls(webEvent);
     if (inserted) {
       addOrUpdateUrlListToPage(webEvent);
       displaySelectedEventDetails(webEvent);
@@ -37,7 +37,7 @@ var eventTracker = (function() {
   }
 
   function insertEventUrls(webEvent) {
-    var captureEvent = isEventToCapture(webEvent);
+    let captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
       // console.log("Before Event processing: " + JSON.stringify(webEvent));
       setRedirectCount(webEvent);
@@ -61,7 +61,7 @@ var eventTracker = (function() {
       redirectCount = 0;
       requestIdRedirectCount.set(webEvent.requestId, redirectCount);
     } else if (redirectCount) {
-      webEvent.requestIdEnhanced = webEvent.requestId + STRING_UNDERSCORE + redirectCount;
+      webEvent.requestIdEnhanced = `${webEvent.requestId}_${redirectCount}`;
     }
   }
 
@@ -135,21 +135,21 @@ var eventTracker = (function() {
 
   // finds out whether the url will be captured or not
   function isEventToCapture(webEvent) {
-    // excludeURLList always takes precedence
-    var captureEventInclude = urlMatchIncludePattern(webEvent);
-    var captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true; // last false or true has no impact
+    // excludeURLsList always takes precedence
+    let captureEventInclude = urlMatchIncludePattern(webEvent);
+    let captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true; // last false or true has no impact
     return (captureEventInclude && !captureEventExclude);
   }
 
   function urlMatchIncludePattern(webEvent) {
-    if (includeURLList) {
-      for (pattern of includeURLList) {
+    if (includeURLsList) {
+      for (pattern of includeURLsList) {
         if (webEvent.url.toLowerCase().includes(pattern.trim().toLowerCase())) {
           return true;
         }
       }
       return false;
-    } else if (webEvent.requestIdEnhanced.includes("fakeRequest-")) {
+    } else if (webEvent.requestIdEnhanced.includes("fakeRequest")) {
       return false;
     } else {
       return true;
@@ -157,8 +157,8 @@ var eventTracker = (function() {
   }
 
   function urlMatchExcludePattern(webEvent) {
-    if (excludeURLList) {
-      for (pattern of excludeURLList) {
+    if (excludeURLsList) {
+      for (pattern of excludeURLsList) {
         if (webEvent.url.toLowerCase().includes(pattern.trim().toLowerCase())) {
           return true;
         }
@@ -191,46 +191,46 @@ var eventTracker = (function() {
       // update the already captured url with details
       if (webEvent.callerName === "onErrorOccurred") {
         // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
-        document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).classList.add("web_event_style_error");
-        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = "ERROR";
+        document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
+        document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = "ERROR";
       } else if (webEvent.statusCode) {
         // do not update if statusCode is not available (ex: service workers in firefox are missing response events)
-        document.getElementById("web_events_list_" + webEvent.requestIdEnhanced).classList.remove("web_event_style_error");
-        document.getElementById("web_event_status_" + webEvent.requestIdEnhanced).innerHTML = webEvent.statusCode;
+        document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
+        document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
       }
       if (webEvent.fromCache !== undefined && webEvent.fromCache !== null) {
-        document.getElementById("web_event_cache_" + webEvent.requestIdEnhanced).innerHTML = webEvent.fromCache;
+        document.getElementById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache;
       }
     }
   }
 
   function generateURLContent(webEvent) {
-    return "<div class='web_event_list_url' id='web_event_url_" + webEvent.requestIdEnhanced + "'>" + webEvent.url + "</div>";
+    return `<div class='web_event_list_url' id='web_event_url_${webEvent.requestIdEnhanced}'>${webEvent.url}</div>`;
   }
 
   function generateMETHODContent(webEvent) {
-    return "<div class='web_event_list_method' id='web_event_method_" + webEvent.requestIdEnhanced + "'>" + webEvent.method + "</div>";
+    return `<div class='web_event_list_method' id='web_event_method_${webEvent.requestIdEnhanced}'>${webEvent.method}</div>`;
   }
 
   function generateSTATUSContent(webEvent) {
-    return "<div class='web_event_list_status' id='web_event_status_" + webEvent.requestIdEnhanced + "'>" + (webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;") + "</div>";
+    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;")}</div>`;
   }
 
   function generateDATETIMEContent(webEvent) {
-    return "<div class='web_event_list_date_time' id='web_event_time_" + webEvent.requestIdEnhanced + "'>" + (webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;") + "</div>";
+    return `<div class='web_event_list_date_time' id='web_event_time_${webEvent.requestIdEnhanced}'>${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;")}</div>`;
   }
 
   function generateCACHEContent(webEvent) {
-    return "<div class='web_event_list_cache' id='web_event_cache_" + webEvent.requestIdEnhanced + "'>" + "NA" + "</div>";
+    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>NA</div>`;
   }
 
   function getReadableDate(timestamp) {
     let date = new Date(timestamp);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   }
 
   function insertRequestBody(webEvent) {
-    if (webEvent.method === "POST" && webEvent.requestBody && captureFormDataCheckboxValue) {
+    if (webEvent.requestBody && captureFormDataCheckboxValue) {
       requestFormData.set(webEvent.requestIdEnhanced, webEvent.requestBody);
     }
   }
@@ -283,7 +283,7 @@ var eventTracker = (function() {
       for (let key of sortedRequestKeys) {
         if (key !== "requestHeaders") {
           if (!ignoreHeaders.includes(key) && webEventIdRequest[key] && webEventIdRequest[key].length > 0) {
-            tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + webEventIdRequest[key] + "</td></tr>";
+            tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${webEventIdRequest[key]}</td></tr>`;
           }
         } else {
           let sortedHeaderKeys = sortObjectByName(webEventIdRequest[key]);
@@ -303,15 +303,15 @@ var eventTracker = (function() {
         if (key !== "responseHeaders") {
           if (!ignoreHeaders.includes(key) && webEventIdResponse[key]) {
             if (typeof webEventIdResponse[key] !== "object") {
-              tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + webEventIdResponse[key] + "</td></tr>";
+              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${webEventIdResponse[key]}</td></tr>`;
             } else { // then its an object
               // this else block was added for firefox to pretty print the urlClassification object, but can be used for any object
               let content = "";
               for (const property in webEventIdResponse[key]) {
-                content += property + ": " + JSON.stringify(webEventIdResponse[key][property]) + ", ";
+                content += `${property}: ${JSON.stringify(webEventIdResponse[key][property])}, `;
               }
               content = content.substring(0, content.length - 2); // removing last ", " from the above loop
-              tableContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + content + "</td></tr>";
+              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${content}</td></tr>`;
             }
           }
         } else {
@@ -334,9 +334,9 @@ var eventTracker = (function() {
         for (let key of sortedFormData) {
           let formKeyValue = webEventIdRequestForm.formData[key];
           if (hideFormDataAttributes.includes(key.toLowerCase())) {
-            formData += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + "***HIDDEN BY ADDON***" + "</td></tr>";
+            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>***HIDDEN BY ADDON***</td></tr>`;
           } else {
-            formData += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + formKeyValue + "</td></tr>";
+            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${formKeyValue}</td></tr>`;
           }
         }
       } else if (webEventIdRequestForm.raw) {
@@ -344,7 +344,7 @@ var eventTracker = (function() {
         for (let eachByte of webEventIdRequestForm.raw) {
           let dataView = new DataView(eachByte.bytes);
           let decodedString = decoder.decode(dataView);
-          formData += "<tr style='white-space: pre-wrap; word-break: break-all;''><td colspan=2>" + decodedString + "</td></tr>";
+          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${decodedString}</td></tr>`;
         }
       }
     }
@@ -376,7 +376,7 @@ var eventTracker = (function() {
       } else if (key.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
         cookieContent += generateResponseCookieDetails(key.value, DELIMITER_RESPONSE_COOKIE);
       } else {
-        generalHeadersContent += "<tr><td class='web_event_detail_header_key'>" + key.name + "</td><td class='web_event_detail_header_value'>" + key.value + "</td></tr>";
+        generalHeadersContent += `<tr><td class='web_event_detail_header_key'>${key.name}</td><td class='web_event_detail_header_value'>${key.value}</td></tr>`;
       }
     }
     if (cookieContent) {
@@ -392,9 +392,9 @@ var eventTracker = (function() {
       for (let eachCookie of cookieList) {
         let firstOccurance = eachCookie.indexOf("=");
         if (firstOccurance > -1) {
-          cookieContent += "<tr><td class='web_event_detail_header_key'>" + eachCookie.substring(0, firstOccurance) + "</td><td class='web_event_detail_header_value'>" + eachCookie.substring(firstOccurance + 1) + "</td></tr>";
+          cookieContent += `<tr><td class='web_event_detail_header_key'>${eachCookie.substring(0, firstOccurance)}</td><td class='web_event_detail_header_value'>${eachCookie.substring(firstOccurance + 1)}</td></tr>`;
         } else {
-          console.error("Invalid cookie format, cookie = " + eachCookie);
+          console.error(`Invalid cookie format for cookie =  ${eachCookie}`);
         }
       }
     }
@@ -414,7 +414,7 @@ var eventTracker = (function() {
       cookieListMap.set(eachCookie.substring(0, firstOccurance), cookieVal);
     }
     for (let [key, value] of cookieListMap) {
-      cookieContent += "<tr><td class='web_event_detail_header_key'>" + key + "</td><td class='web_event_detail_header_value'>" + value + "</td></tr>";
+      cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
     }
     return cookieContent;
   }
@@ -531,8 +531,7 @@ var eventTracker = (function() {
   }
 
   function clearFilterBox() {
-    document.getElementById("web_events_filter_box").value = "";
-    filterWithValue = document.getElementById("web_events_filter_box").value;
+    filterWithValue = document.getElementById("web_events_filter_box").value = "";
     hideUnHideUrlList();
   }
 
@@ -568,7 +567,7 @@ var eventTracker = (function() {
     if (selectedEvent) {
       removeEntry(selectedEvent);
     }
-    document.getElementById("web_event_cache_" + selectedEvent.id.substring(16, selectedEvent.id.length)).nextSibling; // console error
+    document.getElementById(`web_event_cache_${selectedEvent.id.substring(16, selectedEvent.id.length)}`).nextSibling; // console error
   }
 
   function setEventRowAsSelected(event) {
@@ -597,7 +596,7 @@ var eventTracker = (function() {
       clearTimeout(filterPatternsToExcludeTimeout);
     }
     filterPatternsToExcludeTimeout = setTimeout(function() {
-      excludeURLList = convertToArray(event.target.value);
+      excludeURLsList = convertToArray(event.target.value);
     }, filterInputBoxDelay);
   }
 
@@ -606,15 +605,15 @@ var eventTracker = (function() {
       clearTimeout(filterPatternsToIncludeTimeout);
     }
     filterPatternsToIncludeTimeout = setTimeout(function() {
-      includeURLList = convertToArray(event.target.value);
+      includeURLsList = convertToArray(event.target.value);
     }, filterInputBoxDelay);
   }
 
   function captureInitialFilters() {
     filterWithValue = document.getElementById("web_events_filter_box").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
-    includeURLList = convertToArray(document.getElementById("include_urls_pattern").value);
-    excludeURLList = convertToArray(document.getElementById("exclude_urls_pattern").value);
+    includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
+    excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
     hideUnHideUrlList();
   }
 
@@ -647,7 +646,7 @@ var eventTracker = (function() {
 
   document.addEventListener("DOMContentLoaded", function() {
     let manifest = httpTracker.webEventConsumer.runtime.getManifest();
-    document.title = manifest.browser_action.default_title + " (version : " + manifest.version + ")";
+    document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
     bindDefaultEvents();
     captureInitialFilters();
   });
