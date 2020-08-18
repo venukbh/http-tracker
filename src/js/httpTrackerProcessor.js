@@ -466,11 +466,11 @@ var eventTracker = (function() {
   function hideUnhideDeleteButtons() {
     let visibleUrlList = getVisibleUrlList();
     if (filterWithValue && filterWithValue.length > 2 && visibleUrlList && visibleUrlList.length > 0) {
-      document.getElementById("clear_web_events_filtered_list_selected").classList.remove("web_event_list_filtered");
-      document.getElementById("clear_web_events_filtered_list_all").classList.remove("web_event_list_filtered");
+      document.getElementById("delete_selected_web_event").classList.remove("web_event_list_filtered");
+      document.getElementById("delete_all_filtered_web_events").classList.remove("web_event_list_filtered");
     } else {
-      document.getElementById("clear_web_events_filtered_list_selected").classList.add("web_event_list_filtered");
-      document.getElementById("clear_web_events_filtered_list_all").classList.add("web_event_list_filtered");
+      document.getElementById("delete_selected_web_event").classList.add("web_event_list_filtered");
+      document.getElementById("delete_all_filtered_web_events").classList.add("web_event_list_filtered");
     }
   }
 
@@ -494,14 +494,14 @@ var eventTracker = (function() {
   function bindDefaultEvents() {
     document.getElementById("include_urls_pattern").addEventListener("input", setPatternsToInclude);
     document.getElementById("exclude_urls_pattern").addEventListener("input", setPatternsToExclude);
-    document.getElementById("web_events_filter_box").addEventListener("input", filterEvents);
-    document.getElementById("urls_list").addEventListener("click", setEventRowAsSelected);
-    document.getElementById("clear_web_events_filtered_list_selected").addEventListener("click", removeSelectedEvent);
-    document.getElementById("urls_list").addEventListener("keydown", updateSelectedEventToContainer);
-    document.getElementById("clear_web_events_filter_box").addEventListener("click", clearFilterBox);
-    document.getElementById("clear_web_events_filtered_list_all").addEventListener("click", clearFilteredEvents);
-    document.getElementById("clear_web_events_complete_list").addEventListener("click", clearAllEvents);
     document.getElementById("include_form_data").addEventListener("change", captureFormDataCheckbox);
+    document.getElementById("filter_web_events").addEventListener("input", filterEvents);
+    document.getElementById("clear_filter_web_events").addEventListener("click", clearFilterBoxAndDisplayAllURLs);
+    document.getElementById("delete_all_filtered_web_events").addEventListener("click", clearFilteredEvents);
+    document.getElementById("delete_selected_web_event").addEventListener("click", removeSelectedEvent);
+    document.getElementById("delete_all_web_events").addEventListener("click", clearAllEvents);
+    document.getElementById("urls_list").addEventListener("click", setEventRowAsSelected);
+    document.getElementById("urls_list").addEventListener("keydown", updateSelectedEventToContainer);
   }
 
   function captureFormDataCheckbox() {
@@ -527,12 +527,16 @@ var eventTracker = (function() {
         removeEntry(node);
       }
     }
+    clearFilterBoxAndDisplayAllURLs();
+  }
+
+  function clearFilterBoxAndDisplayAllURLs() {
     clearFilterBox();
+    hideUnHideUrlList();
   }
 
   function clearFilterBox() {
-    filterWithValue = document.getElementById("web_events_filter_box").value = "";
-    hideUnHideUrlList();
+    filterWithValue = document.getElementById("filter_web_events").value = "";
   }
 
   function updateSelectedEventToContainer(event) {
@@ -573,7 +577,7 @@ var eventTracker = (function() {
   function setEventRowAsSelected(event) {
     if (event.target && event.target.parentElement.classList.contains("web_event_list_blank")) {
       markSelectedRequest(event.target.parentElement.id);
-      document.getElementById("clear_web_events_filtered_list_selected").classList.remove("web_event_list_filtered");
+      document.getElementById("delete_selected_web_event").classList.remove("web_event_list_filtered");
     }
   }
 
@@ -582,9 +586,9 @@ var eventTracker = (function() {
       clearTimeout(filterWithValueTimeout);
     }
     filterWithValueTimeout = setTimeout(function() {
-      filterWithkey = document.getElementById("web_event_filter_key").selectedOptions[0].value;
+      filterWithkey = document.getElementById("web_event_filter_key").selectedOptions[0].value; // get the selected key from dropdown
       if (filterWithkey) {
-        filterWithValue = event.target.value.toLowerCase();
+        filterWithValue = event.target.value.toLowerCase(); // get the value from filter text box
         hideUnHideUrlList();
         hideUnhideDeleteButtons();
       }
@@ -610,7 +614,7 @@ var eventTracker = (function() {
   }
 
   function captureInitialFilters() {
-    filterWithValue = document.getElementById("web_events_filter_box").value;
+    filterWithValue = document.getElementById("filter_web_events").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
