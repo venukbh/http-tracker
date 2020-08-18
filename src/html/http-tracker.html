@@ -11,21 +11,37 @@
 <body>
   <div id="web_events_tracking" style="width: 90%; margin: 2% 5% 2% 5%; height: 100%">
     <div>
-      <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Include url patterns :</div>
-      <div style="float:left; width: 40%; overflow: hidden;height: 30px;">
-        <input id="include_urls_pattern" type="text" placeholder="Include urls matching comma-separated pattern(s). Blank includes all" style="width: 60%">
-        <label style="margin-left: 3%;">
-          <input id="include_form_data" type="checkbox" checked>Capture form data</label>
+      <div style="width: 45%; float: left;">
+        <div style="height: 30px;">
+          <div style="float: left; width: 20%">
+            Include url patterns :
+          </div>
+          <div style="float: left; width: 75%;">
+            <input id="include_urls_pattern" type="text" placeholder="Include urls matching comma-separated pattern(s). Blank includes all" style="width: 100%">
+          </div>
+        </div>
+        <div style="height: 30px;">
+          <div style="width: 20%; float: left;">
+            Exclude urls patterns :
+          </div>
+          <div style="float: left;width: 75%;">
+            <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching comma-separated pattern(s)" style="width: 100%" value="" />
+          </div>
+        </div>
       </div>
-      <div style="float: left; width: 10%; overflow: hidden; height: 30px;">Exclude urls patterns</div>
-      <div style="height: 30px; overflow: hidden;">
-        <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching comma-separated pattern(s)" style="width: 95%" value="" />
+      <div style="width: 45%; float: left;">
+        <div style="float: left; padding-right: 20px;">
+          <label for="include_form_data" style="">Capture form data</label>
+          <input id="include_form_data" type="checkbox" checked>
+        </div>
       </div>
     </div>
-    <div style="height: 15px;">&nbsp;</div>
-    <div>
-      <div style="float: left; overflow: hidden; height: 30px;">Filter list by&nbsp;&nbsp;</div>
-      <div style="float: left; overflow: hidden; height: 30px; padding-right: 10px;">
+    <div style="clear: both;"></div>
+    <div style="width: 45%; float: left;">
+      <div style="float: left; width: 20%">
+        Filter list by :
+      </div>
+      <div style="float: left; width: 15%;">
         <select id="web_event_filter_key">
           <option value="0" selected="selected">URL</option>
           <option value="1">METHOD</option>
@@ -34,45 +50,55 @@
           <option value="4">CACHE</option>
         </select>
       </div>
-      <div style="float:left; width: 30%; overflow: hidden; height: 30px; padding-right: 10px">
-        <input id="web_events_filter_box" type="text" placeholder="Filter string (min 3 chars)" style="width: 95%" />
-      </div>
-      <!-- <div class="plus"></div> -->
-      <div style="overflow: hidden;height: 30px;">
-        <button id="clear_web_events_filter_box" type="button">Clear filter</button>
-        <button id="clear_web_events_filtered_list_all" type="button" class="web_event_list_filtered">Delete all filtered urls</button>
-        <button id="clear_web_events_filtered_list_selected" type="button" class="web_event_list_filtered">Delete selected event</button>
-        <button id="clear_web_events_complete_list" type="button">Delete complete cache</button>
+      <div style="float:left; width: 65%;">
+        <input id="web_events_filter_box" type="text" placeholder="Filter string (min 3 chars)" style="width: 92.6%;" />
       </div>
     </div>
-    <div id="urls_list_heading" class="urls_list_heading">
-      <div class="web_event_list_url">URL</div>
-      <div class="web_event_list_method">Method</div>
-      <div class="web_event_list_status">Status</div>
-      <div class="web_event_list_date_time">Date time</div>
-      <div class="web_event_list_cache">Cache</div>
+    <div style="width: 45%; float: left;">
+      <div style="height: 30px;">
+        <div style="width: 25%; float: left;">
+          <button id="clear_web_events_filter_box" type="button" style="width: 90%;">Clear filter</button>
+        </div>
+        <div style="width: 25%; float: left;">
+          <button id="clear_web_events_filtered_list_all" type="button" style="width: 90%;" class="web_event_list_filtered">Delete all filtered urls</button>
+        </div>
+        <div style="width: 25%; float: left;">
+          <button id="clear_web_events_filtered_list_selected" type="button" style="width: 90%;" class="web_event_list_filtered">Delete selected event</button>
+        </div>
+        <div style="width: 25%; float:left;">
+          <button id="clear_web_events_complete_list" type="button" style="width: 90%;">Delete complete cache</button>
+        </div>
+      </div>
     </div>
-    <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
-    <div style="height: 15px;">&nbsp;</div>
-    <div style="padding-top: 5px;">
-      <table class="web_event_details">
-        <tr>
-          <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
-          <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
-        </tr>
-      </table>
+    <div style="clear: both;">
+      <div id="urls_list_heading" class="urls_list_heading">
+        <div class="web_event_list_url">URL</div>
+        <div class="web_event_list_method">Method</div>
+        <div class="web_event_list_status">Status</div>
+        <div class="web_event_list_date_time">Date time</div>
+        <div class="web_event_list_cache">Cache</div>
+      </div>
+      <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
+      <div style="height: 15px;">&nbsp;</div>
+      <div style="padding-top: 5px;">
+        <table class="web_event_details">
+          <tr>
+            <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
+            <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
+          </tr>
+        </table>
+      </div>
+      <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
+        <table class="web_event_details">
+          <tr>
+            <td id="web_event_details_selected_request" class="web_event_detail_td">
+              <table id="request_headers_details"></table>
+            </td>
+            <td id="web_event_details_selected_response" class="web_event_detail_td">
+              <table id="response_headers_details" class="web_event_response_header_details"></table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-    <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
-      <table class="web_event_details">
-        <tr>
-          <td id="web_event_details_selected_request" class="web_event_detail_td">
-            <table id="request_headers_details"></table>
-          </td>
-          <td id="web_event_details_selected_response" class="web_event_detail_td">
-            <table id="response_headers_details" class="web_event_response_header_details"></table>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
 </body>
