@@ -623,7 +623,16 @@ var eventTracker = (function() {
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
+
+    updateButonDeleteSelectedWebEvent();
     hideUnHideUrlList();
+  }
+
+  function updateButonDeleteSelectedWebEvent() {
+    let selectedEvent = getSelectedEvent();
+    if (!selectedEvent) {
+      document.getElementById("delete_selected_web_event").disabled = true;
+    }
   }
 
   function markSelectedRequest(requestId) {
