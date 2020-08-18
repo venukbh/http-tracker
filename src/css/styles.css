@@ -50,6 +50,22 @@
   display: none;
 }
 
+.web_event_button_clear_filter {
+  width: 90%;
+}
+
+.web_event_button_delete_all_filtered {
+  width: 90%;
+}
+
+.web_event_button_delete_selected {
+  width: 90%;
+}
+
+.web_event_button_delte_all {
+  width: 90%;
+}
+
 .web_event_list_url {
   float: left;
   width: 70%;

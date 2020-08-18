@@ -570,13 +570,18 @@ var eventTracker = (function() {
     let selectedEvent = getSelectedEvent();
     if (selectedEvent) {
       removeEntry(selectedEvent);
+      document.getElementById("delete_selected_web_event").disabled = true;
+      document.getElementById("response_headers_details").innerHTML = "";
+      document.getElementById("request_headers_details").innerHTML = "";
+      selectedEvent = null;
     }
-    document.getElementById(`web_event_cache_${selectedEvent.id.substring(16, selectedEvent.id.length)}`).nextSibling; // console error
+    // document.getElementById(`web_event_cache_${selectedEvent.id.substring(16, selectedEvent.id.length)}`).nextSibling; // console error
   }
 
   function setEventRowAsSelected(event) {
     if (event.target && event.target.parentElement.classList.contains("web_event_list_blank")) {
       markSelectedRequest(event.target.parentElement.id);
+      document.getElementById("delete_selected_web_event").disabled = false;
       document.getElementById("delete_selected_web_event").classList.remove("web_event_list_filtered");
     }
   }
