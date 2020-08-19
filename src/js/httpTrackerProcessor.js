@@ -27,6 +27,7 @@ var eventTracker = (function() {
   const DELIMITER_RESPONSE_COOKIE = "\n";
   const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
   const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
+  const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
 
   function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
@@ -39,7 +40,7 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     let captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
-      // console.log("Before Event processing: " + JSON.stringify(webEvent));
+      // console.info("Before Event processing: " + JSON.stringify(webEvent));
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
       actionOnBeforeSendHeaders(webEvent);
@@ -143,12 +144,7 @@ var eventTracker = (function() {
 
   function urlMatchIncludePattern(webEvent) {
     if (includeURLsList) {
-      for (pattern of includeURLsList) {
-        if (webEvent.url.toLowerCase().includes(pattern.trim().toLowerCase())) {
-          return true;
-        }
-      }
-      return false;
+      return includeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
     } else if (webEvent.requestIdEnhanced.includes("fakeRequest")) {
       return false;
     } else {
@@ -158,12 +154,7 @@ var eventTracker = (function() {
 
   function urlMatchExcludePattern(webEvent) {
     if (excludeURLsList) {
-      for (pattern of excludeURLsList) {
-        if (webEvent.url.toLowerCase().includes(pattern.trim().toLowerCase())) {
-          return true;
-        }
-      }
-      return false;
+      return excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
     } else {
       return false;
     }
@@ -259,7 +250,7 @@ var eventTracker = (function() {
     let webEventIdRequestForm = requestFormData.get(webEventId);
 
     // sort object keys
-    // JS Object is stored as name-value pair
+    // JS object is stored as name-value pair
     // of inside for loop on an array gives key.
     // in inside for loop on an array gives index.
     let requestContainer = buildRequestContainer(webEventIdRequest);
@@ -320,7 +311,7 @@ var eventTracker = (function() {
         }
       }
     } else {
-      tableContent = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
+      tableContent = RESPONSE_NOT_AVAILABLE;
     }
     return tableContent + headersContent;
   }
@@ -419,12 +410,19 @@ var eventTracker = (function() {
     return cookieContent;
   }
 
-  function hideUnHideUrlList() {
-    let allUrlList = document.querySelectorAll(".web_event_list_blank");
+  /**
+   * This will be called when
+   *  a. On page load - to display only the matched urls from filter box if not empty
+   *  b. For each key entry in the filter box
+   *  c. on clear filter button click
+   */
+  function hideOrShowURLList() {
+    // console.time("method:hideOrShowURLList");
+    let allUrlsList = document.getElementsByClassName("web_event_list_blank"); // can we try to get only hidden elements? is it worth?
     let multipleSearchPatterns = "";
-    if (!filterWithValue || filterWithValue.length <= 2 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
-      // dont hide any thing as the search string has issues
-      for (element of allUrlList) {
+    if (!filterWithValue || filterWithValue.length <= 2) {
+      // dont hide any thing as the search string is less than 3 chars
+      for (element of allUrlsList) {
         if (element.classList.contains("web_event_list_hide")) {
           element.classList.remove("web_event_list_hide");
         }
@@ -439,7 +437,7 @@ var eventTracker = (function() {
           isOrSplit = false;
         }
       }
-      for (element of allUrlList) {
+      for (element of allUrlsList) {
         let urlMatch = false;
         if (multipleSearchPatterns.length > 0) {
           for (let searchString of multipleSearchPatterns) {
@@ -461,17 +459,7 @@ var eventTracker = (function() {
         }
       }
     }
-  }
-
-  function hideUnhideDeleteButtons() {
-    let visibleUrlList = getVisibleUrlList();
-    if (filterWithValue && filterWithValue.length > 2 && visibleUrlList && visibleUrlList.length > 0) {
-      document.getElementById("delete_selected_web_event").classList.remove("web_event_list_filtered");
-      document.getElementById("delete_all_filtered_web_events").classList.remove("web_event_list_filtered");
-    } else {
-      document.getElementById("delete_selected_web_event").classList.add("web_event_list_filtered");
-      document.getElementById("delete_all_filtered_web_events").classList.add("web_event_list_filtered");
-    }
+    // console.timeEnd("method:hideOrShowURLList");
   }
 
   function removeEntry(node) {
@@ -483,25 +471,26 @@ var eventTracker = (function() {
     node.remove();
   }
 
+  /** get the only visible list of urls for
+   *  a. on button click of delete all filtered urls
+   */
   function getVisibleUrlList() {
-    // return document.getElementById("urls_list").querySelectorAll('div' + ':not([class="web_event_list_blank web_event_list_style web_event_list_hide"])');
-    // return document.getElementById("urls_list").querySelectorAll("div.web_event_list_blank.web_event_list_style:not(.web_event_list_hide)").length;
-    if (filterWithValue) {
+    if (filterWithValue && filterWithValue.length > 2) {
       return document.getElementById("urls_list").querySelectorAll("div.web_event_list_blank.web_event_list_style:not(.web_event_list_hide)");
     }
   }
 
   function bindDefaultEvents() {
-    document.getElementById("include_urls_pattern").addEventListener("input", setPatternsToInclude);
-    document.getElementById("exclude_urls_pattern").addEventListener("input", setPatternsToExclude);
-    document.getElementById("include_form_data").addEventListener("change", captureFormDataCheckbox);
-    document.getElementById("filter_web_events").addEventListener("input", filterEvents);
-    document.getElementById("clear_filter_web_events").addEventListener("click", clearFilterBoxAndDisplayAllURLs);
-    document.getElementById("delete_all_filtered_web_events").addEventListener("click", clearFilteredEvents);
-    document.getElementById("delete_selected_web_event").addEventListener("click", removeSelectedEvent);
-    document.getElementById("delete_all_web_events").addEventListener("click", clearAllEvents);
-    document.getElementById("urls_list").addEventListener("click", setEventRowAsSelected);
-    document.getElementById("urls_list").addEventListener("keydown", updateSelectedEventToContainer);
+    document.getElementById("include_urls_pattern").oninput = setPatternsToInclude;
+    document.getElementById("exclude_urls_pattern").oninput = setPatternsToExclude;
+    document.getElementById("include_form_data").onchange = captureFormDataCheckbox;
+    document.getElementById("filter_web_events").oninput = filterEvents;
+    document.getElementById("clear_filter_web_events").onclick = clearFilterBoxDisplayAllURLsAndUpdateButtons;
+    document.getElementById("delete_all_filtered_web_events").onclick = deleteFilteredEvents;
+    document.getElementById("delete_selected_web_event").onclick = removeSelectedEvent;
+    document.getElementById("delete_all_web_events").onclick = clearAllEvents;
+    document.getElementById("urls_list").onclick = setEventRowAsSelected;
+    document.getElementById("urls_list").onkeydown = updateSelectedEventToContainer;
   }
 
   function captureFormDataCheckbox() {
@@ -520,54 +509,76 @@ var eventTracker = (function() {
     document.getElementById("urls_list").innerHTML = "";
   }
 
-  function clearFilteredEvents() {
+  function deleteFilteredEvents() {
     let visibleUrlList = getVisibleUrlList();
     if (visibleUrlList) {
       for (node of visibleUrlList) {
         removeEntry(node);
       }
     }
-    clearFilterBoxAndDisplayAllURLs();
+    clearFilterBoxDisplayAllURLsAndUpdateButtons();
   }
 
-  function clearFilterBoxAndDisplayAllURLs() {
+  function clearFilterBoxDisplayAllURLsAndUpdateButtons() {
+    // console.group("clearFilterBoxDisplayAllURLsAndUpdateButtons");
+    // console.time("clearFilterBoxDisplayAllURLsAndUpdateButtons");
     clearFilterBox();
-    hideUnHideUrlList();
+    hideOrShowURLList();
+    updateAllButtons();
+    // console.timeEnd("clearFilterBoxDisplayAllURLsAndUpdateButtons");
+    // console.groupEnd();
   }
 
   function clearFilterBox() {
+    // console.info("method:clearFilterBox");
     filterWithValue = document.getElementById("filter_web_events").value = "";
   }
 
   function updateSelectedEventToContainer(event) {
+    // e.target refers to the clicked element
+    // e.currentTarget, refer to the parent in this context
     if (event.target && event.target.classList.contains("web_event_list_container")) {
       let selectedEvent = getSelectedEvent();
-      if (event.keyCode == 40) { // down arrow
-        let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
-        while (nextElement) {
-          if (nextElement.classList.contains("web_event_list_hide")) {
-            nextElement = nextElement.nextElementSibling;
-          } else {
-            markSelectedRequest(nextElement.id);
-            break;
-          }
+      selectNextEligibleEvent(selectedEvent, event.keyCode);
+    }
+  }
+
+  function selectNextEligibleEvent(selectedEvent, keyCode) {
+    // console.info(`method:selectNextEligibleEvent:${selectedEvent.id}:${keyCode}`);
+    if (keyCode == 40) { // down arrow
+      let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
+      while (nextElement) {
+        if (nextElement.classList.contains("web_event_list_hide")) {
+          nextElement = nextElement.nextElementSibling;
+        } else {
+          markSelectedRequest(nextElement.id);
+          break;
         }
-      } else if (event.keyCode == 38) { // up arrow
-        let previousElement = selectedEvent ? selectedEvent.previousElementSibling : selectedEvent;
-        while (previousElement) {
-          if (previousElement.classList.contains("web_event_list_hide")) {
-            previousElement = previousElement.previousElementSibling;
-          } else {
-            markSelectedRequest(previousElement.id);
-            break;
-          }
+      }
+    } else if (keyCode == 38) { // up arrow
+      let previousElement = selectedEvent ? selectedEvent.previousElementSibling : selectedEvent;
+      while (previousElement) {
+        if (previousElement.classList.contains("web_event_list_hide")) {
+          previousElement = previousElement.previousElementSibling;
+        } else {
+          markSelectedRequest(previousElement.id);
+          break;
         }
       }
     }
   }
 
   function removeSelectedEvent() {
+    // console.group("method:removeSelectedEvent");
     let selectedEvent = getSelectedEvent();
+
+    // Always select the next element if available, and if not available select the previous element
+    // commenting for now as I do not want to take decission of what to select after deleting a record
+    // selectNextEligibleEvent(selectedEvent, 40);
+    // if (!selectedWebEventRequestId) {
+    //   selectNextEligibleEvent(selectedEvent, 38);
+    // }
+
     if (selectedEvent) {
       removeEntry(selectedEvent);
       document.getElementById("delete_selected_web_event").disabled = true;
@@ -575,7 +586,7 @@ var eventTracker = (function() {
       document.getElementById("request_headers_details").innerHTML = "";
       selectedEvent = null;
     }
-    // document.getElementById(`web_event_cache_${selectedEvent.id.substring(16, selectedEvent.id.length)}`).nextSibling; // console error
+    // console.groupEnd();
   }
 
   function setEventRowAsSelected(event) {
@@ -591,12 +602,14 @@ var eventTracker = (function() {
       clearTimeout(filterWithValueTimeout);
     }
     filterWithValueTimeout = setTimeout(function() {
+      // console.group("filterEvents");
       filterWithkey = document.getElementById("web_event_filter_key").selectedOptions[0].value; // get the selected key from dropdown
       if (filterWithkey) {
         filterWithValue = event.target.value.toLowerCase(); // get the value from filter text box
-        hideUnHideUrlList();
-        hideUnhideDeleteButtons();
+        hideOrShowURLList();
+        updateAllButtons();
       }
+      // console.groupEnd();
     }, filterInputBoxDelay);
   }
 
@@ -618,32 +631,76 @@ var eventTracker = (function() {
     }, filterInputBoxDelay);
   }
 
-  function captureInitialFilters() {
+  function setInitialStateOfPage() {
+    // console.group("setInitialStateOfPage");
     filterWithValue = document.getElementById("filter_web_events").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
+    updateAllButtons();
+    hideOrShowURLList();
+    // console.groupEnd();
+  }
 
+  function updateAllButtons() {
+    // console.group("updateAllButtons");
+    updateButonClearFilterWebEvents();
     updateButonDeleteSelectedWebEvent();
-    hideUnHideUrlList();
+    updateButonDeleteAllFilteredWebEvents();
+    updateButonDeleteAllWebEvents();
+    // console.groupEnd();
+  }
+
+  function updateButonClearFilterWebEvents() {
+    if (!filterWithValue) {
+      document.getElementById("clear_filter_web_events").disabled = true;
+      // console.info("method:updateButonClearFilterWebEvents:disabled");
+    } else {
+      document.getElementById("clear_filter_web_events").disabled = false;
+      // console.info("method:updateButonClearFilterWebEvents:enabled");
+    }
+  }
+
+  function updateButonDeleteAllFilteredWebEvents() {
+    let visibleUrlList = getVisibleUrlList();
+    if (visibleUrlList && visibleUrlList.length > 0) {
+      document.getElementById("delete_all_filtered_web_events").disabled = false;
+      // console.info("method:updateButonDeleteAllFilteredWebEvents:enabled");
+    } else {
+      document.getElementById("delete_all_filtered_web_events").disabled = true;
+      // console.info("method:updateButonDeleteAllFilteredWebEvents:disabled");
+    }
   }
 
   function updateButonDeleteSelectedWebEvent() {
     let selectedEvent = getSelectedEvent();
     if (!selectedEvent) {
       document.getElementById("delete_selected_web_event").disabled = true;
+      // console.info("method:updateButonDeleteSelectedWebEvent:disabled");
+    } else {
+      // console.info("method:updateButonDeleteSelectedWebEvent:enabled");
     }
+  }
+
+  function updateButonDeleteAllWebEvents() {
+    // console.info("method:updateButonDeleteAllWebEvents");
   }
 
   function markSelectedRequest(requestId) {
     document.getElementById("web_event_detail_request_head").style.removeProperty("display");
     document.getElementById("web_event_detail_response_head").style.removeProperty("display");
-    clearSelectedEvent();
-    document.getElementById(requestId).classList.add("web_event_list_selected");
+    deselectEvent();
+    let element = document.getElementById(requestId);
+    element.classList.add("web_event_list_selected");
+
+    // scroll is not working on key up or key down.
+    // let topPos = element.offsetTop;
+    // element.parentNode.scrollTop = element.offsetTop - element.parentNode.offsetTop;
+
     displayEventProperties(requestId.substring(16));
   }
 
-  function clearSelectedEvent() {
+  function deselectEvent() {
     let selectedEvent = getSelectedEvent();
     if (selectedEvent) {
       selectedEvent.classList.remove("web_event_list_selected");
@@ -666,7 +723,7 @@ var eventTracker = (function() {
     let manifest = httpTracker.webEventConsumer.runtime.getManifest();
     document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
     bindDefaultEvents();
-    captureInitialFilters();
+    setInitialStateOfPage();
   });
 
   // window.addEventListener("beforeunload", function(event) {
