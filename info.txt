@@ -133,3 +133,8 @@ https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 https://www.f5.com/c/cloud-2019/application-delivery-saas-solutions?utm_campaign=amer-sc_ateap&utm_medium=cpc&utm_source=google&utm_content=pg_textad_intent_p3_a2_k0_ad_0_&utm_term=owasp%20guidelines&gclid=CjwKCAjwjqT5BRAPEiwAJlBuBf21hDqHCGQZfix7W4sTgrnlw-eOksaqa3CSVODE4v2IaZJdCepUSRoCNsIQAvD_BwE
 
 https://www.chromium.org/hsts
+
+
+
+logging in js:
+    https://stackify.com/javascript-logging-basic-tips/
