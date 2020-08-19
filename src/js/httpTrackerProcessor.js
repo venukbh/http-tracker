@@ -40,7 +40,6 @@ var eventTracker = (function() {
   function insertEventUrls(webEvent) {
     let captureEvent = isEventToCapture(webEvent);
     if (captureEvent) {
-      // console.info("Before Event processing: " + JSON.stringify(webEvent));
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
       actionOnBeforeSendHeaders(webEvent);
@@ -417,8 +416,7 @@ var eventTracker = (function() {
    *  c. on clear filter button click
    */
   function hideOrShowURLList() {
-    // console.time("method:hideOrShowURLList");
-    let allUrlsList = document.getElementsByClassName("web_event_list_blank"); // can we try to get only hidden elements? is it worth?
+    let allUrlsList = document.getElementsByClassName("web_event_list_blank"); // is it worth if we get only hidden elements?
     let multipleSearchPatterns = "";
     if (!filterWithValue || filterWithValue.length <= 2) {
       // dont hide any thing as the search string is less than 3 chars
@@ -459,7 +457,6 @@ var eventTracker = (function() {
         }
       }
     }
-    // console.timeEnd("method:hideOrShowURLList");
   }
 
   function removeEntry(node) {
@@ -520,23 +517,16 @@ var eventTracker = (function() {
   }
 
   function clearFilterBoxDisplayAllURLsAndUpdateButtons() {
-    // console.group("clearFilterBoxDisplayAllURLsAndUpdateButtons");
-    // console.time("clearFilterBoxDisplayAllURLsAndUpdateButtons");
     clearFilterBox();
     hideOrShowURLList();
     updateAllButtons();
-    // console.timeEnd("clearFilterBoxDisplayAllURLsAndUpdateButtons");
-    // console.groupEnd();
   }
 
   function clearFilterBox() {
-    // console.info("method:clearFilterBox");
     filterWithValue = document.getElementById("filter_web_events").value = "";
   }
 
   function updateSelectedEventToContainer(event) {
-    // e.target refers to the clicked element
-    // e.currentTarget, refer to the parent in this context
     if (event.target && event.target.classList.contains("web_event_list_container")) {
       let selectedEvent = getSelectedEvent();
       selectNextEligibleEvent(selectedEvent, event.keyCode);
@@ -544,7 +534,6 @@ var eventTracker = (function() {
   }
 
   function selectNextEligibleEvent(selectedEvent, keyCode) {
-    // console.info(`method:selectNextEligibleEvent:${selectedEvent.id}:${keyCode}`);
     if (keyCode == 40) { // down arrow
       let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
       while (nextElement) {
@@ -569,11 +558,10 @@ var eventTracker = (function() {
   }
 
   function removeSelectedEvent() {
-    // console.group("method:removeSelectedEvent");
     let selectedEvent = getSelectedEvent();
 
-    // Always select the next element if available, and if not available select the previous element
     // commenting for now as I do not want to take decission of what to select after deleting a record
+    // Always select the next element if available, and if not available select the previous element
     // selectNextEligibleEvent(selectedEvent, 40);
     // if (!selectedWebEventRequestId) {
     //   selectNextEligibleEvent(selectedEvent, 38);
@@ -586,7 +574,6 @@ var eventTracker = (function() {
       document.getElementById("request_headers_details").innerHTML = "";
       selectedEvent = null;
     }
-    // console.groupEnd();
   }
 
   function setEventRowAsSelected(event) {
@@ -602,14 +589,12 @@ var eventTracker = (function() {
       clearTimeout(filterWithValueTimeout);
     }
     filterWithValueTimeout = setTimeout(function() {
-      // console.group("filterEvents");
       filterWithkey = document.getElementById("web_event_filter_key").selectedOptions[0].value; // get the selected key from dropdown
       if (filterWithkey) {
         filterWithValue = event.target.value.toLowerCase(); // get the value from filter text box
         hideOrShowURLList();
         updateAllButtons();
       }
-      // console.groupEnd();
     }, filterInputBoxDelay);
   }
 
@@ -632,32 +617,26 @@ var eventTracker = (function() {
   }
 
   function setInitialStateOfPage() {
-    // console.group("setInitialStateOfPage");
     filterWithValue = document.getElementById("filter_web_events").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
     updateAllButtons();
     hideOrShowURLList();
-    // console.groupEnd();
   }
 
   function updateAllButtons() {
-    // console.group("updateAllButtons");
     updateButonClearFilterWebEvents();
     updateButonDeleteSelectedWebEvent();
     updateButonDeleteAllFilteredWebEvents();
     updateButonDeleteAllWebEvents();
-    // console.groupEnd();
   }
 
   function updateButonClearFilterWebEvents() {
     if (!filterWithValue) {
       document.getElementById("clear_filter_web_events").disabled = true;
-      // console.info("method:updateButonClearFilterWebEvents:disabled");
     } else {
       document.getElementById("clear_filter_web_events").disabled = false;
-      // console.info("method:updateButonClearFilterWebEvents:enabled");
     }
   }
 
@@ -665,10 +644,8 @@ var eventTracker = (function() {
     let visibleUrlList = getVisibleUrlList();
     if (visibleUrlList && visibleUrlList.length > 0) {
       document.getElementById("delete_all_filtered_web_events").disabled = false;
-      // console.info("method:updateButonDeleteAllFilteredWebEvents:enabled");
     } else {
       document.getElementById("delete_all_filtered_web_events").disabled = true;
-      // console.info("method:updateButonDeleteAllFilteredWebEvents:disabled");
     }
   }
 
@@ -676,15 +653,10 @@ var eventTracker = (function() {
     let selectedEvent = getSelectedEvent();
     if (!selectedEvent) {
       document.getElementById("delete_selected_web_event").disabled = true;
-      // console.info("method:updateButonDeleteSelectedWebEvent:disabled");
-    } else {
-      // console.info("method:updateButonDeleteSelectedWebEvent:enabled");
     }
   }
 
-  function updateButonDeleteAllWebEvents() {
-    // console.info("method:updateButonDeleteAllWebEvents");
-  }
+  function updateButonDeleteAllWebEvents() {}
 
   function markSelectedRequest(requestId) {
     document.getElementById("web_event_detail_request_head").style.removeProperty("display");
@@ -725,10 +697,6 @@ var eventTracker = (function() {
     bindDefaultEvents();
     setInitialStateOfPage();
   });
-
-  // window.addEventListener("beforeunload", function(event) {
-  //     console.debug("Unloading the data");
-  // });
 
   // for security reasons, disabling the context menu on right click
   document.addEventListener("contextmenu", function(e) {
