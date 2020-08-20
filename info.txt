@@ -138,3 +138,9 @@ https://www.chromium.org/hsts
 
 logging in js:
     https://stackify.com/javascript-logging-basic-tips/
+
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources
+https://www.ecma-international.org/publications/standards/Standard.htm
+https://www.ecma-international.org/ecma-262/11.0/index.html#sec-properties-of-the-array-constructor
+https://tc39.es/ecma262/

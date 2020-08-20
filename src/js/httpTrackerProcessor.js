@@ -681,7 +681,8 @@ var eventTracker = (function() {
 
   function convertToArray(urlListCommaSeperated) {
     if (urlListCommaSeperated.length > 0) {
-      return urlListCommaSeperated.split(",");
+      // split, trim empty spaces, then remove empty strings
+      return (urlListCommaSeperated.split(",").map(e => e.trim()).filter(e => e));
     } else {
       return undefined;
     }
