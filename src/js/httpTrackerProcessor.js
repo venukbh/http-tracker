@@ -297,7 +297,7 @@ var eventTracker = (function() {
             } else { // then its an object
               // this else block was added for firefox to pretty print the urlClassification object, but can be used for any object
               let content = "";
-              for (const property in webEventIdResponse[key]) {
+              for (let property in webEventIdResponse[key]) {
                 content += `${property}: ${JSON.stringify(webEventIdResponse[key][property])}, `;
               }
               content = content.substring(0, content.length - 2); // removing last ", " from the above loop
@@ -416,16 +416,14 @@ var eventTracker = (function() {
    *  c. on clear filter button click
    */
   function hideOrShowURLList() {
-    let allUrlsList = document.getElementsByClassName("web_event_list_blank"); // is it worth if we get only hidden elements?
-    let multipleSearchPatterns = "";
     if (!filterWithValue || filterWithValue.length <= 2) {
       // dont hide any thing as the search string is less than 3 chars
-      for (element of allUrlsList) {
-        if (element.classList.contains("web_event_list_hide")) {
-          element.classList.remove("web_event_list_hide");
-        }
+      let urlsList = getHiddenUrlsList();
+      while (urlsList.length) {
+        urlsList[0].classList.remove("web_event_list_hide");
       }
     } else {
+      let multipleSearchPatterns = "";
       let isOrSplit = true;
       multipleSearchPatterns = filterWithValue.split(DELIMITER_OR).filter(Boolean);
       // remove all empty values
@@ -435,12 +433,16 @@ var eventTracker = (function() {
           isOrSplit = false;
         }
       }
-      for (element of allUrlsList) {
+      // get the live collection and convert into an array
+      // https://stackoverflow.com/a/40910732/2850801
+      // https://stackoverflow.com/a/16777942/2850801 - read comment by user user1106925
+      let allUrlsList = Array.prototype.slice.call(getAllUrlsList());
+      for (let element of allUrlsList) {
         let urlMatch = false;
         if (multipleSearchPatterns.length > 0) {
           for (let searchString of multipleSearchPatterns) {
             urlMatch = false;
-            if (element.childNodes[filterWithkey].innerHTML.toLowerCase().includes(searchString)) {
+            if (element.childNodes[filterWithKey].innerHTML.toLowerCase().includes(searchString)) {
               urlMatch = true;
               if (isOrSplit) {
                 break;
@@ -461,20 +463,48 @@ var eventTracker = (function() {
 
   function removeEntry(node) {
     let requestIdToRemove = node.id.substring(16, node.id.length);
+
     requestIdRedirectCount.delete(requestIdToRemove);
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
     requestFormData.delete(requestIdToRemove);
     node.remove();
+    if (requestIdToRemove === selectedWebEventRequestId) {
+      document.getElementById("delete_selected_web_event").disabled = true;
+      document.getElementById("response_headers_details").innerHTML = "";
+      document.getElementById("request_headers_details").innerHTML = "";
+      selectedEvent = null;
+    }
+
   }
 
-  /** get the only visible list of urls for
-   *  a. on button click of delete all filtered urls
+  /**
+   *  This method always returns a live collection of hidden urls list
    */
-  function getVisibleUrlList() {
-    if (filterWithValue && filterWithValue.length > 2) {
-      return document.getElementById("urls_list").querySelectorAll("div.web_event_list_blank.web_event_list_style:not(.web_event_list_hide)");
-    }
+  function getHiddenUrlsList() {
+    return document.getElementById("urls_list").getElementsByClassName("web_event_list_blank web_event_list_hide"); // this returns a live collection
+  }
+
+  /** get a static (not live) visible list of urls only
+   *  a. on button click of delete all filtered urls
+   *
+   *  querySelectorAll : returns a static list and not a live list
+   *  getElementsByClassName: returns a live list
+   *  This method will not return a live list as we are converting the live list into an array
+   */
+  function getVisibleUrlsList() {
+    let allUrls = getAllUrlsList();
+    let visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
+      return !eachUrl.classList.contains("web_event_list_hide");
+    });
+    return visibleUrls;
+  }
+
+  /**
+   *  This method always returns a live collection of all urls list (hidden and not hidden)
+   */
+  function getAllUrlsList() {
+    return document.getElementById("urls_list").getElementsByClassName("web_event_list_blank"); // this returns a live collection
   }
 
   function bindDefaultEvents() {
@@ -482,6 +512,7 @@ var eventTracker = (function() {
     document.getElementById("exclude_urls_pattern").oninput = setPatternsToExclude;
     document.getElementById("include_form_data").onchange = captureFormDataCheckbox;
     document.getElementById("filter_web_events").oninput = filterEvents;
+    document.getElementById("web_event_filter_key").oninput = filterEvents;
     document.getElementById("clear_filter_web_events").onclick = clearFilterBoxDisplayAllURLsAndUpdateButtons;
     document.getElementById("delete_all_filtered_web_events").onclick = deleteFilteredEvents;
     document.getElementById("delete_selected_web_event").onclick = removeSelectedEvent;
@@ -507,7 +538,7 @@ var eventTracker = (function() {
   }
 
   function deleteFilteredEvents() {
-    let visibleUrlList = getVisibleUrlList();
+    let visibleUrlList = getVisibleUrlsList();
     if (visibleUrlList) {
       for (node of visibleUrlList) {
         removeEntry(node);
@@ -560,7 +591,8 @@ var eventTracker = (function() {
   function removeSelectedEvent() {
     let selectedEvent = getSelectedEvent();
 
-    // commenting for now as I do not want to take decission of what to select after deleting a record
+    // commenting for now as I don't want to decide on what to select after deleting a record
+
     // Always select the next element if available, and if not available select the previous element
     // selectNextEligibleEvent(selectedEvent, 40);
     // if (!selectedWebEventRequestId) {
@@ -589,9 +621,9 @@ var eventTracker = (function() {
       clearTimeout(filterWithValueTimeout);
     }
     filterWithValueTimeout = setTimeout(function() {
-      filterWithkey = document.getElementById("web_event_filter_key").selectedOptions[0].value; // get the selected key from dropdown
-      if (filterWithkey) {
-        filterWithValue = event.target.value.toLowerCase(); // get the value from filter text box
+      filterWithKey = document.getElementById("web_event_filter_key").selectedOptions[0].value; // get the selected key(index) from dropdown
+      if (filterWithKey) {
+        filterWithValue = document.getElementById("filter_web_events").value.toLowerCase(); // get the value from filter text box
         hideOrShowURLList();
         updateAllButtons();
       }
@@ -618,6 +650,7 @@ var eventTracker = (function() {
 
   function setInitialStateOfPage() {
     filterWithValue = document.getElementById("filter_web_events").value;
+    filterWithKey = document.getElementById("filter_web_events").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
@@ -641,7 +674,7 @@ var eventTracker = (function() {
   }
 
   function updateButonDeleteAllFilteredWebEvents() {
-    let visibleUrlList = getVisibleUrlList();
+    let visibleUrlList = getVisibleUrlsList();
     if (visibleUrlList && visibleUrlList.length > 0) {
       document.getElementById("delete_all_filtered_web_events").disabled = false;
     } else {
@@ -656,7 +689,9 @@ var eventTracker = (function() {
     }
   }
 
-  function updateButonDeleteAllWebEvents() {}
+  function updateButonDeleteAllWebEvents() {
+    // TODO
+  }
 
   function markSelectedRequest(requestId) {
     document.getElementById("web_event_detail_request_head").style.removeProperty("display");

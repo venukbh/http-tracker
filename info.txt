@@ -144,3 +144,8 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources
 https://www.ecma-international.org/publications/standards/Standard.htm
 https://www.ecma-international.org/ecma-262/11.0/index.html#sec-properties-of-the-array-constructor
 https://tc39.es/ecma262/
+https://hacks.mozilla.org/2015/04/es6-in-depth-iterators-and-the-for-of-loop/
+
+
+All methods "getElementsBy*" return a live collection. Such collections always reflect the current state of the document and “auto-update” when it changes.
+https://javascript.info/searching-elements-dom
