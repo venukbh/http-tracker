@@ -13,7 +13,7 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.1.5",
+  "version": "2.1.6",
   "browser_action":
   {
     "browser_style": true,
