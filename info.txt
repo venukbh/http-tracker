@@ -68,6 +68,8 @@ Fetch: extensions using fetch cannot access headers. Only browser can handle
             console.log(response);
         });
 
+https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+
 In JavaScript “0” equals to false.
 
 Generating the zip file for review:

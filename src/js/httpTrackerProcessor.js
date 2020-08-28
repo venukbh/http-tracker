@@ -1,21 +1,21 @@
-var eventTracker = (function() {
-  var requestIdRedirectCount = new Map();
-  var allRequestHeaders = new Map();
-  var allResponseHeaders = new Map();
-  var requestFormData = new Map();
-  var addedRequestId = [];
-  var selectedWebEventRequestId = "";
-  var hideFormDataAttributes = []; // "password", "username", "userid"
-  var filterWithKey = "";
-  var filterWithValue = "";
-  var includeURLsList;
-  var excludeURLsList;
-  var captureFormDataCheckboxValue = false;
-  var decoder = new TextDecoder("UTF-8");
-  var filterInputBoxDelay = 500;
-  var filterWithValueTimeout = null;
-  var filterPatternsToIncludeTimeout = null;
-  var filterPatternsToExcludeTimeout = null;
+let eventTracker = (function() {
+  let requestIdRedirectCount = new Map();
+  let allRequestHeaders = new Map();
+  let allResponseHeaders = new Map();
+  let requestFormData = new Map();
+  let addedRequestId = [];
+  let selectedWebEventRequestId = "";
+  let hideFormDataAttributes = []; // "password", "username", "userid"
+  let filterWithKey = "";
+  let filterWithValue = "";
+  let includeURLsList;
+  let excludeURLsList;
+  let captureFormDataCheckboxValue = false;
+  let decoder = new TextDecoder("UTF-8");
+  let filterInputBoxDelay = 500;
+  let filterWithValueTimeout = null;
+  let filterPatternsToIncludeTimeout = null;
+  let filterPatternsToExcludeTimeout = null;
 
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const DELIMITER_OR = "|";
@@ -178,7 +178,7 @@ var eventTracker = (function() {
         "</div>";
       document.getElementById("urls_list").insertAdjacentHTML("beforeend", containerContent);
     } else {
-      // update the already captured url with details
+      // updating already captured url with details
       if (webEvent.callerName === "onErrorOccurred") {
         // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
         document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
@@ -343,8 +343,8 @@ var eventTracker = (function() {
 
   function sortObjectByName(objectReference) {
     let sortedObject = objectReference.sort(function(headerObject1, headerObject2) {
-      var name1 = headerObject1.name.toUpperCase();
-      var name2 = headerObject2.name.toUpperCase();
+      let name1 = headerObject1.name.toUpperCase();
+      let name2 = headerObject2.name.toUpperCase();
       if (name1 < name2) {
         return -1;
       }
@@ -674,12 +674,17 @@ var eventTracker = (function() {
   }
 
   function updateButonDeleteAllFilteredWebEvents() {
-    let visibleUrlList = getVisibleUrlsList();
-    if (visibleUrlList && visibleUrlList.length > 0) {
-      document.getElementById("delete_all_filtered_web_events").disabled = false;
+    if (filterWithValue && filterWithValue.length > 2) {
+      let visibleUrlList = getVisibleUrlsList();
+      if (visibleUrlList && visibleUrlList.length > 0) {
+        document.getElementById("delete_all_filtered_web_events").disabled = false;
+      } else {
+        document.getElementById("delete_all_filtered_web_events").disabled = true;
+      }
     } else {
       document.getElementById("delete_all_filtered_web_events").disabled = true;
     }
+
   }
 
   function updateButonDeleteSelectedWebEvent() {
@@ -734,13 +739,8 @@ var eventTracker = (function() {
     setInitialStateOfPage();
   });
 
-  // for security reasons, disabling the context menu on right click
+  // disabling the context menu on right click
   document.addEventListener("contextmenu", function(e) {
-    e.preventDefault();
-  }, false);
-
-  // for security reasons, disabling the copy option from the form
-  document.addEventListener("copy", function(e) {
     e.preventDefault();
   }, false);
 
