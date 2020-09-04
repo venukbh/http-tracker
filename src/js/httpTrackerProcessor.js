@@ -5,12 +5,13 @@ let eventTracker = (function() {
   let requestFormData = new Map();
   let addedRequestId = [];
   let selectedWebEventRequestId = "";
-  let hideFormDataAttributes = []; // "password", "username", "userid"
+  let maskFormDataAttributes = []; // "password", "username", "userid"
   let filterWithKey = "";
   let filterWithValue = "";
   let includeURLsList;
   let excludeURLsList;
   let captureFormDataCheckboxValue = false;
+  let optimizeResponseCookies;
   let decoder = new TextDecoder("UTF-8");
   let filterInputBoxDelay = 500;
   let filterWithValueTimeout = null;
@@ -20,13 +21,13 @@ let eventTracker = (function() {
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const DELIMITER_OR = "|";
   const DELIMITER_AND = "&";
-  const STRING_UNDERSCORE = "_";
   const CLASS_LIST_TO_ADD = "web_event_list_blank web_event_list_style";
   const DELIMITER_REQUEST_COOKIE = "; ";
   const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
   const DELIMITER_RESPONSE_COOKIE = "\n";
   const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
-  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
+  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
+  const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
 
   function logRequestDetails(webEvent) {
@@ -87,14 +88,14 @@ let eventTracker = (function() {
     if (webEvent.callerName === "onBeforeRedirect") {
       // A defect in latest firefox versions (tested on 79.0)
       // Firefox is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
+      // this issue does not exist in chrome
       // {
       //   "method": "GET",
-      //   "redirectUrl": "https://secure-www.test.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
-      //   "url": "https://secure-www.test.com/profile/sign_in.do?targetURL=/buy/shopping_bag.do",
+      //   "redirectUrl": "blah/blah/blah",
+      //   "url": "blah/blah",
       //   "urlClassification": "firstParty: [], thirdParty: []"
       // }
-      if (webEvent.ip) { // for now reducing the conditions as getting the expected result
-        // if (webEvent.ip && webEvent.statusCode && webEvent.statusLine && webEvent.redirectUrl) {
+      if (webEvent.ip) { // webEvent.ip && webEvent.statusCode && webEvent.statusLine && webEvent.redirectUrl
         let redirectCount = requestIdRedirectCount.get(webEvent.requestId);
         requestIdRedirectCount.set(webEvent.requestId, ++redirectCount);
         insertResponseHeaders(webEvent);
@@ -133,11 +134,13 @@ let eventTracker = (function() {
     }
   }
 
-  // finds out whether the url will be captured or not
+  /**
+   * finds out whether the url will be captured or not
+   * excludeURLsList always takes precedence
+   */
   function isEventToCapture(webEvent) {
-    // excludeURLsList always takes precedence
     let captureEventInclude = urlMatchIncludePattern(webEvent);
-    let captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true; // last false or true has no impact
+    let captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
     return (captureEventInclude && !captureEventExclude);
   }
 
@@ -159,7 +162,9 @@ let eventTracker = (function() {
     }
   }
 
-  // To populate the url list by either adding a new one, or updating the existing one
+  /**
+   * To populate the url list by either adding a new one, or updating the existing one
+   */
   function addOrUpdateUrlListToPage(webEvent) {
     // adding a new url to page using the request events
     // check if we can change the condition to callerName "onBeforeRequest"
@@ -177,14 +182,16 @@ let eventTracker = (function() {
         generateCACHEContent(webEvent) +
         "</div>";
       document.getElementById("urls_list").insertAdjacentHTML("beforeend", containerContent);
-    } else {
-      // updating already captured url with details
+    }
+    // update already captured url with details
+    else {
+      // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
       if (webEvent.callerName === "onErrorOccurred") {
-        // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
         document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
         document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = "ERROR";
-      } else if (webEvent.statusCode) {
-        // do not update if statusCode is not available (ex: service workers in firefox are missing response events)
+      }
+      // do not update if statusCode is not available (ex: service workers, fetch events in firefox are missing response events)
+      else if (webEvent.statusCode) {
         document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
         document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
       }
@@ -237,21 +244,22 @@ let eventTracker = (function() {
 
   function displaySelectedEventDetails(webEvent) {
     if (selectedWebEventRequestId && webEvent.requestIdEnhanced === selectedWebEventRequestId) {
-      // call the update container methods for the already selected url, otherwise not needed to update the display containers
+      // call update container methods for already selected url
       displayEventProperties(webEvent.requestIdEnhanced);
     }
   }
 
+  /**
+   *  This will display the selected url details, or update the already selcted url details
+   *  get the request details, response details, request form data
+   *  build the request container, response container
+   */
   function displayEventProperties(webEventId) {
     selectedWebEventRequestId = webEventId;
     let webEventIdRequest = allRequestHeaders.get(webEventId);
     let webEventIdResponse = allResponseHeaders.get(webEventId);
     let webEventIdRequestForm = requestFormData.get(webEventId);
 
-    // sort object keys
-    // JS object is stored as name-value pair
-    // of inside for loop on an array gives key.
-    // in inside for loop on an array gives index.
     let requestContainer = buildRequestContainer(webEventIdRequest);
     let responseContainer = buildResponseContainer(webEventIdResponse);
     let requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
@@ -269,17 +277,29 @@ let eventTracker = (function() {
     let tableContent = "";
     let headersContent = "";
     if (webEventIdRequest) {
-      let sortedRequestKeys = Object.keys(webEventIdRequest).sort();
-      for (let key of sortedRequestKeys) {
-        if (key !== "requestHeaders") {
-          if (!ignoreHeaders.includes(key) && webEventIdRequest[key] && webEventIdRequest[key].length > 0) {
-            tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${webEventIdRequest[key]}</td></tr>`;
+      Object.entries(webEventIdRequest).forEach(([key, value]) => {
+        if (key !== "requestHeaders") { // headers added by browser
+          if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
+            if (typeof value !== "object") {
+              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+            } else {
+              let content = "";
+              Object.entries(value).forEach(([k, v]) => {
+                // if (Array.isArray(v) && v.length) {
+                content += `${k}: ${JSON.stringify(v)}, `;
+                // }
+              });
+              // if (content) {
+              content = content.substring(0, content.length - 2); // removing last ", " from the above loop
+              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${content}</td></tr>`;
+              // }
+            }
           }
-        } else {
-          let sortedHeaderKeys = sortObjectByName(webEventIdRequest[key]);
-          headersContent = generateHeaderDetails(sortedHeaderKeys);
+        } else { // application headers
+          let sortedHeaders = sortJsonObjectArrayByName(value);
+          headersContent = generateHeaderDetails(sortedHeaders);
         }
-      }
+      });
     }
     return tableContent + headersContent;
   }
@@ -288,27 +308,29 @@ let eventTracker = (function() {
     let tableContent = "";
     let headersContent = "";
     if (webEventIdResponse) {
-      let sortedResponseKeys = Object.keys(webEventIdResponse).sort();
-      for (let key of sortedResponseKeys) {
-        if (key !== "responseHeaders") {
-          if (!ignoreHeaders.includes(key) && webEventIdResponse[key]) {
-            if (typeof webEventIdResponse[key] !== "object") {
-              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${webEventIdResponse[key]}</td></tr>`;
-            } else { // then its an object
-              // this else block was added for firefox to pretty print the urlClassification object, but can be used for any object
+      Object.entries(webEventIdResponse).forEach(([key, value]) => {
+        if (key !== "responseHeaders") { // headers added by browser
+          if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
+            if (typeof value !== "object") {
+              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+            } else {
               let content = "";
-              for (let property in webEventIdResponse[key]) {
-                content += `${property}: ${JSON.stringify(webEventIdResponse[key][property])}, `;
-              }
+              Object.entries(value).forEach(([k, v]) => {
+                // if (Array.isArray(v) && v.length) {
+                content += `${k}: ${JSON.stringify(v)}, `;
+                // }
+              });
+              // if (content) {
               content = content.substring(0, content.length - 2); // removing last ", " from the above loop
               tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${content}</td></tr>`;
+              // }
             }
           }
-        } else {
-          let sortedHeaderKeys = sortObjectByName(webEventIdResponse[key]);
-          headersContent = generateHeaderDetails(sortedHeaderKeys);
+        } else { // application headers sent by server
+          let headers = sortJsonObjectArrayByName(value);
+          headersContent = generateHeaderDetails(headers);
         }
-      }
+      });
     } else {
       tableContent = RESPONSE_NOT_AVAILABLE;
     }
@@ -318,20 +340,18 @@ let eventTracker = (function() {
   function buildRequestFormContainer(webEventIdRequestForm) {
     let formData = "";
     if (webEventIdRequestForm) {
+      formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (Form data)</td></tr>";
       if (webEventIdRequestForm.formData) {
-        let sortedFormData = Object.keys(webEventIdRequestForm.formData).sort();
-        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (Form data)</td></tr>";
-        for (let key of sortedFormData) {
+        Object.entries(webEventIdRequestForm).forEach(([key, value]) => {
           let formKeyValue = webEventIdRequestForm.formData[key];
-          if (hideFormDataAttributes.includes(key.toLowerCase())) {
-            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>***HIDDEN BY ADDON***</td></tr>`;
+          if (maskFormDataAttributes.includes(key.toLowerCase())) {
+            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>*HIDDEN*</td></tr>`;
           } else {
             formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${formKeyValue}</td></tr>`;
           }
-        }
+        });
       } else if (webEventIdRequestForm.raw) {
-        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (Form data)</td></tr>";
-        for (let eachByte of webEventIdRequestForm.raw) {
+        for (let eachByte of webEventIdRequestForm.raw) { //TODO - change to ES6
           let dataView = new DataView(eachByte.bytes);
           let decodedString = decoder.decode(dataView);
           formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${decodedString}</td></tr>`;
@@ -341,72 +361,153 @@ let eventTracker = (function() {
     return formData;
   }
 
-  function sortObjectByName(objectReference) {
-    let sortedObject = objectReference.sort(function(headerObject1, headerObject2) {
-      let name1 = headerObject1.name.toUpperCase();
-      let name2 = headerObject2.name.toUpperCase();
-      if (name1 < name2) {
-        return -1;
-      }
-      if (name1 > name2) {
-        return 1;
-      }
-      // names must be equal
-      return 0;
+  /** This sorts the object which has name as a property eg:
+   * [
+      {"name":"Host","value":"www.google.com"},
+      {"name":"Accept","value":"text"},
+      {"name":"Accept-Language","value":"en-US"}
+     ]
+   *
+   */
+  function sortJsonObjectArrayByName(jsonObjectArray) {
+    let sortedObject = jsonObjectArray.sort(function(a, b) {
+      return a.name.localeCompare(b.name);
     });
     return sortedObject;
   }
 
-  function generateHeaderDetails(sortedHeaderKeys) {
+  function generateHeaderDetails(headers) {
     let generalHeadersContent = "";
     let cookieContent = "";
-    for (let key of sortedHeaderKeys) {
-      if (key.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
-        cookieContent += generateRequestCookieDetails(key.value, DELIMITER_REQUEST_COOKIE);
-      } else if (key.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
-        cookieContent += generateResponseCookieDetails(key.value, DELIMITER_RESPONSE_COOKIE);
-      } else {
-        generalHeadersContent += `<tr><td class='web_event_detail_header_key'>${key.name}</td><td class='web_event_detail_header_value'>${key.value}</td></tr>`;
+    let banner = COOKIE_CONTENT_BANNER;
+    let optimizedCookiesMap = new Map();
+    let unoptimizedCookiesList = [];
+    headers.forEach(header => {
+      if (header.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
+        cookieContent += generateRequestCookieDetails(header.value, DELIMITER_REQUEST_COOKIE);
+      } else if (header.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
+        // unoptimized cookie content
+        if (!optimizeResponseCookies) {
+          cookieContent += generateResponseCookieDetails(header.value, DELIMITER_RESPONSE_COOKIE);
+        } else {
+          setOptimizedCookiesMap(header.value, DELIMITER_RESPONSE_COOKIE, optimizedCookiesMap);
+        }
       }
+      // optimezed cookie content
+      else {
+        generalHeadersContent += `<tr><td class='web_event_detail_header_key'>${header.name}</td><td class='web_event_detail_header_value'>${header.value}</td></tr>`;
+      }
+    });
+    if (optimizeResponseCookies) {
+      banner = COOKIE_CONTENT_BANNER_OPTIMIZED;
+      sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
+        cookieContent += `<tr><td class='web_event_detail_header_key'>${key.split(':', 1)}</td><td class='web_event_detail_header_value'>${value.cookieValue}</td></tr>`;
+      });
     }
     if (cookieContent) {
-      cookieContent = COOKIE_CONTENT_BANNER + cookieContent;
+      cookieContent = banner + cookieContent;
     }
     return generalHeadersContent + cookieContent;
   }
 
   function generateRequestCookieDetails(cookieValue, cookieDelim) {
-    let cookieList = cookieValue.split(cookieDelim).sort();
+    // generally request cookies will not be duplicates
+    let cookieList = cookieValue.split(cookieDelim).sort(sortArray);
     let cookieContent = "";
     if (cookieList.length > 0) {
+      // convert into map to avoid duplicate cookies though request cookies will not be duplicates
+      // the order of cookies will be the order in which they were added to map
+      let cookieMap = new Map();
       for (let eachCookie of cookieList) {
         let firstOccurance = eachCookie.indexOf("=");
         if (firstOccurance > -1) {
-          cookieContent += `<tr><td class='web_event_detail_header_key'>${eachCookie.substring(0, firstOccurance)}</td><td class='web_event_detail_header_value'>${eachCookie.substring(firstOccurance + 1)}</td></tr>`;
-        } else {
-          console.error(`Invalid cookie format for cookie =  ${eachCookie}`);
+          cookieMap.set(eachCookie.substring(0, firstOccurance), eachCookie.substring(firstOccurance + 1));
         }
       }
+      cookieMap.forEach((value, key) => {
+        cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+      })
     }
     return cookieContent;
   }
 
+  function sortArray(a, b) {
+    const digitRegex = /^\d/;
+    const alphabetRegex = /^[a-zA-Z]/;
+    const symbolRegex = /^[^\w\s]/;
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    const scoreA = symbolRegex.test(a) * 1 || digitRegex.test(a) * 10 || alphabetRegex.test(a) * 100;
+    const scoreB = symbolRegex.test(b) * 1 || digitRegex.test(b) * 10 || alphabetRegex.test(b) * 100;
+
+    if (scoreA !== scoreB) {
+      return scoreA - scoreB;
+    } else if (a < b) {
+      return -1;
+    } else if (a > b) {
+      return 1;
+    }
+    return 0;
+  }
+
   function generateResponseCookieDetails(cookieValue, cookieDelim) {
     let cookieList = cookieValue.split(cookieDelim);
-    let cookieVal = "";
+
     let cookieContent = "";
-    let cookieListMap = new Map();
-    for (let eachCookie of cookieList) {
-      let firstOccurance = eachCookie.indexOf("=");
-      if (firstOccurance > -1) {
-        cookieVal = eachCookie.substring(firstOccurance + 1);
+    cookieList.forEach(cookie => {
+      if (cookie) {
+        let cookieDetails = getCookieNameValue(cookie);
+        cookieContent += `<tr><td class='web_event_detail_header_key'>${cookieDetails.cookieName}</td><td class='web_event_detail_header_value'>${cookieDetails.cookieValue}</td></tr>`;
       }
-      cookieListMap.set(eachCookie.substring(0, firstOccurance), cookieVal);
-    }
-    for (let [key, value] of cookieListMap) {
-      cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
-    }
+
+    });
     return cookieContent;
+  }
+
+  function setOptimizedCookiesMap(cookieValue, cookieDelim, optimizedCookiesMap) {
+    let cookieList = cookieValue.split(cookieDelim); // for firefox
+    cookieList.forEach(cookie => {
+      if (cookie) {
+        let key = "";
+        let cookieDetails = getCookieNameValue(cookie);
+        if (cookieDetails.cookieName && cookieDetails.domain && cookieDetails.path) {
+          key = `${cookieDetails.cookieName}:${cookieDetails.domain}:${cookieDetails.path}`;
+        } else if (cookieDetails.cookieName && cookieDetails.domain) {
+          key = `${cookieDetails.cookieName}:${cookieDetails.domain}`;
+        } else {
+          key = `${cookieDetails.cookieName}`;
+        }
+        optimizedCookiesMap.set(key, cookieDetails);
+      }
+    });
+  }
+
+  function getCookieNameValue(cookie) {
+    let firstOccurance = cookie.indexOf("=");
+    let cookieObj = {};
+    if (firstOccurance > -1) {
+      cookieObj.cookieName = cookie.substring(0, firstOccurance);
+      cookieObj.cookieValue = cookie.substring(firstOccurance + 1);
+      // https://tools.ietf.org/html/rfc6265#page-10
+      // https://tools.ietf.org/html/rfc6265#section-4.1.1
+      if (cookieObj.cookieValue) {
+        cookieObj.cookieValue.split(";").forEach(attribute => {
+          if (attribute) {
+            let attributeKeyValue = attribute.trim().split("=");
+            // toLowerCase : chrome sends as domain, FF sends as Domain
+            if (attributeKeyValue[0].toLowerCase() === "domain" || attributeKeyValue[0].toLowerCase() === "path") {
+              cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
+            }
+          }
+        });
+      }
+    }
+    return cookieObj;
+  }
+
+  function sortMapByKey(unsortedMap) {
+    //  javascript map do not have sort by default
+    return new Map([...unsortedMap.entries()].sort());
   }
 
   /**
@@ -511,6 +612,7 @@ let eventTracker = (function() {
     document.getElementById("include_urls_pattern").oninput = setPatternsToInclude;
     document.getElementById("exclude_urls_pattern").oninput = setPatternsToExclude;
     document.getElementById("include_form_data").onchange = captureFormDataCheckbox;
+    document.getElementById("optimize_response_cookies").onchange = optimizeResponseCookiesCheckbox;
     document.getElementById("filter_web_events").oninput = filterEvents;
     document.getElementById("web_event_filter_key").oninput = filterEvents;
     document.getElementById("clear_filter_web_events").onclick = clearFilterBoxDisplayAllURLsAndUpdateButtons;
@@ -523,6 +625,10 @@ let eventTracker = (function() {
 
   function captureFormDataCheckbox() {
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
+  }
+
+  function optimizeResponseCookiesCheckbox() {
+    optimizeResponseCookies = document.getElementById("optimize_response_cookies").checked;
   }
 
   function clearAllEvents() {
@@ -652,6 +758,7 @@ let eventTracker = (function() {
     filterWithValue = document.getElementById("filter_web_events").value;
     filterWithKey = document.getElementById("filter_web_events").value;
     captureFormDataCheckboxValue = document.getElementById("include_form_data").checked;
+    optimizeResponseCookies = document.getElementById("optimize_response_cookies").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
     updateAllButtons();
