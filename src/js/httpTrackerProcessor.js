@@ -26,7 +26,8 @@ let eventTracker = (function() {
   const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
   const DELIMITER_RESPONSE_COOKIE = "\n";
   const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
-  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
+  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
+  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
 
@@ -86,8 +87,8 @@ let eventTracker = (function() {
 
   function actionOnBeforeRedirect(webEvent) {
     if (webEvent.callerName === "onBeforeRedirect") {
-      // A defect in latest firefox versions (tested on 79.0)
-      // Firefox is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
+      // A defect in latest FF versions (tested on 79.0)
+      // FF is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
       // this issue does not exist in chrome
       // {
       //   "method": "GET",
@@ -190,7 +191,7 @@ let eventTracker = (function() {
         document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
         document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = "ERROR";
       }
-      // do not update if statusCode is not available (ex: service workers, fetch events in firefox are missing response events)
+      // do not update if statusCode is not available (ex: service workers, fetch events in FF are missing response events)
       else if (webEvent.statusCode) {
         document.getElementById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
         document.getElementById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
@@ -260,8 +261,8 @@ let eventTracker = (function() {
     let webEventIdResponse = allResponseHeaders.get(webEventId);
     let webEventIdRequestForm = requestFormData.get(webEventId);
 
-    let requestContainer = buildRequestContainer(webEventIdRequest);
-    let responseContainer = buildResponseContainer(webEventIdResponse);
+    let requestContainer = buildURLDetailsContainer(webEventIdRequest, "requestDetails");
+    let responseContainer = buildURLDetailsContainer(webEventIdResponse, "responseDetails");
     let requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
     document.getElementById("web_event_details_selected_request").style.borderRight = "1px solid";
     document.getElementById("web_event_details_selected_response").style.borderRight = "1px solid";
@@ -273,12 +274,12 @@ let eventTracker = (function() {
     document.getElementById("response_headers_details").innerHTML = responseContainer;
   }
 
-  function buildRequestContainer(webEventIdRequest) {
+  function buildURLDetailsContainer(webEventIdDetails, detailsType) {
     let tableContent = "";
     let headersContent = "";
-    if (webEventIdRequest) {
-      Object.entries(webEventIdRequest).forEach(([key, value]) => {
-        if (key !== "requestHeaders") { // headers added by browser
+    if (webEventIdDetails) {
+      Object.entries(webEventIdDetails).forEach(([key, value]) => {
+        if (key !== "responseHeaders" && key !== "requestHeaders") { // headers added by browser
           if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
             if (typeof value !== "object") {
               tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
@@ -296,38 +297,7 @@ let eventTracker = (function() {
             }
           }
         } else { // application headers
-          let sortedHeaders = sortJsonObjectArrayByName(value);
-          headersContent = generateHeaderDetails(sortedHeaders);
-        }
-      });
-    }
-    return tableContent + headersContent;
-  }
-
-  function buildResponseContainer(webEventIdResponse) {
-    let tableContent = "";
-    let headersContent = "";
-    if (webEventIdResponse) {
-      Object.entries(webEventIdResponse).forEach(([key, value]) => {
-        if (key !== "responseHeaders") { // headers added by browser
-          if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
-            if (typeof value !== "object") {
-              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
-            } else {
-              let content = "";
-              Object.entries(value).forEach(([k, v]) => {
-                // if (Array.isArray(v) && v.length) {
-                content += `${k}: ${JSON.stringify(v)}, `;
-                // }
-              });
-              // if (content) {
-              content = content.substring(0, content.length - 2); // removing last ", " from the above loop
-              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${content}</td></tr>`;
-              // }
-            }
-          }
-        } else { // application headers sent by server
-          let headers = sortJsonObjectArrayByName(value);
+          let headers = sortArrayOfJsonObjectsByName(value);
           headersContent = generateHeaderDetails(headers);
         }
       });
@@ -369,7 +339,7 @@ let eventTracker = (function() {
      ]
    *
    */
-  function sortJsonObjectArrayByName(jsonObjectArray) {
+  function sortArrayOfJsonObjectsByName(jsonObjectArray) {
     let sortedObject = jsonObjectArray.sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
@@ -378,28 +348,34 @@ let eventTracker = (function() {
 
   function generateHeaderDetails(headers) {
     let generalHeadersContent = "";
+    let banner = COOKIE_CONTENT_BANNER; // used for request cookies
     let cookieContent = "";
-    let banner = COOKIE_CONTENT_BANNER;
     let optimizedCookiesMap = new Map();
     let unoptimizedCookiesList = [];
     headers.forEach(header => {
+      // request cookies
       if (header.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
         cookieContent += generateRequestCookieDetails(header.value, DELIMITER_REQUEST_COOKIE);
-      } else if (header.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
+      }
+      // response cookies
+      else if (header.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
         // unoptimized cookie content
         if (!optimizeResponseCookies) {
+          banner = COOKIE_CONTENT_BANNER_UNOPTIMIZED;
           cookieContent += generateResponseCookieDetails(header.value, DELIMITER_RESPONSE_COOKIE);
-        } else {
+        }
+        // optimized cookies
+        else {
+          banner = COOKIE_CONTENT_BANNER_OPTIMIZED;
           setOptimizedCookiesMap(header.value, DELIMITER_RESPONSE_COOKIE, optimizedCookiesMap);
         }
       }
-      // optimezed cookie content
+      // general headers which are not cookies
       else {
         generalHeadersContent += `<tr><td class='web_event_detail_header_key'>${header.name}</td><td class='web_event_detail_header_value'>${header.value}</td></tr>`;
       }
     });
     if (optimizeResponseCookies) {
-      banner = COOKIE_CONTENT_BANNER_OPTIMIZED;
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
         cookieContent += `<tr><td class='web_event_detail_header_key'>${key.split(':', 1)}</td><td class='web_event_detail_header_value'>${value.cookieValue}</td></tr>`;
       });
@@ -414,20 +390,20 @@ let eventTracker = (function() {
     // generally request cookies will not be duplicates
     let cookieList = cookieValue.split(cookieDelim).sort(sortArray);
     let cookieContent = "";
-    if (cookieList.length > 0) {
-      // convert into map to avoid duplicate cookies though request cookies will not be duplicates
-      // the order of cookies will be the order in which they were added to map
-      let cookieMap = new Map();
-      for (let eachCookie of cookieList) {
-        let firstOccurance = eachCookie.indexOf("=");
+    // convert into map to avoid duplicate cookies though request cookies will not be duplicates
+    // the order of cookies will be the order in which they were added to map
+    let cookieMap = new Map();
+    cookieList.forEach(cookie => {
+      if (cookie) {
+        let firstOccurance = cookie.indexOf("=");
         if (firstOccurance > -1) {
-          cookieMap.set(eachCookie.substring(0, firstOccurance), eachCookie.substring(firstOccurance + 1));
+          cookieMap.set(cookie.substring(0, firstOccurance), cookie.substring(firstOccurance + 1));
         }
       }
-      cookieMap.forEach((value, key) => {
-        cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
-      })
-    }
+    });
+    cookieMap.forEach((value, key) => {
+      cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+    })
     return cookieContent;
   }
 
@@ -452,20 +428,18 @@ let eventTracker = (function() {
 
   function generateResponseCookieDetails(cookieValue, cookieDelim) {
     let cookieList = cookieValue.split(cookieDelim);
-
     let cookieContent = "";
     cookieList.forEach(cookie => {
       if (cookie) {
         let cookieDetails = getCookieNameValue(cookie);
         cookieContent += `<tr><td class='web_event_detail_header_key'>${cookieDetails.cookieName}</td><td class='web_event_detail_header_value'>${cookieDetails.cookieValue}</td></tr>`;
       }
-
     });
     return cookieContent;
   }
 
   function setOptimizedCookiesMap(cookieValue, cookieDelim, optimizedCookiesMap) {
-    let cookieList = cookieValue.split(cookieDelim); // for firefox
+    let cookieList = cookieValue.split(cookieDelim); // for FF
     cookieList.forEach(cookie => {
       if (cookie) {
         let key = "";
@@ -594,7 +568,7 @@ let eventTracker = (function() {
    *  This method will not return a live list as we are converting the live list into an array
    */
   function getVisibleUrlsList() {
-    let allUrls = getAllUrlsList();
+    let allUrls = getAllUrlsList(); // this gives live list
     let visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
       return !eachUrl.classList.contains("web_event_list_hide");
     });
@@ -629,6 +603,7 @@ let eventTracker = (function() {
 
   function optimizeResponseCookiesCheckbox() {
     optimizeResponseCookies = document.getElementById("optimize_response_cookies").checked;
+    displayEventProperties(selectedWebEventRequestId);
   }
 
   function clearAllEvents() {
