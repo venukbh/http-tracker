@@ -5,18 +5,20 @@ let eventTracker = (function() {
   let requestFormData = new Map();
   let addedRequestId = [];
   let selectedWebEventRequestId = "";
-  let maskFormDataAttributes = []; // "password", "username", "userid"
   let filterWithKey = "";
   let filterWithValue = "";
+  let maskedAttributesList;
   let includeURLsList;
   let excludeURLsList;
   let captureFormDataCheckboxValue = false;
+  let maskAttributesCheckboxValue = false;
   let optimizeResponseCookies;
   let decoder = new TextDecoder("UTF-8");
   let filterInputBoxDelay = 500;
   let filterWithValueTimeout = null;
   let filterPatternsToIncludeTimeout = null;
   let filterPatternsToExcludeTimeout = null;
+  let filterPatternsToMaskTimeout = null;
 
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const DELIMITER_OR = "|";
@@ -30,6 +32,7 @@ let eventTracker = (function() {
   const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
+  const REQUEST_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>";
 
   function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
@@ -163,6 +166,14 @@ let eventTracker = (function() {
     }
   }
 
+  function maskFieldsPattern(value) {
+    let masking = false;
+    if (maskAttributesCheckboxValue && maskedAttributesList) {
+      masking = maskedAttributesList.some(v => value.includes(v));
+    }
+    return masking;
+  }
+
   /**
    * To populate the url list by either adding a new one, or updating the existing one
    */
@@ -282,7 +293,11 @@ let eventTracker = (function() {
         if (key !== "responseHeaders" && key !== "requestHeaders") { // headers added by browser
           if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
             if (typeof value !== "object") {
-              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+              if (maskFieldsPattern(key)) {
+                tableContent += generateMaskedHeaderKeyValueContent(key, value);
+              } else {
+                tableContent += generateHeaderKeyValueContent(key, value);
+              }
             } else {
               let content = "";
               Object.entries(value).forEach(([k, v]) => {
@@ -292,7 +307,7 @@ let eventTracker = (function() {
               });
               // if (content) {
               content = content.substring(0, content.length - 2); // removing last ", " from the above loop
-              tableContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${content}</td></tr>`;
+              tableContent += generateHeaderKeyValueContent(key, content);
               // }
             }
           }
@@ -301,26 +316,37 @@ let eventTracker = (function() {
           headersContent = generateHeaderDetails(headers);
         }
       });
-    } else {
+    } else if (detailsType === "responseDetails") {
       tableContent = RESPONSE_NOT_AVAILABLE;
+    } else {
+      tableContent = REQUEST_NOT_AVAILABLE;
     }
     return tableContent + headersContent;
+  }
+
+  function generateMaskedHeaderKeyValueContent(key, value) {
+    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value.charAt(0)}*****${value.charAt(value.length-1)}</td></tr>`;
+  }
+
+  function generateHeaderKeyValueContent(key, value) {
+    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
   }
 
   function buildRequestFormContainer(webEventIdRequestForm) {
     let formData = "";
     if (webEventIdRequestForm) {
-      formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (Form data)</td></tr>";
       if (webEventIdRequestForm.formData) {
-        Object.entries(webEventIdRequestForm).forEach(([key, value]) => {
-          let formKeyValue = webEventIdRequestForm.formData[key];
-          if (maskFormDataAttributes.includes(key.toLowerCase())) {
-            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>*HIDDEN*</td></tr>`;
+        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (form fields data)</td></tr>";
+        Object.entries(webEventIdRequestForm.formData).forEach(([key, value]) => {
+          if (maskFieldsPattern(key)) {
+            value = value.toString();
+            formData += generateMaskedHeaderKeyValueContent(key, value);
           } else {
-            formData += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${formKeyValue}</td></tr>`;
+            formData += generateHeaderKeyValueContent(key, value);
           }
         });
       } else if (webEventIdRequestForm.raw) {
+        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (raw form data)</td></tr>";
         for (let eachByte of webEventIdRequestForm.raw) { //TODO - change to ES6
           let dataView = new DataView(eachByte.bytes);
           let decodedString = decoder.decode(dataView);
@@ -548,6 +574,7 @@ let eventTracker = (function() {
       document.getElementById("delete_selected_web_event").disabled = true;
       document.getElementById("response_headers_details").innerHTML = "";
       document.getElementById("request_headers_details").innerHTML = "";
+      selectedWebEventRequestId = null;
       selectedEvent = null;
     }
 
@@ -585,6 +612,8 @@ let eventTracker = (function() {
   function bindDefaultEvents() {
     document.getElementById("include_urls_pattern").oninput = setPatternsToInclude;
     document.getElementById("exclude_urls_pattern").oninput = setPatternsToExclude;
+    document.getElementById("mask_patterns_list").oninput = setPatternsToMask;
+    document.getElementById("enable_mask_patterns").onchange = maskFieldsCheckbox;
     document.getElementById("include_form_data").onchange = captureFormDataCheckbox;
     document.getElementById("optimize_response_cookies").onchange = optimizeResponseCookiesCheckbox;
     document.getElementById("filter_web_events").oninput = filterEvents;
@@ -604,6 +633,22 @@ let eventTracker = (function() {
   function optimizeResponseCookiesCheckbox() {
     optimizeResponseCookies = document.getElementById("optimize_response_cookies").checked;
     displayEventProperties(selectedWebEventRequestId);
+  }
+
+  function maskFieldsCheckbox() {
+    maskAttributesCheckboxValue = document.getElementById("enable_mask_patterns").checked;
+    if (selectedWebEventRequestId) {
+      displayEventProperties(selectedWebEventRequestId);
+    }
+  }
+
+  function setPatternsToMask(event) {
+    if (filterPatternsToMaskTimeout) {
+      clearTimeout(filterPatternsToMaskTimeout);
+    }
+    filterPatternsToMaskTimeout = setTimeout(function() {
+      maskedAttributesList = convertToArray(event.target.value);
+    }, filterInputBoxDelay);
   }
 
   function clearAllEvents() {
@@ -736,6 +781,7 @@ let eventTracker = (function() {
     optimizeResponseCookies = document.getElementById("optimize_response_cookies").checked;
     includeURLsList = convertToArray(document.getElementById("include_urls_pattern").value);
     excludeURLsList = convertToArray(document.getElementById("exclude_urls_pattern").value);
+    maskedAttributesList = convertToArray(document.getElementById("mask_patterns_list").value);
     updateAllButtons();
     hideOrShowURLList();
   }
