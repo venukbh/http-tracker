@@ -19,6 +19,7 @@ let eventTracker = (function() {
   let filterPatternsToIncludeTimeout = null;
   let filterPatternsToExcludeTimeout = null;
   let filterPatternsToMaskTimeout = null;
+  let globalExcludeURLsList;
 
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const DELIMITER_OR = "|";
@@ -159,11 +160,13 @@ let eventTracker = (function() {
   }
 
   function urlMatchExcludePattern(webEvent) {
+    let toExclude = false;
     if (excludeURLsList) {
-      return excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
-    } else {
-      return false;
+      toExclude = excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+    } else if (!toExclude && globalExcludeURLsList) {
+      toExclude = globalExcludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
     }
+    return toExclude;
   }
 
   function maskFieldsPattern(value) {
@@ -624,6 +627,9 @@ let eventTracker = (function() {
     document.getElementById("delete_all_web_events").onclick = clearAllEvents;
     document.getElementById("urls_list").onclick = setEventRowAsSelected;
     document.getElementById("urls_list").onkeydown = updateSelectedEventToContainer;
+    document.getElementById("global_options").addEventListener("click", function() {
+      chrome.runtime.openOptionsPage();
+    });
   }
 
   function captureFormDataCheckbox() {
@@ -865,12 +871,25 @@ let eventTracker = (function() {
     document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
     bindDefaultEvents();
     setInitialStateOfPage();
+    getGlobalOptions();
   });
+
+  function getGlobalOptions() {
+    globalExcludeURLsList = httpTracker.webEventConsumer.storage.local.get(['httpTrackerGlobalExcludePatterns'], getStoredDetails);
+  }
 
   // disabling the context menu on right click
   document.addEventListener("contextmenu", function(e) {
     e.preventDefault();
   }, false);
+
+  httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
+    for (var key in changes) {
+      var storageChange = changes[key];
+      globalExcludeURLsList = storageChange.newValue;
+    }
+  });
+
 
   return {
     logRequestDetails: logRequestDetails
