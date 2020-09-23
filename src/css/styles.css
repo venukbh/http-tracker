@@ -50,6 +50,10 @@
   display: none;
 }
 
+.web_event_button_global_options {
+  float: right;
+}
+
 .web_event_button_clear_filter {
   width: 90%;
 }
