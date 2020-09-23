@@ -879,9 +879,17 @@ let eventTracker = (function() {
   }
 
   // disabling the context menu on right click
-  document.addEventListener("contextmenu", function(e) {
-    e.preventDefault();
-  }, false);
+  // document.addEventListener("contextmenu", function(e) {
+  //   e.preventDefault();
+  // }, false);
+
+  httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
+    for (var key in changes) {
+      var storageChange = changes[key];
+      globalExcludeURLsList = storageChange.newValue;
+    }
+  });
+
 
   httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
     for (var key in changes) {
