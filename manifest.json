@@ -14,7 +14,7 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.1.9",
+  "version": "2.2.0",
   "browser_action":
   {
     "browser_style": true,

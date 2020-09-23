@@ -20,6 +20,7 @@ let eventTracker = (function() {
   let filterPatternsToExcludeTimeout = null;
   let filterPatternsToMaskTimeout = null;
   let globalExcludeURLsList;
+  let toggleCaptureEvents = true;
 
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const DELIMITER_OR = "|";
@@ -44,7 +45,7 @@ let eventTracker = (function() {
   }
 
   function insertEventUrls(webEvent) {
-    let captureEvent = isEventToCapture(webEvent);
+    let captureEvent = toggleCaptureEvents && isEventToCapture(webEvent);
     if (captureEvent) {
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
@@ -189,7 +190,7 @@ let eventTracker = (function() {
       if (filterWithValue && filterWithValue.length > 2 && !webEvent.url.toLowerCase().includes(filterWithValue)) {
         hideClass = " web_event_list_hide";
       }
-      let containerContent = "<div class='" + CLASS_LIST_TO_ADD + hideClass + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
+      let containerContent = "<div title='Click to view details' class='" + CLASS_LIST_TO_ADD + hideClass + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
         generateURLContent(webEvent) +
         generateMETHODContent(webEvent) +
         generateSTATUSContent(webEvent) +
@@ -627,9 +628,20 @@ let eventTracker = (function() {
     document.getElementById("delete_all_web_events").onclick = clearAllEvents;
     document.getElementById("urls_list").onclick = setEventRowAsSelected;
     document.getElementById("urls_list").onkeydown = updateSelectedEventToContainer;
-    document.getElementById("global_options").addEventListener("click", function() {
+    document.getElementById("toggle_track_web_events").onclick = updateToggleCaptureEvents;
+    document.getElementById("preferences").addEventListener("click", function() {
       chrome.runtime.openOptionsPage();
     });
+  }
+
+  function updateToggleCaptureEvents() {
+    if (toggleCaptureEvents) {
+      toggleCaptureEvents = false;
+      document.getElementById("toggle_track_web_events").innerHTML = "Resume tracker";
+    } else {
+      toggleCaptureEvents = true;
+      document.getElementById("toggle_track_web_events").innerHTML = "Pause tracker";
+    }
   }
 
   function captureFormDataCheckbox() {

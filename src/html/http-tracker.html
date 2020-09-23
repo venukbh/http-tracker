@@ -12,7 +12,7 @@
   <div id="web_events_tracking" style="width: 90%; margin: 2% 5% 2% 5%; height: 100%">
     <div>
       <div style="width: 45%; float: left;">
-        <div style="height: 30px;">
+        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that an url containing any of the pattern(s) will be tracked. If the url does not contain any of the pattern(s), it will not be tracked. If same pattern is also available in exclude list, it will not be tracked. Leaving this input field blank tracks all the urls.">
           <div style="float: left; width: 20%">
             Include url patterns :
           </div>
@@ -20,7 +20,7 @@
             <input id="include_urls_pattern" type="text" placeholder="Include urls matching comma-separated pattern(s). Blank includes all" style="width: 100%">
           </div>
         </div>
-        <div style="height: 30px;">
+        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that an url containing any of the pattern(s) will not be tracked. If the url does not contain any of the pattern(s), it will be tracked. Leaving this input field blank tracks all the urls. Permanent exclude patterns can also be set in the preferences.">
           <div style="width: 20%; float: left;">
             Exclude urls patterns :
           </div>
@@ -28,7 +28,7 @@
             <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching comma-separated pattern(s)" style="width: 100%" value="" />
           </div>
         </div>
-        <div style="height: 30px;">
+        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that any form attributes containing this pattern will mask its value while dispalying. If the details pane was already displayed and then added pattern(s) to mask, then user need to click on the event again to view the masked details. Leaving this filed blank will not mask any attributes.">
           <div style="width: 20%; float: left;">
             Mask form fields :
           </div>
@@ -38,22 +38,22 @@
         </div>
       </div>
       <div style="width: 45%; float: left;">
-        <div style="float: left; padding-right: 20px; height: 30px;">
-          <label for="include_form_data" style="">Capture form data</label>
+        <div style="float: left; padding-right: 20px; height: 30px;" title="Check this to track form data along with headers and cookies">
           <input id="include_form_data" type="checkbox" checked>
+          <label for="include_form_data" style="">Capture form data</label>
         </div>
         <div style="float: left; padding-right: 20px; height: 30px;">
-          <label for="optimize_response_cookies" style="">Optimize response cookies</label>
           <input id="optimize_response_cookies" type="checkbox" checked>
+          <label for="optimize_response_cookies" style="" title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize response cookies</label>
         </div>
-        <div style="padding-right: 20px; height: 30px;">
-          <button id="global_options" type="button" class="web_event_button_global_options">Global options</button>
+        <div style="padding-right: 20px; height: 30px;" title="Global preferences to persist across browser sessions.">
+          <button id="preferences" type="button" class="web_event_button_preferences">Preferences</button>
         </div>
         <div style="height: 30px;">
         </div>
-        <div style="height: 30px;">
-          <label for="enable_mask_patterns" style="">Mask fields</label>
+        <div style="height: 30px;" title="Check this to mask the form attributes matching the pattern(s). When unchecked, nothing will be masked">
           <input id="enable_mask_patterns" type="checkbox" checked>
+          <label for="enable_mask_patterns" style="">Mask fields</label>
         </div>
       </div>
     </div>
@@ -77,23 +77,26 @@
     </div>
     <div style="width: 45%; float: left;">
       <div style="height: 30px;">
-        <div style="width: 25%; float: left;">
-          <button id="clear_filter_web_events" type="button" class="web_event_button_clear_filter">Clear filter</button>
+        <div style="width: 20%; float: left;">
+          <button id="clear_filter_web_events" type="button" class="web_event_button_clear_filter" title="Clear the filter textbox and display all events">Clear filter</button>
         </div>
-        <div style="width: 25%; float: left;">
-          <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered">Delete all filtered urls</button>
+        <div style="width: 20%; float: left;">
+          <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered" title="Delete all filtered list of events">Delete filtered</button>
         </div>
-        <div style="width: 25%; float: left;">
-          <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected">Delete selected event</button>
+        <div style="width: 20%; float: left;">
+          <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected" title="Delete selected event">Delete selected</button>
         </div>
-        <div style="width: 25%; float:left;">
-          <button id="delete_all_web_events" type="button" class="web_event_button_delte_all">Delete complete cache</button>
+        <div style="width: 20%; float:left;">
+          <button id="delete_all_web_events" type="button" class="web_event_button_delete_all" title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete all</button>
+        </div>
+        <div style="width: 20%; float:left;">
+          <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track" title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
         </div>
       </div>
     </div>
     <div style=" clear: both;">
       <div id="urls_list_heading" class="urls_list_heading">
-        <div class="web_event_list_url">URL</div>
+        <div class="web_event_list_url">URL [click a tracked url (if any) to view details]</div>
         <div class="web_event_list_method">Method</div>
         <div class="web_event_list_status">Status</div>
         <div class="web_event_list_date_time">Date time</div>
