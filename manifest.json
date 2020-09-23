@@ -14,14 +14,14 @@
     "webRequest",
     "<all_urls>"
   ],
-  "version": "2.1.9",
+  "version": "2.2.0",
   "browser_action":
   {
     "browser_style": true,
     "default_icon":
     {
-      "16": "/src/assets/icon.png",
-      "32": "/src/assets/icon.png"
+      "16": "/src/assets/icon_320px.png",
+      "32": "/src/assets/icon_320px.png"
     },
     "default_title": "HTTP-TRACKER : Track HTTP request headers, cookies, data and response Headers, cookies"
   },

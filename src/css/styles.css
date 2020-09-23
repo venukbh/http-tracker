@@ -50,7 +50,7 @@
   display: none;
 }
 
-.web_event_button_global_options {
+.web_event_button_preferences {
   float: right;
 }
 
@@ -66,7 +66,11 @@
   width: 90%;
 }
 
-.web_event_button_delte_all {
+.web_event_button_delete_all {
+  width: 90%;
+}
+
+.web_event_button_toggle_track {
   width: 90%;
 }
 
