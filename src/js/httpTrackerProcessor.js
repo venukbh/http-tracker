@@ -871,17 +871,12 @@ let eventTracker = (function() {
     document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
     bindDefaultEvents();
     setInitialStateOfPage();
-    getGlobalOptions();
   });
-
-  function getGlobalOptions() {
-    globalExcludeURLsList = httpTracker.webEventConsumer.storage.local.get(['httpTrackerGlobalExcludePatterns'], getStoredDetails);
-  }
 
   // disabling the context menu on right click
-  // document.addEventListener("contextmenu", function(e) {
-  //   e.preventDefault();
-  // }, false);
+  document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+  }, false);
 
   httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
     for (var key in changes) {
@@ -898,6 +893,11 @@ let eventTracker = (function() {
     }
   });
 
+  function getGlobalOptions(details) {
+    globalExcludeURLsList = getStoredDetails(details);
+  }
+
+  httpTracker.webEventConsumer.storage.local.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails

@@ -24,7 +24,7 @@ function getStoredDetails(details) {
   } else {
     let existingValues = "";
     if (details.httpTrackerGlobalExcludePatterns) {
-      existingValues = details.httpTrackerGlobalExcludePatterns.join(", ");
+      existingValues = details.httpTrackerGlobalExcludePatterns;
     }
     return existingValues;
   }

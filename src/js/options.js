@@ -14,7 +14,7 @@ function storeSettings() {
 defaultExcludePatternsTextArea.addEventListener("change", storeSettings);
 
 function updateGlobalOptions(details) {
-  defaultExcludePatternsTextArea.value = getStoredDetails(details);
+  defaultExcludePatternsTextArea.value = getStoredDetails(details).join(", ");
 }
 
 // On opening the options page, fetch stored settings and update the UI with them.
