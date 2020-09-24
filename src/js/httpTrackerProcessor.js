@@ -873,6 +873,10 @@ let eventTracker = (function() {
     setInitialStateOfPage();
   });
 
+  function getGlobalOptions(details) {
+    globalExcludeURLsList = getStoredDetails(details);
+  }
+
   // disabling the context menu on right click
   document.addEventListener("contextmenu", function(e) {
     e.preventDefault();
@@ -884,18 +888,6 @@ let eventTracker = (function() {
       globalExcludeURLsList = storageChange.newValue;
     }
   });
-
-
-  httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
-    for (var key in changes) {
-      var storageChange = changes[key];
-      globalExcludeURLsList = storageChange.newValue;
-    }
-  });
-
-  function getGlobalOptions(details) {
-    globalExcludeURLsList = getStoredDetails(details);
-  }
 
   httpTracker.webEventConsumer.storage.local.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
 
