@@ -39,5 +39,9 @@
   "options_ui":
   {
     "page": "/src/html/options.html"
+  },
+  "icons":
+  {
+    "320": "/src/assets/icon_320px.png"
   }
 }
