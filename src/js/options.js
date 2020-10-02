@@ -1,4 +1,4 @@
-let defaultExcludePatternsTextArea = document.getElementById("default_exclude_patterns");
+let defaultExcludePatternsTextArea = getById("default_exclude_patterns");
 
 function storeSettings() {
   let excludedPatternsArray = defaultExcludePatternsTextArea.value.split(/\n|\t|\ |\,/).map(e => e.trim()).filter(e => e);
