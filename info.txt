@@ -123,7 +123,7 @@ To run JavaScript performance:
 Flow:
 domEvents.js:
     There are 3 ways to display the list of urls.
-        1. Right after the add-on is loaded by start tracking the httpTracker.webEventConsumer requests
+        1. Right after the add-on is loaded by start tracking the httpTracker.browser requests
         2. When the search box input changes
         3. When ever the requestIdURL map changes
 

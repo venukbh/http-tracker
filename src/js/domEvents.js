@@ -1,84 +1,84 @@
-httpTracker.webEventConsumer.webRequest.onBeforeRequest.addListener(
+httpTracker.browser.webRequest.onBeforeRequest.addListener(
   function(details) {
     details.callerName = "onBeforeRequest";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestBody"] : ["requestBody"]
+  }, httpTracker.isFF ? ["requestBody"] : ["requestBody"]
 );
 
-httpTracker.webEventConsumer.webRequest.onBeforeSendHeaders.addListener(
+httpTracker.browser.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
     details.callerName = "onBeforeSendHeaders";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onSendHeaders.addListener(
+httpTracker.browser.webRequest.onSendHeaders.addListener(
   function(details) {
     details.callerName = "onSendHeaders";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onHeadersReceived.addListener(
+httpTracker.browser.webRequest.onHeadersReceived.addListener(
   function(details) {
     details.callerName = "onHeadersReceived";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onAuthRequired.addListener(
+httpTracker.browser.webRequest.onAuthRequired.addListener(
   function(details) {
     details.callerName = "onAuthRequired";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onBeforeRedirect.addListener(
+httpTracker.browser.webRequest.onBeforeRedirect.addListener(
   function(details) {
     details.callerName = "onBeforeRedirect";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onResponseStarted.addListener(
+httpTracker.browser.webRequest.onResponseStarted.addListener(
   function(details) {
     details.callerName = "onResponseStarted";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onCompleted.addListener(
+httpTracker.browser.webRequest.onCompleted.addListener(
   function(details) {
     details.callerName = "onCompleted";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
   }, {
     urls: ["<all_urls>"]
-  }, httpTracker.isFirefoxBrowser ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"] // chrome: need access to extraHeaders to get access to headers like Cookie, Referer, Accept-Language, Accept-Encoding, etc
+  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
 );
 
-httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+httpTracker.browser.webRequest.onErrorOccurred.addListener(
   function(details) {
     details.callerName = "onErrorOccurred";
     details.requestIdEnhanced = details.requestId;
@@ -88,8 +88,8 @@ httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
   }
 );
 
-// if (httpTracker.isFirefoxBrowser) {
-//   httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+// if (httpTracker.isFF) {
+//   httpTracker.browser.webRequest.onErrorOccurred.addListener(
 //     function(details) {
 //       details.callerName = "onErrorOccurred";
 //       details.requestIdEnhanced = details.requestId;
@@ -99,7 +99,7 @@ httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
 //     }
 //   );
 // } else {
-//   httpTracker.webEventConsumer.webRequest.onErrorOccurred.addListener(
+//   httpTracker.browser.webRequest.onErrorOccurred.addListener(
 //     function(details) {
 //       details.callerName = "onErrorOccurred";
 //       details.requestIdEnhanced = details.requestId;
