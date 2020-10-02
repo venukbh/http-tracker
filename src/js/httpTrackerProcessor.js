@@ -1,40 +1,40 @@
 let eventTracker = (function() {
-  let requestIdRedirectCount = new Map();
+  let addedRequestId = [];
   let allRequestHeaders = new Map();
   let allResponseHeaders = new Map();
-  let requestFormData = new Map();
-  let addedRequestId = [];
-  let selectedWebEventRequestId = "";
+  let captureFormDataCheckboxValue = false;
+  let decoder = new TextDecoder("UTF-8");
+  let excludeURLsList;
+  let filterInputBoxDelay = 500;
+  let filterPatternsToExcludeTimeout = null;
+  let filterPatternsToIncludeTimeout = null;
+  let filterPatternsToMaskTimeout = null;
   let filterWithKey = "";
   let filterWithValue = "";
-  let maskedAttributesList;
-  let includeURLsList;
-  let excludeURLsList;
-  let captureFormDataCheckboxValue = false;
-  let maskAttributesCheckboxValue = false;
-  let optimizeResponseCookies;
-  let decoder = new TextDecoder("UTF-8");
-  let filterInputBoxDelay = 500;
   let filterWithValueTimeout = null;
-  let filterPatternsToIncludeTimeout = null;
-  let filterPatternsToExcludeTimeout = null;
-  let filterPatternsToMaskTimeout = null;
   let globalExcludeURLsList;
+  let includeURLsList;
+  let maskAttributesCheckboxValue = false;
+  let maskedAttributesList;
+  let optimizeResponseCookies;
+  let requestFormData = new Map();
+  let requestIdRedirectCount = new Map();
+  let selectedWebEventRequestId = "";
   let toggleCaptureEvents = true;
 
-  const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
-  const DELIMITER_OR = "|";
-  const DELIMITER_AND = "&";
   const CLASS_LIST_TO_ADD = "web_event_list_blank web_event_list_style";
+  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>";
+  const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
+  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
+  const DELIMITER_AND = "&";
+  const DELIMITER_OR = "|";
   const DELIMITER_REQUEST_COOKIE = "; ";
   const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
   const DELIMITER_RESPONSE_COOKIE = "\n";
   const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
-  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies</td></tr>";
-  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
-  const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
-  const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
+  const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const REQUEST_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>";
+  const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
 
   function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
@@ -173,7 +173,7 @@ let eventTracker = (function() {
   function maskFieldsPattern(value) {
     let masking = false;
     if (maskAttributesCheckboxValue && maskedAttributesList) {
-      masking = maskedAttributesList.some(v => value.includes(v));
+      masking = maskedAttributesList.some(v => value.toLowerCase().includes(v));
     }
     return masking;
   }
@@ -316,7 +316,7 @@ let eventTracker = (function() {
             }
           }
         } else { // application headers
-          let headers = sortArrayOfJsonObjectsByName(value);
+          let headers = sortJsonByProperty(value, "name");
           headersContent = generateHeaderDetails(headers);
         }
       });
@@ -359,21 +359,6 @@ let eventTracker = (function() {
       }
     }
     return formData;
-  }
-
-  /** This sorts the object which has name as a property eg:
-   * [
-      {"name":"Host","value":"www.google.com"},
-      {"name":"Accept","value":"text"},
-      {"name":"Accept-Language","value":"en-US"}
-     ]
-   *
-   */
-  function sortArrayOfJsonObjectsByName(jsonObjectArray) {
-    let sortedObject = jsonObjectArray.sort(function(a, b) {
-      return a.name.localeCompare(b.name);
-    });
-    return sortedObject;
   }
 
   function generateHeaderDetails(headers) {
@@ -437,25 +422,6 @@ let eventTracker = (function() {
     return cookieContent;
   }
 
-  function sortArray(a, b) {
-    const digitRegex = /^\d/;
-    const alphabetRegex = /^[a-zA-Z]/;
-    const symbolRegex = /^[^\w\s]/;
-    a = a.toLowerCase();
-    b = b.toLowerCase();
-    const scoreA = symbolRegex.test(a) * 1 || digitRegex.test(a) * 10 || alphabetRegex.test(a) * 100;
-    const scoreB = symbolRegex.test(b) * 1 || digitRegex.test(b) * 10 || alphabetRegex.test(b) * 100;
-
-    if (scoreA !== scoreB) {
-      return scoreA - scoreB;
-    } else if (a < b) {
-      return -1;
-    } else if (a > b) {
-      return 1;
-    }
-    return 0;
-  }
-
   function generateResponseCookieDetails(cookieValue, cookieDelim) {
     let cookieList = cookieValue.split(cookieDelim);
     let cookieContent = "";
@@ -495,7 +461,7 @@ let eventTracker = (function() {
       // https://tools.ietf.org/html/rfc6265#page-10
       // https://tools.ietf.org/html/rfc6265#section-4.1.1
       if (cookieObj.cookieValue) {
-        cookieObj.cookieValue.split(";").forEach(attribute => {
+        stringToArray(cookieObj.cookieValue, ";").forEach(attribute => {
           if (attribute) {
             let attributeKeyValue = attribute.trim().split("=");
             // toLowerCase : chrome sends as domain, FF sends as Domain
@@ -879,29 +845,24 @@ let eventTracker = (function() {
   }
 
   document.addEventListener("DOMContentLoaded", function() {
-    let manifest = httpTracker.webEventConsumer.runtime.getManifest();
+    let manifest = httpTracker.browser.runtime.getManifest();
     document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
     bindDefaultEvents();
     setInitialStateOfPage();
   });
 
-  function getGlobalOptions(details) {
+  async function getGlobalOptions(details) {
     globalExcludeURLsList = getStoredDetails(details);
   }
 
   // disabling the context menu on right click
-  document.addEventListener("contextmenu", function(e) {
-    e.preventDefault();
-  }, false);
+  // document.addEventListener("contextmenu", function(e) {
+  //   e.preventDefault();
+  // }, false);
 
-  httpTracker.webEventConsumer.storage.onChanged.addListener(function(changes, namespace) {
-    for (var key in changes) {
-      var storageChange = changes[key];
-      globalExcludeURLsList = storageChange.newValue;
-    }
-  });
+  httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
 
-  httpTracker.webEventConsumer.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
+  httpTracker.browser.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails

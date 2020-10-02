@@ -3,7 +3,7 @@
   "background":
   {
     "scripts": [
-      "/src/js/openHttpTracker.js"
+      "/src/js/detectBrowser.js", "/src/js/openHttpTracker.js"
     ]
   },
   "description": "Monitoring the browser network for all tabs and pages in a single page",
