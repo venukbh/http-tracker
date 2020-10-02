@@ -901,7 +901,7 @@ let eventTracker = (function() {
     }
   });
 
-  httpTracker.webEventConsumer.storage.local.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
+  httpTracker.webEventConsumer.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails
