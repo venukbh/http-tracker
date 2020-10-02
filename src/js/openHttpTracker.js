@@ -4,21 +4,11 @@ const bringToFront = {
   focused: true
 };
 
-const createWindowProperties =
-  (!httpTracker.isFF) ? {
-    // height: (window.screen.height) * 3 / 4,
-    // width: (window.screen.width) * 3 / 4,
-    // left: (window.screen.width) * 3 / 4,
-    // top: (window.screen.height) * 3 / 4,
-    state: "normal",
-    type: "popup",
-    url: httpTracker.browser.extension.getURL("/src/html/http-tracker.html")
-  } : {
-    state: "maximized",
-    type: "popup",
-    url: httpTracker.browser.extension.getURL("/src/html/http-tracker.html")
-  };
-
+const createWindowProperties = {
+  type: "popup",
+  url: httpTracker.browser.extension.getURL("/src/html/http-tracker.html"),
+  state: httpTracker.isFF ? "maximized" : "normal"
+};
 
 // // open in a new tab functionality
 // function tabOpeningSuccess(result) {
@@ -51,33 +41,36 @@ const createWindowProperties =
 //   });
 // }
 
-// open the addon window, or if already opened, bring to front
-// this will not open multiple windows when the addon icon is clicked
-async function OpenAddonWindow() {
+async function closeAddon(closedaddOnWindowId) {
+  addOnWindowId = undefined;
+}
+
+// open the addon window, or if already opened, bring to front preventing multiple windows
+async function openAddon() {
   if (addOnWindowId) {
     httpTracker.browser.windows.get(addOnWindowId, focusExistingWindow);
   } else {
-    createNewAddonPopupWindow();
+    createNewAddonWindow();
   }
 }
 
-async function focusExistingWindow(addOnWindow) {
+async function focusExistingWindow(addOnWindowDetails) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
-  } else if (addOnWindow) {
-    httpTracker.browser.windows.update(addOnWindow.id, bringToFront);
+  } else if (addOnWindowDetails) {
+    httpTracker.browser.windows.update(addOnWindowDetails.id, bringToFront);
   } else {
-    createNewAddonPopupWindow();
+    createNewAddonWindow();
   }
 }
-
-function createNewAddonPopupWindow() {
-  httpTracker.browser.windows.create(createWindowProperties, captureAddonWindowId);
-}
-
 async function captureAddonWindowId(windowDetails) {
   addOnWindowId = windowDetails.id;
 }
 
+async function createNewAddonWindow() {
+  httpTracker.browser.windows.create(createWindowProperties, captureAddonWindowId);
+}
+
 // httpTracker.browser.browserAction.onClicked.addListener(openInNewTab);
-httpTracker.browser.browserAction.onClicked.addListener(OpenAddonWindow);
+httpTracker.browser.browserAction.onClicked.addListener(openAddon);
+httpTracker.browser.windows.onRemoved.addListener(closeAddon);

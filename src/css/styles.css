@@ -74,6 +74,10 @@
   width: 90%;
 }
 
+.web_event_invalid_header_json_input {
+  color: red;
+}
+
 .web_event_list_url {
   float: left;
   width: 70%;

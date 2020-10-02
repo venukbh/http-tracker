@@ -1,5 +1,6 @@
 let eventTracker = (function() {
   let addedRequestId = [];
+  let addHeadersList = null;
   let allRequestHeaders = new Map();
   let allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
@@ -22,6 +23,7 @@ let eventTracker = (function() {
   let selectedWebEventRequestId = "";
   let toggleCaptureEvents = true;
 
+
   const CLASS_LIST_TO_ADD = "web_event_list_blank web_event_list_style";
   const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>";
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
@@ -36,7 +38,7 @@ let eventTracker = (function() {
   const REQUEST_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>";
   const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
 
-  function logRequestDetails(webEvent) {
+  async function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
     if (inserted) {
       addOrUpdateUrlListToPage(webEvent);
@@ -595,6 +597,7 @@ let eventTracker = (function() {
     getById("urls_list").onclick = setEventRowAsSelected;
     getById("urls_list").onkeydown = updateSelectedEventToContainer;
     getById("toggle_track_web_events").onclick = updateToggleCaptureEvents;
+    getById("request_headers_list").onkeydown = generateHeadersToAdd;
     getById("preferences").addEventListener("click", function() {
       chrome.runtime.openOptionsPage();
     });
@@ -631,9 +634,47 @@ let eventTracker = (function() {
       clearTimeout(filterPatternsToMaskTimeout);
     }
     filterPatternsToMaskTimeout = setTimeout(function() {
-      maskedAttributesList = convertToArray(event.target.value);
+      maskedAttributesList = stringToArray(event.target.value);
     }, filterInputBoxDelay);
   }
+
+  function generateHeadersToAdd(event) {
+    if (addHeadersList) {
+      clearTimeout(addHeadersList);
+    }
+    addHeadersList = setTimeout(function() {
+      let parsedJSONArray = [];
+      if (event.target.value.trim()) {
+        try {
+          let parsedJSON;
+          parsedJSON = JSON.parse(event.target.value);
+          if (!Array.isArray(parsedJSON)) {
+            parsedJSONArray.push(parsedJSON);
+          } else {
+            parsedJSONArray = parsedJSON;
+          }
+        } catch (e) {
+          getById("valid_header_json").innerHTML = "Invalid json";
+          getById("valid_header_json").classList.add("web_event_invalid_header_json_input");
+        }
+        if (parsedJSONArray) {
+          headersValid = validateAndGenerateHeaders(parsedJSONArray);
+          if (!headersValid) {
+            getById("valid_header_json").innerHTML = "Invalid json (name, value properties are missing)";
+            getById("valid_header_json").classList.add("web_event_invalid_header_json_input");
+          } else {
+            getById("valid_header_json").innerHTML = "Valid json";
+            getById("valid_header_json").classList.remove("web_event_invalid_header_json_input");
+          }
+        }
+
+      } else {
+        getById("valid_header_json").innerHTML = "Valid json";
+        getById("valid_header_json").classList.remove("web_event_invalid_header_json_input");
+      }
+    }, filterInputBoxDelay);
+  }
+
 
   function clearAllEvents() {
     requestFormData.clear();
@@ -745,16 +786,16 @@ let eventTracker = (function() {
       clearTimeout(filterPatternsToExcludeTimeout);
     }
     filterPatternsToExcludeTimeout = setTimeout(function() {
-      excludeURLsList = convertToArray(event.target.value);
+      excludeURLsList = stringToArray(event.target.value);
     }, filterInputBoxDelay);
   }
 
-  function setPatternsToInclude(event) {
+  async function setPatternsToInclude(event) {
     if (filterPatternsToIncludeTimeout) {
       clearTimeout(filterPatternsToIncludeTimeout);
     }
     filterPatternsToIncludeTimeout = setTimeout(function() {
-      includeURLsList = convertToArray(event.target.value);
+      includeURLsList = stringToArray(event.target.value);
     }, filterInputBoxDelay);
   }
 
@@ -763,9 +804,9 @@ let eventTracker = (function() {
     filterWithKey = getById("filter_web_events").value;
     captureFormDataCheckboxValue = getById("include_form_data").checked;
     optimizeResponseCookies = getById("optimize_response_cookies").checked;
-    includeURLsList = convertToArray(getById("include_urls_pattern").value);
-    excludeURLsList = convertToArray(getById("exclude_urls_pattern").value);
-    maskedAttributesList = convertToArray(getById("mask_patterns_list").value);
+    includeURLsList = stringToArray(getById("include_urls_pattern").value);
+    excludeURLsList = stringToArray(getById("exclude_urls_pattern").value);
+    maskedAttributesList = stringToArray(getById("mask_patterns_list").value);
     updateAllButtons();
     hideOrShowURLList();
   }
@@ -831,15 +872,6 @@ let eventTracker = (function() {
     }
   }
 
-  function convertToArray(urlListCommaSeperated) {
-    if (urlListCommaSeperated.length > 0) {
-      // split, trim empty spaces, then remove empty strings
-      return (urlListCommaSeperated.split(",").map(e => e.trim()).filter(e => e));
-    } else {
-      return undefined;
-    }
-  }
-
   function getSelectedEvent() {
     return getByClassNames("web_event_list_selected")[0];
   }
@@ -861,7 +893,6 @@ let eventTracker = (function() {
   // }, false);
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
-
   httpTracker.browser.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
 
   return {

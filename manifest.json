@@ -6,13 +6,14 @@
       "/src/js/detectBrowser.js", "/src/js/openHttpTracker.js"
     ]
   },
-  "description": "Monitoring the browser network for all tabs and pages in a single page",
+  "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests for all tabs and pages in a single addon",
   "manifest_version": 2,
   "name": "HTTP-TRACKER",
   "permissions": [
     "storage",
     "webRequest",
-    "<all_urls>"
+    "<all_urls>",
+    "webRequestBlocking"
   ],
   "version": "2.2.1",
   "browser_action":
@@ -23,7 +24,7 @@
       "16": "/src/assets/icon_320px.png",
       "32": "/src/assets/icon_320px.png"
     },
-    "default_title": "HTTP-TRACKER : Track HTTP request headers, cookies, data and response Headers, cookies"
+    "default_title": "HTTP-TRACKER : Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests"
   },
   "commands":
   {
@@ -33,7 +34,7 @@
       {
         "default": "Ctrl+Shift+1"
       },
-      "description": "Open the add-on window if not opened, or bring to front if already opened"
+      "description": "Open HTTP-TRACKER if not opened, or bring to front if already opened"
     }
   },
   "options_ui":
