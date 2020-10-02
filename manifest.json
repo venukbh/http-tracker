@@ -3,7 +3,7 @@
   "background":
   {
     "scripts": [
-      "/src/js/detectBrowser.js", "/src/js/openHttpTracker.js"
+      "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
     ]
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests for all tabs and pages in a single addon",
