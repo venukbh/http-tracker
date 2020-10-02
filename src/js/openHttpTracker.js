@@ -1,17 +1,14 @@
 // this cannot be referred in detectBrowser.js
 // when ever this below code is changed, make sure the same copy is updated in detectBrowser.js and vice-versa
-if (window.browser) {
-  httpTracker = {
+let httpTracker =
+  (window.browser) ? {
     webEventConsumer: window.browser,
     browserName: "firefox",
     isFirefoxBrowser: true
-  };
-} else {
-  httpTracker = {
+  } : {
     webEventConsumer: window.chrome,
     browserName: "chrome"
   };
-}
 
 addOnWindowId = null;
 

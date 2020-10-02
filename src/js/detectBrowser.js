@@ -1,18 +1,15 @@
 // this cannot be used in openHttpTracker.js as that js itself is self implemented and does not take external script files
 
 // But when ever this file is changed, make sure the same copy is updated there and vice-versa
-if (window.browser) {
-  httpTracker = {
+let httpTracker =
+  (window.browser) ? {
     webEventConsumer: window.browser,
     browserName: "firefox",
     isFirefoxBrowser: true
-  };
-} else {
-  httpTracker = {
+  } : {
     webEventConsumer: window.chrome,
     browserName: "chrome"
   };
-}
 
 function onError(e) {
   console.error(e);
@@ -28,4 +25,14 @@ function getStoredDetails(details) {
     }
     return existingValues;
   }
+}
+
+// Shorthand for document.getElementById
+function getById(elementId) {
+  return document.getElementById(elementId);
+}
+
+// Shorthand for document.getElementsByClassName which returns a live HTMLCollection of found elements.
+function getByClassNames(classNamesSpaceDelimited) {
+  return document.getElementsByClassName(classNamesSpaceDelimited);
 }
