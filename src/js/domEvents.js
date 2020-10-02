@@ -1,21 +1,30 @@
+const trackUrls = {
+  urls: ["<all_urls>"]
+};
+
+let reqBodyHeaders = httpTracker.isFF ? ["requestBody"] : ["requestBody"];
+let reqHeaders = httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"];
+let reqHeadersBlocking = httpTracker.isFF ? ["blocking", "requestHeaders"] : ["blocking", "requestHeaders", "extraHeaders"];
+let resHeaders = httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"];
+let errorHeaders = ["extraHeaders"];
+const r = httpTracker.browser.webRequest;
+
 httpTracker.browser.webRequest.onBeforeRequest.addListener(
   function(details) {
     details.callerName = "onBeforeRequest";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["requestBody"] : ["requestBody"]
+  }, trackUrls, reqBodyHeaders
 );
 
 httpTracker.browser.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
     details.callerName = "onBeforeSendHeaders";
     details.requestIdEnhanced = details.requestId;
+    addModifyRequestHeaders(details);
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
+    return { requestHeaders: details.requestHeaders };
+  }, trackUrls, reqHeadersBlocking
 );
 
 httpTracker.browser.webRequest.onSendHeaders.addListener(
@@ -23,9 +32,7 @@ httpTracker.browser.webRequest.onSendHeaders.addListener(
     details.callerName = "onSendHeaders";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
+  }, trackUrls, reqHeaders
 );
 
 httpTracker.browser.webRequest.onHeadersReceived.addListener(
@@ -33,9 +40,7 @@ httpTracker.browser.webRequest.onHeadersReceived.addListener(
     details.callerName = "onHeadersReceived";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, trackUrls, resHeaders
 );
 
 httpTracker.browser.webRequest.onAuthRequired.addListener(
@@ -43,9 +48,7 @@ httpTracker.browser.webRequest.onAuthRequired.addListener(
     details.callerName = "onAuthRequired";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, trackUrls, resHeaders
 );
 
 httpTracker.browser.webRequest.onBeforeRedirect.addListener(
@@ -53,9 +56,7 @@ httpTracker.browser.webRequest.onBeforeRedirect.addListener(
     details.callerName = "onBeforeRedirect";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, trackUrls, resHeaders
 );
 
 httpTracker.browser.webRequest.onResponseStarted.addListener(
@@ -63,9 +64,7 @@ httpTracker.browser.webRequest.onResponseStarted.addListener(
     details.callerName = "onResponseStarted";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, trackUrls, resHeaders
 );
 
 httpTracker.browser.webRequest.onCompleted.addListener(
@@ -73,39 +72,23 @@ httpTracker.browser.webRequest.onCompleted.addListener(
     details.callerName = "onCompleted";
     details.requestIdEnhanced = details.requestId;
     eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }, httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"]
+  }, trackUrls, resHeaders
 );
 
-httpTracker.browser.webRequest.onErrorOccurred.addListener(
-  function(details) {
-    details.callerName = "onErrorOccurred";
-    details.requestIdEnhanced = details.requestId;
-    eventTracker.logRequestDetails(details);
-  }, {
-    urls: ["<all_urls>"]
-  }
-);
-
-// if (httpTracker.isFF) {
-//   httpTracker.browser.webRequest.onErrorOccurred.addListener(
-//     function(details) {
-//       details.callerName = "onErrorOccurred";
-//       details.requestIdEnhanced = details.requestId;
-//       eventTracker.logRequestDetails(details);
-//     }, {
-//       urls: ["<all_urls>"]
-//     }
-//   );
-// } else {
-//   httpTracker.browser.webRequest.onErrorOccurred.addListener(
-//     function(details) {
-//       details.callerName = "onErrorOccurred";
-//       details.requestIdEnhanced = details.requestId;
-//       eventTracker.logRequestDetails(details);
-//     }, {
-//       urls: ["<all_urls>"]
-//     }, ["extraHeaders"]
-//   );
-// }
+if (httpTracker.isFF) {
+  httpTracker.browser.webRequest.onErrorOccurred.addListener(
+    function(details) {
+      details.callerName = "onErrorOccurred";
+      details.requestIdEnhanced = details.requestId;
+      eventTracker.logRequestDetails(details);
+    }, trackUrls
+  );
+} else {
+  httpTracker.browser.webRequest.onErrorOccurred.addListener(
+    function(details) {
+      details.callerName = "onErrorOccurred";
+      details.requestIdEnhanced = details.requestId;
+      eventTracker.logRequestDetails(details);
+    }, trackUrls, errorHeaders
+  );
+}

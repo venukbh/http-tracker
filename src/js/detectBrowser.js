@@ -6,6 +6,12 @@ const httpTracker =
     browser: window.chrome
   };
 
+let addModifyRequestHeadersList;
+
+const FORBIDDEN_HEADERS = ["Accept-Charset", "Accept-Encoding", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Content-Length", "Cookie", "Cookie2", "Date", "DNT", "Expect", "Feature-Policy", "Host", "Keep-Alive", "Origin", "Proxy-", "Sec-", "Referer", "TE", "Trailer", "Transfer-Encoding", "Upgrade", "Via"];
+const FORBIDDEN_HEADERS_PATTERN = ["Proxy-", "Sec-"];
+
+
 function onError(e) {
   console.error(e);
 }
@@ -74,12 +80,12 @@ function sortJsonByProperty(jsonObjectArray, property) {
   return sortedObject;
 }
 
-// change to a better name
+// change to a better name, always returns an array
 function getStoredDetails(details) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
   } else {
-    let existingValues = "";
+    let existingValues = [];
     if (details.httpTrackerGlobalExcludePatterns) {
       existingValues = details.httpTrackerGlobalExcludePatterns;
     }
@@ -87,11 +93,53 @@ function getStoredDetails(details) {
   }
 }
 
-
-
 async function getChangesFromStorge(changes, namespace) {
   for (var key in changes) {
     var storageChange = changes[key];
     globalExcludeURLsList = storageChange.newValue;
   }
+}
+
+function validateAndGenerateHeaders(headers) {
+  if (headers.length) {
+    let validHeaders = new Map();
+    headers = headers.filter(header =>
+      header.hasOwnProperty("name") &&
+      header.hasOwnProperty("value") &&
+      header["name"] &&
+      !FORBIDDEN_HEADERS.some(v => header.name.toLowerCase() === v.toLowerCase()) &&
+      !FORBIDDEN_HEADERS_PATTERN.some(v => header.name.toLowerCase().startsWith(v.toLowerCase()))
+    );
+  }
+  if (headers.length) { // do not merge these 2 if conditions, as the headers object is modified in the above if
+    addModifyRequestHeadersList = headers;
+    return true;
+  }
+  addModifyRequestHeadersList = null;
+  return false;
+}
+
+function addModifyRequestHeaders(webEvent) {
+  if (addModifyRequestHeadersList) {
+    addModifyRequestHeadersList.forEach(newHeader => {
+      if ((newHeader.hasOwnProperty("url") && webEvent.url.includes(newHeader['url'])) ||
+        !newHeader.hasOwnProperty("url")) {
+        let found = false;
+        for (let header of webEvent.requestHeaders) {
+          if (header.name.toLowerCase() === newHeader.name.toLowerCase()) {
+            header.value = newHeader.value;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          webEvent.requestHeaders.push({
+            'name': newHeader.name,
+            'value': newHeader.value
+          });
+        }
+      }
+    });
+  }
+  return webEvent.requestHeaders;
 }

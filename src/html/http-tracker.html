@@ -28,6 +28,21 @@
             <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching comma-separated pattern(s)" style="width: 100%" value="" />
           </div>
         </div>
+        <div style="height: 30px;" title="Provide an array of json object with name, value and url as properties for each header.&#013;&#013;e.g. {[name:headerName, value:headerValue, url:addToURLPattern(blank will add to all urls)]} to include in the request headers.&#013;&#013;NOTE: Forbidden headers cannot be added and has no effect if provided. Leaving this filed blank will not add any headers. Headers in this field will be added for all requests matching the url pattern.&#013;&#013;Only valid headers from this list are added to the request.">
+          <div style="width: 20%; float: left;">
+            Add request headers :
+          </div>
+          <div style="float: left;width: 75%;">
+            <input id="request_headers_list" type="text" placeholder='[{"name":"headerName","value":"headerValue","url":"test"}, repeat]' style="width: 100%" value='' />
+          </div>
+        </div>
+        <div style="height: 30px;">
+          <div style="width: 20%; float: left;">&nbsp;
+          </div>
+          <div style="float: left;width: 75%;">
+            E.g. [{"name":"headerName","value":"headerValue","url":"test"}]
+          </div>
+        </div>
         <div style="height: 30px;" title="Provide a list of comma-separated patterns so that any form attributes containing this pattern will mask its value while dispalying. If the details pane was already displayed and then added pattern(s) to mask, then user need to click on the event again to view the masked details. Leaving this filed blank will not mask any attributes.">
           <div style="width: 20%; float: left;">
             Mask form fields :
@@ -48,6 +63,11 @@
         </div>
         <div style="padding-right: 20px; height: 30px;" title="Global preferences to persist across browser sessions.">
           <button id="preferences" type="button" class="web_event_button_preferences">Preferences</button>
+        </div>
+        <div style="height: 30px;">
+        </div>
+        <div style="height: 30px;">
+          <div id="valid_header_json" class="">Valid json</div>
         </div>
         <div style="height: 30px;">
         </div>
