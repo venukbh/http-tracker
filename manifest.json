@@ -3,19 +3,20 @@
   "background":
   {
     "scripts": [
-      "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
+      "/src/js/httpTrackerConstants.js", "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
     ]
   },
-  "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests for all tabs and pages in a single addon",
+  "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
   "manifest_version": 2,
   "name": "HTTP-TRACKER",
   "permissions": [
     "storage",
     "webRequest",
     "<all_urls>",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "tabs"
   ],
-  "version": "2.2.1",
+  "version": "2.2.2",
   "browser_action":
   {
     "browser_style": true,

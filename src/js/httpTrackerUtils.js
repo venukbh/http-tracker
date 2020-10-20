@@ -1,16 +1,5 @@
-const httpTracker =
-  (window.browser) ? {
-    browser: window.browser,
-    isFF: true
-  } : {
-    browser: window.chrome
-  };
-
+let customManifestDetails;
 let addModifyRequestHeadersList;
-
-const FORBIDDEN_HEADERS = ["Accept-Charset", "Accept-Encoding", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Content-Length", "Cookie", "Cookie2", "Date", "DNT", "Expect", "Feature-Policy", "Host", "Keep-Alive", "Origin", "Proxy-", "Sec-", "Referer", "TE", "Trailer", "Transfer-Encoding", "Upgrade", "Via"];
-const FORBIDDEN_HEADERS_PATTERN = ["Proxy-", "Sec-"];
-
 
 function onError(e) {
   console.error(e);
@@ -55,8 +44,10 @@ function stringToArray(stringWithDelimiter, delimiter = ",") {
 }
 
 function uniqueArray(arrayWithEntries) {
-  if (arrayWithEntries.length) {
+  if (arrayWithEntries && arrayWithEntries.length) {
     return [...new Set(arrayWithEntries)];
+  } else {
+    return "";
   }
 }
 
@@ -93,13 +84,6 @@ function getStoredDetails(details) {
   }
 }
 
-async function getChangesFromStorge(changes, namespace) {
-  for (var key in changes) {
-    var storageChange = changes[key];
-    globalExcludeURLsList = storageChange.newValue;
-  }
-}
-
 function validateAndGenerateHeaders(headers) {
   if (headers.length) {
     let validHeaders = new Map();
@@ -117,6 +101,17 @@ function validateAndGenerateHeaders(headers) {
   }
   addModifyRequestHeadersList = null;
   return false;
+}
+
+function getManifestDetails() {
+  if (!customManifestDetails) {
+    let manifest = httpTracker.browser.runtime.getManifest();
+    if (manifest) {
+      customManifestDetails = {};
+      customManifestDetails.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
+    }
+  }
+  return customManifestDetails;
 }
 
 function addModifyRequestHeaders(webEvent) {
