@@ -28,8 +28,6 @@ let eventTracker = (function() {
   const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>";
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
-  const DELIMITER_AND = "&";
-  const DELIMITER_OR = "|";
   const DELIMITER_REQUEST_COOKIE = "; ";
   const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
   const DELIMITER_RESPONSE_COOKIE = "\n";
@@ -582,7 +580,7 @@ let eventTracker = (function() {
   }
 
   function bindDefaultEvents() {
-    getById("include_urls_pattern").oninput = setPatternsToInclude;
+    getById("track_urls_pattern").oninput = setPatternsToInclude;
     getById("exclude_urls_pattern").oninput = setPatternsToExclude;
     getById("mask_patterns_list").oninput = setPatternsToMask;
     getById("enable_mask_patterns").onchange = maskFieldsCheckbox;
@@ -804,7 +802,7 @@ let eventTracker = (function() {
     filterWithKey = getById("filter_web_events").value;
     captureFormDataCheckboxValue = getById("include_form_data").checked;
     optimizeResponseCookies = getById("optimize_response_cookies").checked;
-    includeURLsList = stringToArray(getById("include_urls_pattern").value);
+    includeURLsList = stringToArray(getById("track_urls_pattern").value);
     excludeURLsList = stringToArray(getById("exclude_urls_pattern").value);
     maskedAttributesList = stringToArray(getById("mask_patterns_list").value);
     updateAllButtons();
@@ -877,13 +875,12 @@ let eventTracker = (function() {
   }
 
   document.addEventListener("DOMContentLoaded", function() {
-    let manifest = httpTracker.browser.runtime.getManifest();
-    document.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
+    document.title = getManifestDetails().title;
     bindDefaultEvents();
     setInitialStateOfPage();
   });
 
-  async function getGlobalOptions(details) {
+  function getGlobalOptions(details) {
     globalExcludeURLsList = getStoredDetails(details);
   }
 
@@ -891,6 +888,15 @@ let eventTracker = (function() {
   // document.addEventListener("contextmenu", function(e) {
   //   e.preventDefault();
   // }, false);
+
+  function getChangesFromStorge(changes, namespace) {
+    for (var key in changes) {
+      if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
+        globalExcludeURLsList = changes[key].newValue;
+        break;
+      }
+    }
+  }
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
   httpTracker.browser.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);

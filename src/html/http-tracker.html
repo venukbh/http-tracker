@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="/src/css/styles.css">
+  <script type="text/javascript" src="/src/js/httpTrackerConstants.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerProcessor.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerDomEvents.js"></script>
@@ -12,25 +13,25 @@
   <div id="web_events_tracking" style="width: 90%; margin: 2% 5% 2% 5%; height: 100%">
     <div>
       <div style="width: 45%; float: left;">
-        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that an url containing any of the pattern(s) will be tracked. If the url does not contain any of the pattern(s), it will not be tracked. If same pattern is also available in exclude list, it will not be tracked. Leaving this input field blank tracks all the urls.">
+        <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will be tracked by the addon. If the url does not contain any of the words, it will not be tracked. If same word is in skip list also, the matching url will not be tracked as skip list takes precedence. Leaving this input field blank tracks all the urls.">
           <div style="float: left; width: 20%">
-            Include url patterns :
+            Track urls having :
           </div>
           <div style="float: left; width: 75%;">
-            <input id="include_urls_pattern" type="text" placeholder="Include urls matching comma-separated pattern(s). Blank includes all" style="width: 100%">
+            <input id="track_urls_pattern" type="text" placeholder="Track urls containing words. Blank includes all" style="width: 100%">
           </div>
         </div>
-        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that an url containing any of the pattern(s) will not be tracked. If the url does not contain any of the pattern(s), it will be tracked. Leaving this input field blank tracks all the urls. Permanent exclude patterns can also be set in the preferences.">
+        <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will not be tracked by the addon. If the url does not contain any of the words, it will be tracked. Leaving this input field blank tracks all the urls. Permanent excludes can also be set in the preferences.">
           <div style="width: 20%; float: left;">
-            Exclude urls patterns :
+            Skip urls having :
           </div>
           <div style="float: left;width: 75%;">
-            <input id="exclude_urls_pattern" type="text" placeholder="Exclude urls matching comma-separated pattern(s)" style="width: 100%" value="" />
+            <input id="exclude_urls_pattern" type="text" placeholder="Skip urls containing words" style="width: 100%" value="" />
           </div>
         </div>
-        <div style="height: 30px;" title="Provide an array of json object with name, value and url as properties for each header.&#013;&#013;e.g. {[name:headerName, value:headerValue, url:addToURLPattern(blank will add to all urls)]} to include in the request headers.&#013;&#013;NOTE: Forbidden headers cannot be added and has no effect if provided. Leaving this filed blank will not add any headers. Headers in this field will be added for all requests matching the url pattern.&#013;&#013;Only valid headers from this list are added to the request.">
+        <div style="height: 40px;" title="Provide an array of json objects with name, value and an optional url as properties for each header to include in the request headers.&#013;&#013;e.g.&#013;&#013;1. To add header to only 'google' urls&#013;&nbsp;&nbsp;&nbsp;&nbsp;{[name:headerName, value:headerValue, url:google]}.&#013;2. To add header to all urls&#013;&nbsp;&nbsp;&nbsp;&nbsp;{[name:headerName, value:headerValue]}.&#013;&#013;NOTE-1: Forbidden headers cannot be added and has no affect if provided. Leaving this filed blank will not add any headers.&#013;&#013;NOTE-2: Only vaild headers from the array in this text field will be added for all requests matching the url property value.">
           <div style="width: 20%; float: left;">
-            Add request headers :
+            Add/Modify request headers :
           </div>
           <div style="float: left;width: 75%;">
             <input id="request_headers_list" type="text" placeholder='[{"name":"headerName","value":"headerValue","url":"test"}, repeat]' style="width: 100%" value='' />
@@ -43,7 +44,7 @@
             E.g. [{"name":"headerName","value":"headerValue","url":"test"}]
           </div>
         </div>
-        <div style="height: 30px;" title="Provide a list of comma-separated patterns so that any form attributes containing this pattern will mask its value while dispalying. If the details pane was already displayed and then added pattern(s) to mask, then user need to click on the event again to view the masked details. Leaving this filed blank will not mask any attributes.">
+        <div style="height: 30px;" title="Mask any form attributes containing one of the words from this list while dispalying. If the details pane was already displayed and then added words to mask, then click on the url again to view the masked details. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screen shots with sensitive form attributes">
           <div style="width: 20%; float: left;">
             Mask form fields :
           </div>
@@ -71,7 +72,7 @@
         </div>
         <div style="height: 30px;">
         </div>
-        <div style="height: 30px;" title="Check this to mask the form attributes matching the pattern(s). When unchecked, nothing will be masked">
+        <div style="height: 30px;" title="Check this to mask and display the form attributes matching any one of the words. Unchecking will display without masking">
           <input id="enable_mask_patterns" type="checkbox" checked>
           <label for="enable_mask_patterns" style="">Mask fields</label>
         </div>

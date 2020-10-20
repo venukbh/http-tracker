@@ -2,14 +2,14 @@ const trackUrls = {
   urls: ["<all_urls>"]
 };
 
-let reqBodyHeaders = httpTracker.isFF ? ["requestBody"] : ["requestBody"];
-let reqHeaders = httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"];
-let reqHeadersBlocking = httpTracker.isFF ? ["blocking", "requestHeaders"] : ["blocking", "requestHeaders", "extraHeaders"];
-let resHeaders = httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"];
-let errorHeaders = ["extraHeaders"];
+const reqBodyHeaders = httpTracker.isFF ? ["requestBody"] : ["requestBody"];
+const reqHeaders = httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"];
+const reqHeadersBlocking = httpTracker.isFF ? ["blocking", "requestHeaders"] : ["blocking", "requestHeaders", "extraHeaders"];
+const resHeaders = httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"];
+const errorHeaders = ["extraHeaders"];
 const r = httpTracker.browser.webRequest;
 
-httpTracker.browser.webRequest.onBeforeRequest.addListener(
+r.onBeforeRequest.addListener(
   function(details) {
     details.callerName = "onBeforeRequest";
     details.requestIdEnhanced = details.requestId;
@@ -17,7 +17,7 @@ httpTracker.browser.webRequest.onBeforeRequest.addListener(
   }, trackUrls, reqBodyHeaders
 );
 
-httpTracker.browser.webRequest.onBeforeSendHeaders.addListener(
+r.onBeforeSendHeaders.addListener(
   function(details) {
     details.callerName = "onBeforeSendHeaders";
     details.requestIdEnhanced = details.requestId;
@@ -27,7 +27,7 @@ httpTracker.browser.webRequest.onBeforeSendHeaders.addListener(
   }, trackUrls, reqHeadersBlocking
 );
 
-httpTracker.browser.webRequest.onSendHeaders.addListener(
+r.onSendHeaders.addListener(
   function(details) {
     details.callerName = "onSendHeaders";
     details.requestIdEnhanced = details.requestId;
@@ -35,7 +35,7 @@ httpTracker.browser.webRequest.onSendHeaders.addListener(
   }, trackUrls, reqHeaders
 );
 
-httpTracker.browser.webRequest.onHeadersReceived.addListener(
+r.onHeadersReceived.addListener(
   function(details) {
     details.callerName = "onHeadersReceived";
     details.requestIdEnhanced = details.requestId;
@@ -43,7 +43,7 @@ httpTracker.browser.webRequest.onHeadersReceived.addListener(
   }, trackUrls, resHeaders
 );
 
-httpTracker.browser.webRequest.onAuthRequired.addListener(
+r.onAuthRequired.addListener(
   function(details) {
     details.callerName = "onAuthRequired";
     details.requestIdEnhanced = details.requestId;
@@ -51,7 +51,7 @@ httpTracker.browser.webRequest.onAuthRequired.addListener(
   }, trackUrls, resHeaders
 );
 
-httpTracker.browser.webRequest.onBeforeRedirect.addListener(
+r.onBeforeRedirect.addListener(
   function(details) {
     details.callerName = "onBeforeRedirect";
     details.requestIdEnhanced = details.requestId;
@@ -59,7 +59,7 @@ httpTracker.browser.webRequest.onBeforeRedirect.addListener(
   }, trackUrls, resHeaders
 );
 
-httpTracker.browser.webRequest.onResponseStarted.addListener(
+r.onResponseStarted.addListener(
   function(details) {
     details.callerName = "onResponseStarted";
     details.requestIdEnhanced = details.requestId;
@@ -67,7 +67,7 @@ httpTracker.browser.webRequest.onResponseStarted.addListener(
   }, trackUrls, resHeaders
 );
 
-httpTracker.browser.webRequest.onCompleted.addListener(
+r.onCompleted.addListener(
   function(details) {
     details.callerName = "onCompleted";
     details.requestIdEnhanced = details.requestId;
@@ -76,7 +76,7 @@ httpTracker.browser.webRequest.onCompleted.addListener(
 );
 
 if (httpTracker.isFF) {
-  httpTracker.browser.webRequest.onErrorOccurred.addListener(
+  r.onErrorOccurred.addListener(
     function(details) {
       details.callerName = "onErrorOccurred";
       details.requestIdEnhanced = details.requestId;
@@ -84,7 +84,7 @@ if (httpTracker.isFF) {
     }, trackUrls
   );
 } else {
-  httpTracker.browser.webRequest.onErrorOccurred.addListener(
+  r.onErrorOccurred.addListener(
     function(details) {
       details.callerName = "onErrorOccurred";
       details.requestIdEnhanced = details.requestId;
