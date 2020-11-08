@@ -1,5 +1,8 @@
-let customManifestDetails;
-let addModifyRequestHeadersList;
+var customManifestDetails;
+var addModifyRequestHeadersList;
+var blockURLSList;
+var includeURLsList;
+var excludeURLsList;
 
 function onError(e) {
   console.error(e);
@@ -85,8 +88,11 @@ function getStoredDetails(details) {
 }
 
 function validateAndGenerateHeaders(headers) {
+  if (!headers) {
+    addModifyRequestHeadersList = null;
+    return true;
+  }
   if (headers.length) {
-    let validHeaders = new Map();
     headers = headers.filter(header =>
       header.hasOwnProperty("name") &&
       header.hasOwnProperty("value") &&
@@ -103,6 +109,10 @@ function validateAndGenerateHeaders(headers) {
   return false;
 }
 
+function setRequestHeadersList(headersList) {
+  addModifyRequestHeadersList = headersList;
+}
+
 function getManifestDetails() {
   if (!customManifestDetails) {
     let manifest = httpTracker.browser.runtime.getManifest();
@@ -114,8 +124,37 @@ function getManifestDetails() {
   return customManifestDetails;
 }
 
+function blockRequests(webEvent) {
+  let block = false;
+  if (blockURLSList) {
+    blockURLSList.some(value => {
+      if (webEvent.url.includes(value)) {
+        block = true;
+      }
+    });
+  }
+  return block;
+}
+
 function addModifyRequestHeaders(webEvent) {
-  if (addModifyRequestHeadersList) {
+  let addHeaders = true;
+  if (includeURLsList) {
+    if (!(includeURLsList.some(value => webEvent.url.toLowerCase().includes(value)))) {
+      // addHeaders = false;
+      return webEvent.requestHeaders;
+    }
+  }
+  // if (addHeaders) {
+  if (excludeURLsList) {
+    if (excludeURLsList.some(value =>
+        webEvent.url.includes(value)
+      )) {
+      // addHeaders = false;
+      return webEvent.requestHeaders;
+    }
+  }
+  // }
+  if (addHeaders && addModifyRequestHeadersList) {
     addModifyRequestHeadersList.forEach(newHeader => {
       if ((newHeader.hasOwnProperty("url") && webEvent.url.includes(newHeader['url'])) ||
         !newHeader.hasOwnProperty("url")) {
