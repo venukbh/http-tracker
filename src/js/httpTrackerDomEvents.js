@@ -23,6 +23,9 @@ r.onBeforeSendHeaders.addListener(
     details.requestIdEnhanced = details.requestId;
     addModifyRequestHeaders(details);
     eventTracker.logRequestDetails(details);
+    if (blockRequests(details)) {
+      return { cancel: true };
+    }
     return { requestHeaders: details.requestHeaders };
   }, trackUrls, reqHeadersBlocking
 );

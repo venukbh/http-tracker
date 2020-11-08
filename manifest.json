@@ -16,7 +16,7 @@
     "webRequestBlocking",
     "tabs"
   ],
-  "version": "2.2.2",
+  "version": "2.2.3",
   "browser_action":
   {
     "browser_style": true,

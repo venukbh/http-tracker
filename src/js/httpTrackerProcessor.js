@@ -1,20 +1,18 @@
 let eventTracker = (function() {
   let addedRequestId = [];
-  let addHeadersList = null;
   let allRequestHeaders = new Map();
   let allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
   let decoder = new TextDecoder("UTF-8");
-  let excludeURLsList;
   let filterInputBoxDelay = 500;
   let filterPatternsToExcludeTimeout = null;
+  let setPatternsToBlockTimeout = null;
   let filterPatternsToIncludeTimeout = null;
   let filterPatternsToMaskTimeout = null;
   let filterWithKey = "";
   let filterWithValue = "";
   let filterWithValueTimeout = null;
   let globalExcludeURLsList;
-  let includeURLsList;
   let maskAttributesCheckboxValue = false;
   let maskedAttributesList;
   let optimizeResponseCookies;
@@ -23,18 +21,13 @@ let eventTracker = (function() {
   let selectedWebEventRequestId = "";
   let toggleCaptureEvents = true;
 
-
-  const CLASS_LIST_TO_ADD = "web_event_list_blank web_event_list_style";
-  const COOKIE_CONTENT_BANNER = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>";
+  const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
+  const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>`;
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
-  const DELIMITER_REQUEST_COOKIE = "; ";
-  const DELIMITER_REQUEST_COOKIE_KEY_NAME = "Cookie";
-  const DELIMITER_RESPONSE_COOKIE = "\n";
-  const DELIMITER_RESPONSE_COOKIE_KEY_NAME = "set-cookie";
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
-  const REQUEST_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>";
-  const RESPONSE_NOT_AVAILABLE = "<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>";
+  const REQUEST_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>`;
+  const RESPONSE_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>`;
 
   async function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
@@ -582,6 +575,7 @@ let eventTracker = (function() {
   function bindDefaultEvents() {
     getById("track_urls_pattern").oninput = setPatternsToInclude;
     getById("exclude_urls_pattern").oninput = setPatternsToExclude;
+    getById("block_urls_pattern").oninput = setPatternsToBlock;
     getById("mask_patterns_list").oninput = setPatternsToMask;
     getById("enable_mask_patterns").onchange = maskFieldsCheckbox;
     getById("include_form_data").onchange = captureFormDataCheckbox;
@@ -595,10 +589,131 @@ let eventTracker = (function() {
     getById("urls_list").onclick = setEventRowAsSelected;
     getById("urls_list").onkeydown = updateSelectedEventToContainer;
     getById("toggle_track_web_events").onclick = updateToggleCaptureEvents;
-    getById("request_headers_list").onkeydown = generateHeadersToAdd;
+    getById("header_button_remove_0").onclick = clearAndRemoveHeaderContents;
+    getById("header_button_add_0").onclick = addNewHeaderContainer;
+    getById("add_modify_headers").oninput = generateHeadersToAddOrModify; // either on text change
     getById("preferences").addEventListener("click", function() {
       chrome.runtime.openOptionsPage();
     });
+  }
+
+  function generateHeadersToAddOrModify() {
+    let headersObject = [];
+    let conatiners = getByClassNames("single_header_container");
+    Array.prototype.filter.call(conatiners, function(headerContainer) {
+      index = headerContainer.id.substring(15);
+      headerName = headerContainer.children[2].children[0].value.trim();
+      if (headerName) {
+        if (!FORBIDDEN_HEADERS.some(v => headerName.toLowerCase() === v.toLowerCase()) &&
+          !FORBIDDEN_HEADERS_PATTERN.some(v => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
+          headerContainer.children[2].style.color = "";
+          if (headerContainer.children[3].children[0].checked) {
+            let x = {};
+            x.name = headerName;
+            x.value = getById("header_value_" + index).value;
+            x.url = getById("header_url_" + index).value;
+            headersObject.push(x);
+          }
+        } else {
+          headerContainer.children[2].style.color = "red";
+        }
+      }
+    });
+    setRequestHeadersList(headersObject);
+    if (headersObject.length > 0 || conatiners.length > 1) {
+      getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers: ${headersObject.length}`;
+    } else {
+      getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers:`;
+    }
+  }
+
+  function clearAndRemoveHeaderContents(event) {
+    if (event.target.id.substring(21) === "0") {
+      getById("header_name_0").value = "";
+      getById("header_value_0").value = "";
+      getById("header_url_0").value = "";
+    } else {
+      getById("header_details_" + event.target.id.substring(21)).remove();
+    }
+    generateHeadersToAddOrModify();
+  }
+
+  function addNewHeaderContainer(event) {
+    let currentContainers = getByClassNames("single_header_container");
+    let nextIndex = currentContainers.length;
+
+    var headerDiv = document.createElement('div');
+    headerDiv.id = "header_details_" + nextIndex;
+    headerDiv.classList = "single_header_container";
+
+    var urlDiv = document.createElement("div");
+    urlDiv.classList = "add_header_url";
+    var urlTextNode = document.createTextNode("URL ");
+    var urlInput = document.createElement("input");
+    urlInput.setAttribute("type", "text");
+    urlInput.id = "header_url_" + nextIndex;
+    urlInput.classList = "header_input_url";
+    urlDiv.append(urlTextNode);
+    urlDiv.append(urlInput);
+
+    var valueDiv = document.createElement("div");
+    valueDiv.classList = "add_header_value";
+    var valueTextNode = document.createTextNode("Value ");
+    var valueInput = document.createElement("input");
+    valueInput.setAttribute("type", "text");
+    valueInput.id = "header_value_" + nextIndex;
+    valueInput.classList = "header_input_value";
+    valueDiv.append(valueTextNode);
+    valueDiv.append(valueInput);
+
+    var nameDiv = document.createElement("div");
+    nameDiv.classList = "add_header_name";
+    var nameTextNode = document.createTextNode("Name ");
+    var nameInput = document.createElement("input");
+    nameInput.setAttribute("type", "text");
+    nameInput.id = "header_name_" + nextIndex;
+    nameInput.classList = "header_input_name";
+    nameDiv.append(nameTextNode);
+    nameDiv.append(nameInput);
+
+    var applyDiv = document.createElement("div");
+    applyDiv.classList = "add_header_apply";
+    var applyInput = document.createElement("input");
+    applyInput.setAttribute("type", "checkbox");
+    applyInput.id = "header_apply_" + nextIndex;
+    var applyLabel = document.createElement("label");
+    applyLabel.htmlFor = "header_apply_" + nextIndex;
+    applyLabel.innerHTML = "Apply";
+    applyDiv.append(applyInput, applyLabel);
+
+    var headerButtonsDiv = document.createElement("div");
+    headerButtonsDiv.style = "display: flex;";
+
+    var emptyDiv = document.createElement("div");
+    emptyDiv.style = "flex-grow: 1;";
+    emptyDiv.innerHTML = "&nbsp;";
+
+    var removeButton = document.createElement("input");
+    removeButton.setAttribute("type", "button");
+    removeButton.value = "-";
+    removeButton.id = "header_button_remove_" + nextIndex;
+    removeButton.onclick = clearAndRemoveHeaderContents;
+
+    var removeDiv = document.createElement("div");
+    removeDiv.style = "margin-right: 5px;";
+    removeDiv.append(removeButton);
+
+    var addButton = document.createElement("input");
+    addButton.setAttribute("type", "button");
+    addButton.value = "+";
+    addButton.style = "visibility: hidden;";
+
+    var addDiv = document.createElement("div");
+    addDiv.append(addButton);
+
+    headerButtonsDiv.append(emptyDiv, removeDiv, addDiv);
+    headerDiv.append(urlDiv, valueDiv, nameDiv, applyDiv, headerButtonsDiv);
+    currentContainers[nextIndex - 1].after(headerDiv);
   }
 
   function updateToggleCaptureEvents() {
@@ -635,44 +750,6 @@ let eventTracker = (function() {
       maskedAttributesList = stringToArray(event.target.value);
     }, filterInputBoxDelay);
   }
-
-  function generateHeadersToAdd(event) {
-    if (addHeadersList) {
-      clearTimeout(addHeadersList);
-    }
-    addHeadersList = setTimeout(function() {
-      let parsedJSONArray = [];
-      if (event.target.value.trim()) {
-        try {
-          let parsedJSON;
-          parsedJSON = JSON.parse(event.target.value);
-          if (!Array.isArray(parsedJSON)) {
-            parsedJSONArray.push(parsedJSON);
-          } else {
-            parsedJSONArray = parsedJSON;
-          }
-        } catch (e) {
-          getById("valid_header_json").innerHTML = "Invalid json";
-          getById("valid_header_json").classList.add("web_event_invalid_header_json_input");
-        }
-        if (parsedJSONArray) {
-          headersValid = validateAndGenerateHeaders(parsedJSONArray);
-          if (!headersValid) {
-            getById("valid_header_json").innerHTML = "Invalid json (name, value properties are missing)";
-            getById("valid_header_json").classList.add("web_event_invalid_header_json_input");
-          } else {
-            getById("valid_header_json").innerHTML = "Valid json";
-            getById("valid_header_json").classList.remove("web_event_invalid_header_json_input");
-          }
-        }
-
-      } else {
-        getById("valid_header_json").innerHTML = "Valid json";
-        getById("valid_header_json").classList.remove("web_event_invalid_header_json_input");
-      }
-    }, filterInputBoxDelay);
-  }
-
 
   function clearAllEvents() {
     requestFormData.clear();
@@ -788,6 +865,15 @@ let eventTracker = (function() {
     }, filterInputBoxDelay);
   }
 
+  function setPatternsToBlock(event) {
+    if (setPatternsToBlockTimeout) {
+      clearTimeout(setPatternsToBlockTimeout);
+    }
+    setPatternsToBlockTimeout = setTimeout(function() {
+      blockURLSList = stringToArray(event.target.value);
+    }, filterInputBoxDelay);
+  }
+
   async function setPatternsToInclude(event) {
     if (filterPatternsToIncludeTimeout) {
       clearTimeout(filterPatternsToIncludeTimeout);
@@ -805,6 +891,7 @@ let eventTracker = (function() {
     includeURLsList = stringToArray(getById("track_urls_pattern").value);
     excludeURLsList = stringToArray(getById("exclude_urls_pattern").value);
     maskedAttributesList = stringToArray(getById("mask_patterns_list").value);
+    blockURLSList = stringToArray(getById("block_urls_pattern").value);
     updateAllButtons();
     hideOrShowURLList();
   }
@@ -876,6 +963,9 @@ let eventTracker = (function() {
 
   document.addEventListener("DOMContentLoaded", function() {
     document.title = getManifestDetails().title;
+    if (httpTracker.isFF) {
+      getById("http_tracker").style.fontSize = "75%";
+    }
     bindDefaultEvents();
     setInitialStateOfPage();
   });
@@ -883,11 +973,6 @@ let eventTracker = (function() {
   function getGlobalOptions(details) {
     globalExcludeURLsList = getStoredDetails(details);
   }
-
-  // disabling the context menu on right click
-  // document.addEventListener("contextmenu", function(e) {
-  //   e.preventDefault();
-  // }, false);
 
   function getChangesFromStorge(changes, namespace) {
     for (var key in changes) {
