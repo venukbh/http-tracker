@@ -10,7 +10,7 @@
   <script type="text/javascript" src="/src/js/httpTrackerDomEvents.js"></script>
 </head>
 
-<body>
+<body style="font-size: 100%">
   <div id="web_events_tracking" class="web_event_tracker">
     <div>
       <div class="left_pane">
@@ -58,7 +58,7 @@
           <div style="float: left; width: 20%">
             Filter list by :
           </div>
-          <div style="float: left; width: 10%;">
+          <div style="float: left; width: 15%;">
             <select id="web_event_filter_key">
               <option value="0" selected="selected">URL</option>
               <option value="1">METHOD</option>
@@ -67,7 +67,7 @@
               <option value="4">CACHE</option>
             </select>
           </div>
-          <div style="float:left; width: 50%;">
+          <div style="float:left; width: 45%;">
             <input id="filter_web_events" type="text" placeholder="Filter string (min 3 chars)" style="width: 100%;" />
           </div>
           <div style="width: 15%; float: left; text-align: right;">
@@ -75,7 +75,7 @@
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url as properties for each header to include in the request headers.&#013;&#013;examples&#013;&#013;1. Adding header to all urls containing 'google' &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2. To add header to any url, then leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2. If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only vaild headers from the list will be added for all requests matching the url property value.">
+        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only vaild headers will be added for requests matching the url property value.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
           <div id="add_modify_headers_banner" style="width: 20%; float: left;">
             Add/Modify request headers :
           </div>
@@ -93,15 +93,14 @@
               <div class="add_header_apply">
                 <input id="header_apply_0" type="checkbox" /><label for="header_apply_0" title="Check this to apply this header">Apply</label>
               </div>
-              <div style="display: flex;">
-                <div style="flex-grow: 1;">
-                  &nbsp;
-                </div>
-                <div style="margin-right: 5px;">
-                  <input id="header_button_remove_0" type="button" value="-" style="">
-                </div>
-                <div>
-                  <input id="header_button_add_0" type="button" value="+">
+              <div style="width: 12%;float: left;text-align: right;">
+                <div style="display: flex;">
+                  <div style="margin-right: 5px;float: left;flex-grow: 1;">
+                    <input id="header_button_remove_0" type="button" value="-" style="" />
+                  </div>
+                  <div>
+                    <input id="header_button_add_0" type="button" value="+" />
+                  </div>
                 </div>
               </div>
             </div>
