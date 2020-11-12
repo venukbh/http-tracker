@@ -2,7 +2,7 @@ const trackUrls = {
   urls: ["<all_urls>"]
 };
 
-const reqBodyHeaders = httpTracker.isFF ? ["requestBody"] : ["requestBody"];
+const reqBodyHeaders = httpTracker.isFF ? ["requestBody"] : ["requestBody", "extraHeaders"];
 const reqHeaders = httpTracker.isFF ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"];
 const reqHeadersBlocking = httpTracker.isFF ? ["blocking", "requestHeaders"] : ["blocking", "requestHeaders", "extraHeaders"];
 const resHeaders = httpTracker.isFF ? ["responseHeaders"] : ["responseHeaders", "extraHeaders"];
