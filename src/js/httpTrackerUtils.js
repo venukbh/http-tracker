@@ -87,28 +87,6 @@ function getStoredDetails(details) {
   }
 }
 
-function validateAndGenerateHeaders(headers) {
-  if (!headers) {
-    addModifyRequestHeadersList = null;
-    return true;
-  }
-  if (headers.length) {
-    headers = headers.filter(header =>
-      header.hasOwnProperty("name") &&
-      header.hasOwnProperty("value") &&
-      header["name"] &&
-      !FORBIDDEN_HEADERS.some(v => header.name.toLowerCase() === v.toLowerCase()) &&
-      !FORBIDDEN_HEADERS_PATTERN.some(v => header.name.toLowerCase().startsWith(v.toLowerCase()))
-    );
-  }
-  if (headers.length) { // do not merge these 2 if conditions, as the headers object is modified in the above if
-    addModifyRequestHeadersList = headers;
-    return true;
-  }
-  addModifyRequestHeadersList = null;
-  return false;
-}
-
 function setRequestHeadersList(headersList) {
   addModifyRequestHeadersList = headersList;
 }
@@ -185,4 +163,14 @@ function getPropertyFromStorage(details, key) {
     console.log(`value from storage for ${key} = ${details[key]}`);
     return details[key];
   }
+}
+
+function setStorageDetailsForAddon(key, value) {
+  console.log(`saving values into storage for ${key} = ${value}`);
+  httpTracker.browser.storage.sync.set({
+    [key]: value
+  }, function() {
+    // nothing to do after successfull storing
+    console.log(`Successfully stored ${key} = ${value}`);
+  });
 }

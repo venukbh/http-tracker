@@ -468,11 +468,6 @@ let eventTracker = (function() {
     return cookieObj;
   }
 
-  function sortMapByKey(unsortedMap) {
-    //  javascript map do not have sort by default
-    return new Map([...unsortedMap.entries()].sort());
-  }
-
   /**
    * This will be called when
    *  a. On page load - to display only the matched urls from filter box if not empty
