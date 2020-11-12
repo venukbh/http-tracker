@@ -1,6 +1,7 @@
 .web_event_tracker {
   margin: 2% 2% 2% 2%;
   height: 100%;
+  font-size: 100%;
 }
 
 .empty_div {
@@ -45,15 +46,15 @@
 }
 
 .header_input_value {
-  width: 76%;
+  width: 70%;
 }
 
 .header_input_name {
-  width: 78%;
+  width: 70%;
 }
 
 .header_input_url {
-  width: 80%;
+  width: 70%;
 }
 
 .all_headers_containers {

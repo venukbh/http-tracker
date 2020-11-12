@@ -687,11 +687,10 @@ let eventTracker = (function() {
     applyDiv.append(applyInput, applyLabel);
 
     var headerButtonsDiv = document.createElement("div");
-    headerButtonsDiv.style = "display: flex;";
+    headerButtonsDiv.style = "width: 12%;float: left;text-align: right;";
 
-    var emptyDiv = document.createElement("div");
-    emptyDiv.style = "flex-grow: 1;";
-    emptyDiv.innerHTML = "&nbsp;";
+    var simpleDiv = document.createElement("div");
+    simpleDiv.style = "display: flex;";
 
     var removeButton = document.createElement("input");
     removeButton.setAttribute("type", "button");
@@ -700,7 +699,7 @@ let eventTracker = (function() {
     removeButton.onclick = clearAndRemoveHeaderContents;
 
     var removeDiv = document.createElement("div");
-    removeDiv.style = "margin-right: 5px;";
+    removeDiv.style = "margin-right: 5px;float: left;flex-grow: 1;";
     removeDiv.append(removeButton);
 
     var addButton = document.createElement("input");
@@ -711,7 +710,8 @@ let eventTracker = (function() {
     var addDiv = document.createElement("div");
     addDiv.append(addButton);
 
-    headerButtonsDiv.append(emptyDiv, removeDiv, addDiv);
+    simpleDiv.append(removeDiv, addDiv);
+    headerButtonsDiv.append(simpleDiv);
     headerDiv.append(urlDiv, valueDiv, nameDiv, applyDiv, headerButtonsDiv);
     currentContainers[nextIndex - 1].after(headerDiv);
   }
@@ -963,9 +963,9 @@ let eventTracker = (function() {
 
   document.addEventListener("DOMContentLoaded", function() {
     document.title = getManifestDetails().title;
-    if (httpTracker.isFF) {
-      getById("http_tracker").style.fontSize = "75%";
-    }
+    // if (httpTracker.isFF) {
+    //   getById("http_tracker").style.fontSize = "75%";
+    // }
     bindDefaultEvents();
     setInitialStateOfPage();
   });
