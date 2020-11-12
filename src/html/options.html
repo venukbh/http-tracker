@@ -8,21 +8,25 @@
 <body>
   <div>
     <div style="float: left;">
-      How do you want to open th addon page
+      Open addon in
     </div>
     <div id="openAddonStyleTab" style="float: left;">
       <input type="radio" id="tab" name="uipage" value="tab">
       <label for="tab">Tab</label>
     </div>
-    <div id="openAddonStylePopup" style="float: left;">
+    <div id="openAddonStylePopup" style="">
       <input type="radio" id="popup" name="uipage" value="popup">
       <label for="popup">Popup</label>
     </div>
   </div>
-  <label>Always exclude urls patterns (separated by comma or space or new line)</label>
-  <textarea id="default_exclude_patterns" rows="10" cols="50"></textarea>
-  <label>Always mask patterns (separated by comma or space or new line)</label>
-  <textarea id="default_mask_patterns" rows="10" cols="50"></textarea>
+  <div>
+    <label>Always exclude urls patterns (separated by comma or space or new line)</label>
+    <textarea id="default_exclude_patterns" rows="10" cols="50"></textarea>
+  </div>
+  <div>
+    <label>Always mask patterns (separated by comma or space or new line)</label>
+    <textarea id="default_mask_patterns" rows="10" cols="50"></textarea>
+  </div>
   <script type="text/javascript" src="/src/js/httpTrackerConstants.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerOptions.js"></script>

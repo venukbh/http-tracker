@@ -177,3 +177,12 @@ function addModifyRequestHeaders(webEvent) {
   }
   return webEvent.requestHeaders;
 }
+
+function getPropertyFromStorage(details, key) {
+  if (httpTracker.browser.runtime.lastError) {
+    onError(httpTracker.browser.runtime.lastError);
+  } else {
+    console.log(`value from storage for ${key} = ${details[key]}`);
+    return details[key];
+  }
+}
