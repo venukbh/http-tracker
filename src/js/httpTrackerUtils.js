@@ -56,7 +56,7 @@ function uniqueArray(arrayWithEntries) {
 
 function sortMapByKey(unsortedMap) {
   //  javascript map do not have sort by default
-  return new Map([...unsortedMap.entries()].sort(sortArray));
+  return new Map([...unsortedMap.entries()].sort());
 }
 
 /** This sorts the object which has name as a property e.g.:

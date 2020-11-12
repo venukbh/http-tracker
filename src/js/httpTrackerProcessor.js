@@ -13,6 +13,7 @@ let eventTracker = (function() {
   let filterWithValue = "";
   let filterWithValueTimeout = null;
   let globalExcludeURLsList;
+  let globalMaskPatternsList;
   let maskAttributesCheckboxValue = false;
   let maskedAttributesList;
   let optimizeResponseCookies;
@@ -165,8 +166,12 @@ let eventTracker = (function() {
 
   function maskFieldsPattern(value) {
     let masking = false;
-    if (maskAttributesCheckboxValue && maskedAttributesList) {
-      masking = maskedAttributesList.some(v => value.toLowerCase().includes(v));
+    if (maskAttributesCheckboxValue) {
+      if (maskedAttributesList)
+        masking = maskedAttributesList.some(v => value.toLowerCase().includes(v));
+      if (!masking && globalMaskPatternsList) {
+        masking = globalMaskPatternsList.some(v => value.toLowerCase().includes(v));
+      }
     }
     return masking;
   }
@@ -966,7 +971,9 @@ let eventTracker = (function() {
   });
 
   function getGlobalOptions(details) {
-    globalExcludeURLsList = getStoredDetails(details);
+    // globalExcludeURLsList = getStoredDetails(details);
+    globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
+    globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
   }
 
   function getChangesFromStorge(changes, namespace) {
@@ -979,7 +986,7 @@ let eventTracker = (function() {
   }
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
-  httpTracker.browser.storage.sync.get(['httpTrackerGlobalExcludePatterns'], getGlobalOptions);
+  httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails
