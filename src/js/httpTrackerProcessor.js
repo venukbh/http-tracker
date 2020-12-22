@@ -23,6 +23,7 @@ let eventTracker = (function() {
   let toggleCaptureEvents = true;
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
+  const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
   const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>`;
   const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
   const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
@@ -157,9 +158,9 @@ let eventTracker = (function() {
   function urlMatchExcludePattern(webEvent) {
     let toExclude = false;
     if (excludeURLsList) {
-      toExclude = excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+      toExclude = excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v.toLowerCase()));
     } else if (!toExclude && globalExcludeURLsList) {
-      toExclude = globalExcludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+      toExclude = globalExcludeURLsList.some(v => webEvent.url.toLowerCase().includes(v.toLowerCase()));
     }
     return toExclude;
   }
@@ -167,8 +168,9 @@ let eventTracker = (function() {
   function maskFieldsPattern(value) {
     let masking = false;
     if (maskAttributesCheckboxValue) {
-      if (maskedAttributesList)
+      if (maskedAttributesList) {
         masking = maskedAttributesList.some(v => value.toLowerCase().includes(v));
+      }
       if (!masking && globalMaskPatternsList) {
         masking = globalMaskPatternsList.some(v => value.toLowerCase().includes(v));
       }
@@ -291,6 +293,7 @@ let eventTracker = (function() {
     let tableContent = "";
     let headersContent = "";
     if (webEventIdDetails) {
+      tableContent = HEADER_CONTENT_BANNER;
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
         if (key !== "responseHeaders" && key !== "requestHeaders") { // headers added by browser
           if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
@@ -327,7 +330,10 @@ let eventTracker = (function() {
   }
 
   function generateMaskedHeaderKeyValueContent(key, value) {
-    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value.charAt(0)}*****${value.charAt(value.length-1)}</td></tr>`;
+    if (value.trim().length > 0) {
+      return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value.charAt(0)}*****${value.charAt(value.length-1)}</td></tr>`;
+    }
+    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
   }
 
   function generateHeaderKeyValueContent(key, value) {
@@ -602,20 +608,20 @@ let eventTracker = (function() {
     let conatiners = getByClassNames("single_header_container");
     Array.prototype.filter.call(conatiners, function(headerContainer) {
       index = headerContainer.id.substring(15);
-      headerName = headerContainer.children[2].children[0].value.trim();
+      headerName = headerContainer.querySelector(".header_input_name").value.trim();
       if (headerName) {
         if (!FORBIDDEN_HEADERS.some(v => headerName.toLowerCase() === v.toLowerCase()) &&
           !FORBIDDEN_HEADERS_PATTERN.some(v => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
-          headerContainer.children[2].style.color = "";
-          if (headerContainer.children[3].children[0].checked) {
+          headerContainer.querySelector(".add_header_name").style.color = "";
+          if (headerContainer.querySelector(".header_input_apply").checked) {
             let x = {};
             x.name = headerName;
-            x.value = getById("header_value_" + index).value;
-            x.url = getById("header_url_" + index).value;
+            x.value = headerContainer.querySelector(".header_input_value").value;
+            x.url = headerContainer.querySelector(".header_input_url").value.trim();
             headersObject.push(x);
           }
         } else {
-          headerContainer.children[2].style.color = "red";
+          headerContainer.querySelector(".add_header_name").style.color = "red";
         }
       }
     });
@@ -681,6 +687,7 @@ let eventTracker = (function() {
     var applyInput = document.createElement("input");
     applyInput.setAttribute("type", "checkbox");
     applyInput.id = "header_apply_" + nextIndex;
+    applyInput.classList = "header_input_apply";
     var applyLabel = document.createElement("label");
     applyLabel.htmlFor = "header_apply_" + nextIndex;
     applyLabel.innerHTML = "Apply";
@@ -712,7 +719,7 @@ let eventTracker = (function() {
 
     simpleDiv.append(removeDiv, addDiv);
     headerButtonsDiv.append(simpleDiv);
-    headerDiv.append(urlDiv, valueDiv, nameDiv, applyDiv, headerButtonsDiv);
+    headerDiv.append(nameDiv, valueDiv, urlDiv, applyDiv, headerButtonsDiv);
     currentContainers[nextIndex - 1].after(headerDiv);
   }
 
@@ -891,6 +898,7 @@ let eventTracker = (function() {
     includeURLsList = stringToArray(getById("track_urls_pattern").value);
     excludeURLsList = stringToArray(getById("exclude_urls_pattern").value);
     maskedAttributesList = stringToArray(getById("mask_patterns_list").value);
+    maskAttributesCheckboxValue = getById("enable_mask_patterns").checked;
     blockURLSList = stringToArray(getById("block_urls_pattern").value);
     updateAllButtons();
     hideOrShowURLList();
