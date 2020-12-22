@@ -38,7 +38,7 @@ function sortArray(a, b) {
 }
 
 function stringToArray(stringWithDelimiter, delimiter = ",") {
-  if (stringWithDelimiter.trim().length > 0) {
+  if (stringWithDelimiter && stringWithDelimiter.trim().length > 0) {
     // split, trim empty spaces, then remove empty strings
     return (stringWithDelimiter.split(delimiter).map(e => e.trim()).filter(e => e));
   } else {
@@ -160,17 +160,17 @@ function getPropertyFromStorage(details, key) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
   } else {
-    console.log(`value from storage for ${key} = ${details[key]}`);
+    // console.log(`value from storage for ${key} = ${details[key]}`);
     return details[key];
   }
 }
 
-function setStorageDetailsForAddon(key, value) {
-  console.log(`saving values into storage for ${key} = ${value}`);
+function setPropertyToStorage(key, value) {
+  // console.log(`saving values into storage for ${key} = ${value}`);
   httpTracker.browser.storage.sync.set({
     [key]: value
   }, function() {
     // nothing to do after successfull storing
-    console.log(`Successfully stored ${key} = ${value}`);
+    // console.log(`Successfully stored ${key} = ${value}`);
   });
 }

@@ -29,32 +29,19 @@ async function storeSettings(event) {
     key = httpTracker.STORAGE_KEY_MASK_PATTERN;
     value = uniqueArray(stringToArray(defaultMaskPatternsTextArea.value, /\n|\t|\ |\,/))
   }
-  setStorageDetailsForAddon(key, value);
+  setPropertyToStorage(key, value);
 }
 
-// async function getSetGlobalOptions(details) {
-//   defaultExcludePatternsTextArea.value = getStoredDetails(details).join(", ");
-// }
-
-// On opening the options page, fetch stored settings and update the textarea with them.
-// httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_EXCLUDE_PATTERN], getSetGlobalOptions);
-
-httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_EXCLUDE_PATTERN], function(cbResponseParams) {
+httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
   let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
   if (value) {
     defaultExcludePatternsTextArea.value = value.join(", ");
   }
-});
-
-httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_MASK_PATTERN], function(cbResponseParams) {
-  let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_MASK_PATTERN);
+  value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_MASK_PATTERN);
   if (value) {
     defaultMaskPatternsTextArea.value = value.join(", ");
   }
-});
-
-httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
-  let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
+  value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
   openAddonStyleTab.checked = false;
   openAddonStylePopup.checked = false;
   if (value) {
