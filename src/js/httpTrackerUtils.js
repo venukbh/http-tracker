@@ -46,6 +46,12 @@ function stringToArray(stringWithDelimiter, delimiter = ",") {
   }
 }
 
+function filterWithLength(array, length = 0) {
+  if (array && array.length > 0) {
+    return (array.filter(e => e.length > length));
+  }
+}
+
 function uniqueArray(arrayWithEntries) {
   if (arrayWithEntries && arrayWithEntries.length) {
     return [...new Set(arrayWithEntries)];
@@ -66,7 +72,7 @@ function sortMapByKey(unsortedMap) {
       {"name":"Accept-Language","value":"en-US"}
      ]
    *
-   */
+*/
 function sortJsonByProperty(jsonObjectArray, property) {
   let sortedObject = jsonObjectArray.sort(function(a, b) {
     return a[property].localeCompare(b[property]);
@@ -74,7 +80,6 @@ function sortJsonByProperty(jsonObjectArray, property) {
   return sortedObject;
 }
 
-// change to a better name, always returns an array
 function getStoredDetails(details) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
@@ -118,20 +123,16 @@ function addModifyRequestHeaders(webEvent) {
   let addHeaders = true;
   if (includeURLsList) {
     if (!(includeURLsList.some(value => webEvent.url.toLowerCase().includes(value)))) {
-      // addHeaders = false;
       return webEvent.requestHeaders;
     }
   }
-  // if (addHeaders) {
   if (excludeURLsList) {
     if (excludeURLsList.some(value =>
         webEvent.url.includes(value)
       )) {
-      // addHeaders = false;
       return webEvent.requestHeaders;
     }
   }
-  // }
   if (addHeaders && addModifyRequestHeadersList) {
     addModifyRequestHeadersList.forEach(newHeader => {
       if ((newHeader.hasOwnProperty("url") && webEvent.url.includes(newHeader['url'])) ||
@@ -170,7 +171,7 @@ function setPropertyToStorage(key, value) {
   httpTracker.browser.storage.sync.set({
     [key]: value
   }, function() {
-    // nothing to do after successfull storing
+    // nothing to do after successful storing
     // console.log(`Successfully stored ${key} = ${value}`);
   });
 }

@@ -41,20 +41,7 @@
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;" title="Mask any form attributes containing one of the words from this list while dispalying. If the details pane was already displayed and then added words to mask, then click on the url again to view the masked details. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screen shots with sensitive form attributes">
-          <div style="width: 20%; float: left;">
-            Mask form fields :
-          </div>
-          <div style="float: left;width: 60%;">
-            <input id="mask_patterns_list" type="text" placeholder="Mask form fields matching comma-separated pattern(s)" style="width: 100%" value="" />
-          </div>
-          <div style="float: left; width: 15%;text-align: right;">
-            <input id="enable_mask_patterns" type="checkbox" checked />
-            <label for="enable_mask_patterns">Mask fields</label>
-          </div>
-          <div class="empty_div">&nbsp;</div>
-        </div>
-        <div style="height: 30px;" title="Filter captured events based on various filter keys">
+        <div style="height: 30px;" title="Filter captured events based on available filter options. To add more filtration, use &, |&#013;&#013;Examples:&#013;&#013;&nbsp;1. type: url, filter value: google&gmail, outcome : filter all urls containing 'google' AND followed by 'gmail' i.e. url should contain matching words in the same order of filter.&#013;&nbsp;2. type: method, filter value: get|post, outcome : filter all urls whose method is get OR post, ignoring order of entries">
           <div style="float: left; width: 20%">
             Filter list by :
           </div>
@@ -68,14 +55,14 @@
             </select>
           </div>
           <div style="float:left; width: 45%;">
-            <input id="filter_web_events" type="text" placeholder="Filter string (min 3 chars)" style="width: 100%;" />
+            <input id="filter_web_events" type="text" placeholder="Filter string case insensitive (min 3 chars). Read tooltip" style="width: 100%;" />
           </div>
           <div style="width: 15%; float: left; text-align: right;">
             <input id="clear_filter_web_events" type="button" class="web_event_button_clear_filter" title="Clear the filter textbox and display all events" value="Clear filter"></input>
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only vaild headers will be added for requests matching the url property value.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
+        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only vaild headers will be added for requests matching the url property value and invalid headers will mark the name filed in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
           <div id="add_modify_headers_banner" style="width: 20%; float: left;">
             Add/Modify request headers :
           </div>
@@ -126,9 +113,27 @@
         </div>
         <div style="height: 30px;">
         </div>
-        <div style="height: 30px;">
+        <div style="height: 30px;" title="Mask any form attributes containing one of the words from this list while dispalying. Will not mask if the data is raw data. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screen shots with sensitive form attributes">
+          <div style="width: 20%; float: left;">
+            Mask form fields :
+          </div>
+          <div style="float: left;width: 60%;">
+            <input id="mask_patterns_list" type="text" placeholder="Mask form fields matching comma-separated pattern(s)" style="width: 100%" value="" />
+          </div>
+          <div style="float: left; width: 15%;text-align: right;">
+            <input id="enable_mask_patterns" type="checkbox" checked />
+            <label for="enable_mask_patterns">Mask fields</label>
+          </div>
+          <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;">
+        <div style="height: 30px;" title="Find content in the details pane of the selected url">
+          <div style="width: 20%; float: left;">
+            Find in details :
+          </div>
+          <div style="float: left;width: 75%;">
+            <input id="find_in_details_pattern" type="text" placeholder="Find text in details containing words" style="width: 100%" value="" />
+          </div>
+          <div class="empty_div">&nbsp;</div>
         </div>
         <div style="height: 30px;">
           <div style="width: 25%; float: left; text-align: center;">
@@ -156,25 +161,27 @@
     </div>
     <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
     <div style="height: 15px;">&nbsp;</div>
-    <div style="margin-top: 5px;">
-      <table class="web_event_details">
-        <tr>
-          <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
-          <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
-        </tr>
-      </table>
-    </div>
-    <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
-      <table class="web_event_details">
-        <tr>
-          <td id="web_event_details_selected_request" class="web_event_detail_td">
-            <table id="request_headers_details"></table>
-          </td>
-          <td id="web_event_details_selected_response" class="web_event_detail_td">
-            <table id="response_headers_details" class="web_event_response_header_details"></table>
-          </td>
-        </tr>
-      </table>
+    <div id="web_details_selected_container">
+      <div style="margin-top: 5px;">
+        <table class="web_event_details">
+          <tr>
+            <td id="web_event_detail_request_head" class="web_event_detail_request_heading" style="display: none;">Request Details</td>
+            <td id="web_event_detail_response_head" class="web_event_detail_response_heading" style="display: none;">Response Details</td>
+          </tr>
+        </table>
+      </div>
+      <div style="overflow-y: auto; height: 500px; overflow-x: hidden;">
+        <table class="web_event_details">
+          <tr>
+            <td id="web_event_details_selected_request" class="web_event_detail_td">
+              <table id="request_headers_details"></table>
+            </td>
+            <td id="web_event_details_selected_response" class="web_event_detail_td">
+              <table id="response_headers_details" class="web_event_response_header_details"></table>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </body>

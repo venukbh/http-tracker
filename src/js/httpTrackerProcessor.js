@@ -4,7 +4,7 @@ let eventTracker = (function() {
   let allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
   let decoder = new TextDecoder("UTF-8");
-  let filterInputBoxDelay = 500;
+  let inputBoxDelay = 500;
   let filterPatternsToExcludeTimeout = null;
   let setPatternsToBlockTimeout = null;
   let filterPatternsToIncludeTimeout = null;
@@ -21,6 +21,10 @@ let eventTracker = (function() {
   let requestIdRedirectCount = new Map();
   let selectedWebEventRequestId = "";
   let toggleCaptureEvents = true;
+  let findPatterns = "";
+  let findPatternsTimeout = null;
+  let multipleSearchPatterns = "";
+  let isANDFilter = false;
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
@@ -30,6 +34,8 @@ let eventTracker = (function() {
   const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
   const REQUEST_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>`;
   const RESPONSE_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>`;
+  const HEADER_CONTENT_KEY = `<tr><td class='web_event_detail_header_key'>`;
+  const HEADER_CONTENT_VALUE = `</td><td class='web_event_detail_header_value'>`;
 
   async function logRequestDetails(webEvent) {
     let inserted = insertEventUrls(webEvent);
@@ -88,7 +94,7 @@ let eventTracker = (function() {
   function actionOnBeforeRedirect(webEvent) {
     if (webEvent.callerName === "onBeforeRedirect") {
       // A defect in latest FF versions (tested on 79.0)
-      // FF is starting onBeforeRedirect event without any actual headers as below, and we do not want to capture anything during this process and so adding this if condition. If the redirect response is as below, it means there are still more response headers coming. So wait till all the response headers are completed
+      // Firefox starts onBeforeRedirect without actual headers as below, and don't capture anything during this process. If the redirect response is as below, it means response headers are on the way. So wait till all the response headers are completed
       // this issue does not exist in chrome
       // {
       //   "method": "GET",
@@ -100,7 +106,6 @@ let eventTracker = (function() {
         let redirectCount = requestIdRedirectCount.get(webEvent.requestId);
         requestIdRedirectCount.set(webEvent.requestId, ++redirectCount);
         insertResponseHeaders(webEvent);
-        displaySelectedEventDetails(webEvent);
       }
     }
   }
@@ -136,7 +141,7 @@ let eventTracker = (function() {
   }
 
   /**
-   * finds out whether the url will be captured or not
+   * find out whether the event to be captured or not
    * excludeURLsList always takes precedence
    */
   function isEventToCapture(webEvent) {
@@ -179,40 +184,65 @@ let eventTracker = (function() {
   }
 
   /**
-   * To populate the url list by either adding a new one, or updating the existing one
+   * populate the events list by adding or updating existing one
    */
   function addOrUpdateUrlListToPage(webEvent) {
-    // adding a new url to page using the request events
-    // check if we can change the condition to callerName "onBeforeRequest"
     if (addedRequestId.indexOf(webEvent.requestIdEnhanced) === -1) {
-      addedRequestId.push(webEvent.requestIdEnhanced);
-      let hideClass = "";
-      if (filterWithValue && filterWithValue.length > 2 && !webEvent.url.toLowerCase().includes(filterWithValue)) {
-        hideClass = " web_event_list_hide";
-      }
-      let containerContent = "<div title='Click to view details' class='" + CLASS_LIST_TO_ADD + hideClass + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
-        generateURLContent(webEvent) +
-        generateMETHODContent(webEvent) +
-        generateSTATUSContent(webEvent) +
-        generateDATETIMEContent(webEvent) +
-        generateCACHEContent(webEvent) +
-        "</div>";
-      getById("urls_list").insertAdjacentHTML("beforeend", containerContent);
+      addEventList(webEvent);
+    } else {
+      updateEventList(webEvent);
     }
-    // update already captured url with details
-    else {
-      // onErrorOccurred, webEvent will have webEvent.error instead of webEvent.statusCode
-      if (webEvent.callerName === "onErrorOccurred") {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
-        getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = "ERROR";
+    filterEventList(webEvent);
+  }
+
+  function addEventList(webEvent) {
+    addedRequestId.push(webEvent.requestIdEnhanced);
+    let containerContent = "<div title='Click to view details' class='" + CLASS_LIST_TO_ADD + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
+      generateURLContent(webEvent) +
+      generateMETHODContent(webEvent) +
+      generateSTATUSContent(webEvent) +
+      generateDATETIMEContent(webEvent) +
+      generateCACHEContent(webEvent) +
+      "</div>";
+    getById("urls_list").insertAdjacentHTML("beforeend", containerContent);
+  }
+
+  function updateEventList(webEvent) {
+    if (webEvent.callerName === "onErrorOccurred") { // onErrorOccurred contains webEvent.error not webEvent.statusCode
+      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
+      getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = STRING_ERROR;
+    }
+    // do not update if statusCode is not available (ex: service workers, fetch events in FF are missing response events)
+    else if (webEvent.statusCode) {
+      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
+      getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
+    }
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ?? "N/A";
+  }
+
+  function filterEventList(webEvent) {
+    if (multipleSearchPatterns.length > 0) {
+      let type = getById("web_event_filter_key").selectedOptions[0].innerText;
+      let value = "";
+      if (type === "CACHE") {
+        value = webEvent.fromCache ?? "N/A";
       }
-      // do not update if statusCode is not available (ex: service workers, fetch events in FF are missing response events)
-      else if (webEvent.statusCode) {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
-        getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
+      if (type === "METHOD") {
+        value = webEvent.method;
       }
-      if (webEvent.fromCache !== undefined && webEvent.fromCache !== null) {
-        getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache;
+      if (type === "STATUS") {
+        value = `${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : "N/A")}`;
+      }
+      if (type === "URL") {
+        value = webEvent.url;
+      }
+      if (type === "DATE") {
+        value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "N/A")}`;
+      }
+      if (!value.toString().toLowerCase().includes(filterWithValue)) {
+        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_list_hide");
+      } else {
+        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_list_hide");
       }
     }
   }
@@ -226,15 +256,15 @@ let eventTracker = (function() {
   }
 
   function generateSTATUSContent(webEvent) {
-    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? "ERROR" : "&nbsp;")}</div>`;
+    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : "N/A")}</div>`;
   }
 
   function generateDATETIMEContent(webEvent) {
-    return `<div class='web_event_list_date_time' id='web_event_time_${webEvent.requestIdEnhanced}'>${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "&nbsp;")}</div>`;
+    return `<div class='web_event_list_date_time' id='web_event_time_${webEvent.requestIdEnhanced}'>${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "N/A")}</div>`;
   }
 
   function generateCACHEContent(webEvent) {
-    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>NA</div>`;
+    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>N/A</div>`;
   }
 
   function getReadableDate(timestamp) {
@@ -260,21 +290,19 @@ let eventTracker = (function() {
 
   function displaySelectedEventDetails(webEvent) {
     if (selectedWebEventRequestId && webEvent.requestIdEnhanced === selectedWebEventRequestId) {
-      // call update container methods for already selected url
-      displayEventProperties(webEvent.requestIdEnhanced);
+      displayEventProperties();
     }
   }
 
   /**
-   *  This will display the selected url details, or update the already selcted url details
+   *  display selected event details, or update the already selected event details
    *  get the request details, response details, request form data
    *  build the request container, response container
    */
-  function displayEventProperties(webEventId) {
-    selectedWebEventRequestId = webEventId;
-    let webEventIdRequest = allRequestHeaders.get(webEventId);
-    let webEventIdResponse = allResponseHeaders.get(webEventId);
-    let webEventIdRequestForm = requestFormData.get(webEventId);
+  function displayEventProperties() {
+    let webEventIdRequest = allRequestHeaders.get(selectedWebEventRequestId);
+    let webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
+    let webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
 
     let requestContainer = buildURLDetailsContainer(webEventIdRequest, "requestDetails");
     let responseContainer = buildURLDetailsContainer(webEventIdResponse, "responseDetails");
@@ -287,6 +315,7 @@ let eventTracker = (function() {
     getById("web_event_details_selected_response").style.borderBottom = "1px solid";
     getById("request_headers_details").innerHTML = requestContainer + requestFormContainer;
     getById("response_headers_details").innerHTML = responseContainer;
+    getById("web_details_selected_container").style = "visibility: visible;";
   }
 
   function buildURLDetailsContainer(webEventIdDetails, detailsType) {
@@ -298,22 +327,14 @@ let eventTracker = (function() {
         if (key !== "responseHeaders" && key !== "requestHeaders") { // headers added by browser
           if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
             if (typeof value !== "object") {
-              if (maskFieldsPattern(key)) {
-                tableContent += generateMaskedHeaderKeyValueContent(key, value);
-              } else {
-                tableContent += generateHeaderKeyValueContent(key, value);
-              }
+              tableContent += generateHeaderKeyValueContent(key, value);
             } else {
               let content = "";
               Object.entries(value).forEach(([k, v]) => {
-                // if (Array.isArray(v) && v.length) {
                 content += `${k}: ${JSON.stringify(v)}, `;
-                // }
               });
-              // if (content) {
               content = content.substring(0, content.length - 2); // removing last ", " from the above loop
               tableContent += generateHeaderKeyValueContent(key, content);
-              // }
             }
           }
         } else { // application headers
@@ -329,15 +350,23 @@ let eventTracker = (function() {
     return tableContent + headersContent;
   }
 
-  function generateMaskedHeaderKeyValueContent(key, value) {
-    if (value.trim().length > 0) {
-      return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value.charAt(0)}*****${value.charAt(value.length-1)}</td></tr>`;
+  function generateHeaderKeyValueContent(key, value) {
+    if (maskFieldsPattern(key)) {
+      value = value.toString().trim();
+      if (value.length > 0) {
+        value = value.charAt(0) + "*****" + value.charAt(value.length - 1);
+      }
     }
-    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+    return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}`;
   }
 
-  function generateHeaderKeyValueContent(key, value) {
-    return `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+  function addMarkTag(text) {
+    if (findPatterns.length > 0) {
+      let findStr = new RegExp(findPatterns, "gi");
+      let markedText = text.toString().replace(findStr, (match) => `<mark>${match}</mark>`);
+      return markedText;
+    }
+    return text;
   }
 
   function buildRequestFormContainer(webEventIdRequestForm) {
@@ -346,19 +375,14 @@ let eventTracker = (function() {
       if (webEventIdRequestForm.formData) {
         formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (form fields data)</td></tr>";
         Object.entries(webEventIdRequestForm.formData).forEach(([key, value]) => {
-          if (maskFieldsPattern(key)) {
-            value = value.toString();
-            formData += generateMaskedHeaderKeyValueContent(key, value);
-          } else {
-            formData += generateHeaderKeyValueContent(key, value);
-          }
+          formData += generateHeaderKeyValueContent(key, value);
         });
       } else if (webEventIdRequestForm.raw) {
         formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (raw form data)</td></tr>";
-        for (let eachByte of webEventIdRequestForm.raw) { //TODO - change to ES6
+        for (let eachByte of webEventIdRequestForm.raw) {
           let dataView = new DataView(eachByte.bytes);
           let decodedString = decoder.decode(dataView);
-          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${decodedString}</td></tr>`;
+          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${addMarkTag(decodedString)}</td></tr>`;
         }
       }
     }
@@ -367,7 +391,7 @@ let eventTracker = (function() {
 
   function generateHeaderDetails(headers) {
     let generalHeadersContent = "";
-    let banner = COOKIE_CONTENT_BANNER; // used for request cookies
+    let banner = COOKIE_CONTENT_BANNER; // request cookies
     let cookieContent = "";
     let optimizedCookiesMap = new Map();
     let unoptimizedCookiesList = [];
@@ -378,25 +402,22 @@ let eventTracker = (function() {
       }
       // response cookies
       else if (header.name.toLowerCase() === DELIMITER_RESPONSE_COOKIE_KEY_NAME) {
-        // unoptimized cookie content
         if (!optimizeResponseCookies) {
           banner = COOKIE_CONTENT_BANNER_UNOPTIMIZED;
           cookieContent += generateResponseCookieDetails(header.value, DELIMITER_RESPONSE_COOKIE);
-        }
-        // optimized cookies
-        else {
+        } else {
           banner = COOKIE_CONTENT_BANNER_OPTIMIZED;
           setOptimizedCookiesMap(header.value, DELIMITER_RESPONSE_COOKIE, optimizedCookiesMap);
         }
       }
-      // general headers which are not cookies
+      // other headers
       else {
-        generalHeadersContent += `<tr><td class='web_event_detail_header_key'>${header.name}</td><td class='web_event_detail_header_value'>${header.value}</td></tr>`;
+        generalHeadersContent += `${HEADER_CONTENT_KEY}${addMarkTag(header.name)}${HEADER_CONTENT_VALUE}${addMarkTag(header.value)}</td></tr>`;
       }
     });
     if (optimizeResponseCookies) {
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
-        cookieContent += `<tr><td class='web_event_detail_header_key'>${key.split(':', 1)}</td><td class='web_event_detail_header_value'>${value.cookieValue}</td></tr>`;
+        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key.split(':', 1))}${HEADER_CONTENT_VALUE}${addMarkTag(value.cookieValue)}</td></tr>`;
       });
     }
     if (cookieContent) {
@@ -421,7 +442,7 @@ let eventTracker = (function() {
       }
     });
     cookieMap.forEach((value, key) => {
-      cookieContent += `<tr><td class='web_event_detail_header_key'>${key}</td><td class='web_event_detail_header_value'>${value}</td></tr>`;
+      cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}</td></tr>`;
     })
     return cookieContent;
   }
@@ -432,7 +453,7 @@ let eventTracker = (function() {
     cookieList.forEach(cookie => {
       if (cookie) {
         let cookieDetails = getCookieNameValue(cookie);
-        cookieContent += `<tr><td class='web_event_detail_header_key'>${cookieDetails.cookieName}</td><td class='web_event_detail_header_value'>${cookieDetails.cookieValue}</td></tr>`;
+        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieDetails.cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(cookieDetails.cookieValue)}</td></tr>`;
       }
     });
     return cookieContent;
@@ -479,53 +500,47 @@ let eventTracker = (function() {
     return cookieObj;
   }
 
+  function displayHiddenURLList() {
+    let urlsList = getHiddenUrlsList();
+    while (urlsList.length) {
+      urlsList[0].classList.remove("web_event_list_hide");
+    }
+  }
+
   /**
    * This will be called when
-   *  a. On page load - to display only the matched urls from filter box if not empty
+   *  a. On page load - to display only the matched URLs from filter box if not empty
    *  b. For each key entry in the filter box
    *  c. on clear filter button click
    */
   function hideOrShowURLList() {
-    if (!filterWithValue || filterWithValue.length <= 2) {
-      // dont hide any thing as the search string is less than 3 chars
-      let urlsList = getHiddenUrlsList();
-      while (urlsList.length) {
-        urlsList[0].classList.remove("web_event_list_hide");
-      }
+    if (multipleSearchPatterns.length == 0) {
+      displayHiddenURLList();
     } else {
-      let multipleSearchPatterns = "";
-      let isOrSplit = true;
-      multipleSearchPatterns = filterWithValue.split(DELIMITER_OR).filter(Boolean);
-      // remove all empty values
-      if (multipleSearchPatterns.length === 1) {
-        multipleSearchPatterns = multipleSearchPatterns[0].split(DELIMITER_AND).filter(Boolean);
-        if (multipleSearchPatterns.length > 1) {
-          isOrSplit = false;
-        }
-      }
-      // get the live collection and convert into an array
-      // https://stackoverflow.com/a/40910732/2850801
-      // https://stackoverflow.com/a/16777942/2850801 - read comment by user user1106925
       let allUrlsList = Array.prototype.slice.call(getAllUrlsList());
       for (let element of allUrlsList) {
-        let urlMatch = false;
-        if (multipleSearchPatterns.length > 0) {
-          for (let searchString of multipleSearchPatterns) {
-            urlMatch = false;
-            if (element.childNodes[filterWithKey].innerHTML.toLowerCase().includes(searchString)) {
-              urlMatch = true;
-              if (isOrSplit) {
-                break;
-              }
-            } else if (!isOrSplit) {
-              break;
-            }
+        let string = element.childNodes[filterWithKey].innerHTML.toLowerCase();
+        if (!isANDFilter) {
+          if (multipleSearchPatterns.some(v => string.includes(v))) {
+            element.classList.remove("web_event_list_hide");
+          } else {
+            element.classList.add("web_event_list_hide");
           }
-        }
-        if (urlMatch) {
-          element.classList.remove("web_event_list_hide");
         } else {
-          element.classList.add("web_event_list_hide");
+          let index = 0;
+          multipleSearchPatterns.forEach(e => {
+            if (index !== -1) {
+              index = string.indexOf(e, index);
+              if (index !== -1) {
+                index += e.length;
+              }
+            }
+          });
+          if (index === -1) {
+            element.classList.add("web_event_list_hide");
+          } else {
+            element.classList.remove("web_event_list_hide");
+          }
         }
       }
     }
@@ -533,7 +548,6 @@ let eventTracker = (function() {
 
   function removeEntry(node) {
     let requestIdToRemove = node.id.substring(16, node.id.length);
-
     requestIdRedirectCount.delete(requestIdToRemove);
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
@@ -543,26 +557,19 @@ let eventTracker = (function() {
       getById("delete_selected_web_event").disabled = true;
       getById("response_headers_details").innerHTML = "";
       getById("request_headers_details").innerHTML = "";
+      getById("web_details_selected_container").style = "visibility: hidden;";
       selectedWebEventRequestId = null;
       selectedEvent = null;
     }
-
   }
 
   /**
-   *  This method always returns a live collection of hidden urls list
+   *  This method always returns a live collection of hidden URLs list
    */
   function getHiddenUrlsList() {
     return getById("urls_list").getElementsByClassName("web_event_list_blank web_event_list_hide"); // this returns a live collection
   }
 
-  /** get a static (not live) visible list of urls only
-   *  a. on button click of delete all filtered urls
-   *
-   *  querySelectorAll : returns a static list and not a live list
-   *  getElementsByClassName: returns a live list
-   *  This method will not return a live list as we are converting the live list into an array
-   */
   function getVisibleUrlsList() {
     let allUrls = getAllUrlsList(); // this gives live list
     let visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
@@ -572,7 +579,7 @@ let eventTracker = (function() {
   }
 
   /**
-   *  This method always returns a live collection of all urls list (hidden and not hidden)
+   *  This method always returns a live collection of all URLs list (hidden and not hidden)
    */
   function getAllUrlsList() {
     return getById("urls_list").getElementsByClassName("web_event_list_blank"); // this returns a live collection
@@ -598,9 +605,20 @@ let eventTracker = (function() {
     getById("header_button_remove_0").onclick = clearAndRemoveHeaderContents;
     getById("header_button_add_0").onclick = addNewHeaderContainer;
     getById("add_modify_headers").oninput = generateHeadersToAddOrModify; // either on text change
+    getById("find_in_details_pattern").oninput = setFindPatterns;
     getById("preferences").addEventListener("click", function() {
       chrome.runtime.openOptionsPage();
     });
+  }
+
+  function setFindPatterns(event) {
+    if (findPatternsTimeout) {
+      clearTimeout(findPatternsTimeout);
+    }
+    findPatternsTimeout = setTimeout(function() {
+      findPatterns = event.target.value.trim();
+      displayEventProperties();
+    }, inputBoxDelay);
   }
 
   function generateHeadersToAddOrModify() {
@@ -739,14 +757,12 @@ let eventTracker = (function() {
 
   function optimizeResponseCookiesCheckbox() {
     optimizeResponseCookies = getById("optimize_response_cookies").checked;
-    displayEventProperties(selectedWebEventRequestId);
+    displayEventProperties();
   }
 
   function maskFieldsCheckbox() {
     maskAttributesCheckboxValue = getById("enable_mask_patterns").checked;
-    if (selectedWebEventRequestId) {
-      displayEventProperties(selectedWebEventRequestId);
-    }
+    displayEventProperties();
   }
 
   function setPatternsToMask(event) {
@@ -755,7 +771,8 @@ let eventTracker = (function() {
     }
     filterPatternsToMaskTimeout = setTimeout(function() {
       maskedAttributesList = stringToArray(event.target.value);
-    }, filterInputBoxDelay);
+      displayEventProperties();
+    }, inputBoxDelay);
   }
 
   function clearAllEvents() {
@@ -768,6 +785,7 @@ let eventTracker = (function() {
     getById("response_headers_details").innerHTML = "";
     getById("request_headers_details").innerHTML = "";
     getById("urls_list").innerHTML = "";
+    getById("web_details_selected_container").style = "visibility: hidden;";
   }
 
   function deleteFilteredEvents() {
@@ -788,6 +806,7 @@ let eventTracker = (function() {
 
   function clearFilterBox() {
     filterWithValue = getById("filter_web_events").value = "";
+    multipleSearchPatterns = "";
   }
 
   function updateSelectedEventToContainer(event) {
@@ -823,20 +842,9 @@ let eventTracker = (function() {
 
   function removeSelectedEvent() {
     let selectedEvent = getSelectedEvent();
-
-    // commenting for now as I don't want to decide on what to select after deleting a record
-
-    // Always select the next element if available, and if not available select the previous element
-    // selectNextEligibleEvent(selectedEvent, 40);
-    // if (!selectedWebEventRequestId) {
-    //   selectNextEligibleEvent(selectedEvent, 38);
-    // }
-
     if (selectedEvent) {
       removeEntry(selectedEvent);
       getById("delete_selected_web_event").disabled = true;
-      getById("response_headers_details").innerHTML = "";
-      getById("request_headers_details").innerHTML = "";
       selectedEvent = null;
     }
   }
@@ -854,13 +862,31 @@ let eventTracker = (function() {
       clearTimeout(filterWithValueTimeout);
     }
     filterWithValueTimeout = setTimeout(function() {
-      filterWithKey = getById("web_event_filter_key").selectedOptions[0].value; // get the selected key(index) from dropdown
-      if (filterWithKey) {
-        filterWithValue = getById("filter_web_events").value.toLowerCase(); // get the value from filter text box
-        hideOrShowURLList();
-        updateAllButtons();
+      updateFilterOptions();
+      hideOrShowURLList();
+      updateAllButtons();
+    }, inputBoxDelay);
+  }
+
+  function updateFilterOptions() {
+    filterWithKey = getById("web_event_filter_key").selectedOptions[0].value; // get the selected key(index) from drop down
+    filterWithValue = getById("filter_web_events").value.toLowerCase().trim(); // get the value from filter text box
+    isANDFilter = false;
+    multipleSearchPatterns = "";
+    if (filterWithValue) {
+      if (filterWithValue.length < 3 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
+        // invalid search filter text, do nothing
+      } else {
+        if (filterWithValue.includes(DELIMITER_AND)) {
+          multipleSearchPatterns = stringToArray(filterWithValue, DELIMITER_AND);
+          multipleSearchPatterns = filterWithLength(multipleSearchPatterns, 2);
+        } else {
+          multipleSearchPatterns = stringToArray(filterWithValue, DELIMITER_OR);
+          multipleSearchPatterns = filterWithLength(multipleSearchPatterns, 2);
+          isANDFilter = false;
+        }
       }
-    }, filterInputBoxDelay);
+    }
   }
 
   function setPatternsToExclude(event) {
@@ -869,7 +895,7 @@ let eventTracker = (function() {
     }
     filterPatternsToExcludeTimeout = setTimeout(function() {
       excludeURLsList = stringToArray(event.target.value);
-    }, filterInputBoxDelay);
+    }, inputBoxDelay);
   }
 
   function setPatternsToBlock(event) {
@@ -878,7 +904,7 @@ let eventTracker = (function() {
     }
     setPatternsToBlockTimeout = setTimeout(function() {
       blockURLSList = stringToArray(event.target.value);
-    }, filterInputBoxDelay);
+    }, inputBoxDelay);
   }
 
   async function setPatternsToInclude(event) {
@@ -887,12 +913,11 @@ let eventTracker = (function() {
     }
     filterPatternsToIncludeTimeout = setTimeout(function() {
       includeURLsList = stringToArray(event.target.value);
-    }, filterInputBoxDelay);
+    }, inputBoxDelay);
   }
 
   function setInitialStateOfPage() {
     filterWithValue = getById("filter_web_events").value;
-    filterWithKey = getById("filter_web_events").value;
     captureFormDataCheckboxValue = getById("include_form_data").checked;
     optimizeResponseCookies = getById("optimize_response_cookies").checked;
     includeURLsList = stringToArray(getById("track_urls_pattern").value);
@@ -908,7 +933,6 @@ let eventTracker = (function() {
     updateButonClearFilterWebEvents();
     updateButonDeleteSelectedWebEvent();
     updateButonDeleteAllFilteredWebEvents();
-    updateButonDeleteAllWebEvents();
   }
 
   function updateButonClearFilterWebEvents() {
@@ -940,22 +964,14 @@ let eventTracker = (function() {
     }
   }
 
-  function updateButonDeleteAllWebEvents() {
-    // TODO
-  }
-
   function markSelectedRequest(requestId) {
     getById("web_event_detail_request_head").style.removeProperty("display");
     getById("web_event_detail_response_head").style.removeProperty("display");
     deselectEvent();
     let element = getById(requestId);
     element.classList.add("web_event_list_selected");
-
-    // scroll is not working on key up or key down.
-    // let topPos = element.offsetTop;
-    // element.parentNode.scrollTop = element.offsetTop - element.parentNode.offsetTop;
-
-    displayEventProperties(requestId.substring(16));
+    selectedWebEventRequestId = requestId.substring(16);
+    displayEventProperties();
   }
 
   function deselectEvent() {
@@ -971,15 +987,11 @@ let eventTracker = (function() {
 
   document.addEventListener("DOMContentLoaded", function() {
     document.title = getManifestDetails().title;
-    // if (httpTracker.isFF) {
-    //   getById("http_tracker").style.fontSize = "75%";
-    // }
     bindDefaultEvents();
     setInitialStateOfPage();
   });
 
   function getGlobalOptions(details) {
-    // globalExcludeURLsList = getStoredDetails(details);
     globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
     globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
   }

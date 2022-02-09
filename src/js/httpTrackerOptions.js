@@ -6,7 +6,7 @@ let defaultMaskPatternsTextArea = getById("default_mask_patterns");
 openAddonStylePopup.addEventListener('click', storeSettings);
 openAddonStyleTab.addEventListener('click', storeSettings);
 
-// Whenever the contents of the textarea is changed and then loses focus, save the new values
+// Whenever the contents of the text area is changed and then loses focus, save the new values
 defaultExcludePatternsTextArea.addEventListener("change", storeSettings);
 defaultMaskPatternsTextArea.addEventListener("change", storeSettings);
 
