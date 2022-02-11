@@ -14,7 +14,8 @@
     "webRequest",
     "<all_urls>",
     "webRequestBlocking",
-    "tabs"
+    "tabs",
+    "cookies"
   ],
   "version": "2.2.6",
   "browser_action":
@@ -46,5 +47,13 @@
   "icons":
   {
     "320": "/src/assets/icon_320px.png"
+  },
+  "browser_specific_settings":
+  {
+    "gecko":
+    {
+      "id": "httptracker@venukbh.com",
+      "strict_min_version": "50"
+    }
   }
 }

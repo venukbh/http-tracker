@@ -21,13 +21,13 @@ async function storeSettings(event) {
 
 httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
   let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
-  getById("default_include_patterns").value = value?.join(", ") ?? "";
+  getById("default_include_patterns").value = getProcessedValue(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
-  getById("default_exclude_patterns").value = value?.join(", ") ?? "";
+  getById("default_exclude_patterns").value = getProcessedValue(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_MASK_PATTERN);
-  getById("default_mask_patterns").value = value?.join(", ") ?? "";
+  getById("default_mask_patterns").value = getProcessedValue(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
   if (value === undefined) {
@@ -37,3 +37,10 @@ httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, h
     getById("popup").checked = !value;
   }
 });
+
+function getProcessedValue(value) {
+  if (value && value.length) {
+    return value.join(", ");
+  }
+  return "";
+}

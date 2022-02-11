@@ -8,6 +8,7 @@
   <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerProcessor.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerDomEvents.js"></script>
+  <script type="text/javascript" src="/src/js/httpTrackerOpen.js"></script>
 </head>
 
 <body style="font-size: 100%">
@@ -18,8 +19,10 @@
           <div style="float: left; width: 20%">
             Track urls having :
           </div>
-          <div style="float: left; width: 75%;">
-            <input id="track_urls_pattern" type="text" placeholder="Track urls containing words. Blank includes all" style="width: 100%" />
+          <div style="float: left; width: 73%;">
+            <input id="track_urls_pattern" type="text" placeholder="Track urls containing words. Leave this field empty to include all" style="width: 99%" />
+          </div>
+          <div id="info_include" style="float: left;width: 2%;">
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
@@ -27,8 +30,10 @@
           <div style="width: 20%; float: left;">
             Skip urls having :
           </div>
-          <div style="float: left;width: 75%;">
-            <input id="exclude_urls_pattern" type="text" placeholder="Skip urls containing words" style="width: 100%" value="" />
+          <div style="float: left; width: 73%;">
+            <input id="exclude_urls_pattern" type="text" placeholder="Skip urls containing words. Leave this field empty to include all" style="width: 99%" value="" />
+          </div>
+          <div id="info_exclude" style="float: left;width: 2%;">
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
@@ -36,8 +41,8 @@
           <div style="width: 20%; float: left;">
             Block urls having :
           </div>
-          <div style="float: left;width: 75%;">
-            <input id="block_urls_pattern" type="text" placeholder="Block urls containing words" style="width: 100%" value="" />
+          <div style="float: left;width: 73%;">
+            <input id="block_urls_pattern" type="text" placeholder="Block urls containing words. This works as a 404 simulator" style="width: 99%" value="" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
@@ -111,14 +116,14 @@
         </div>
         <div style="height: 30px;">
         </div>
-        <div style="height: 30px;">
-        </div>
-        <div style="height: 30px;" title="Mask any form attributes containing one of the words from this list while dispalying. Will not mask if the data is raw data. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screen shots with sensitive form attributes">
+        <div style="height: 30px;" title="Mask any attributes (headers, form data) containing one of the words from this list while dispalying. Will not mask if the data is raw data for a POST event. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
           <div style="width: 20%; float: left;">
-            Mask form fields :
+            Mask fields :
           </div>
-          <div style="float: left;width: 60%;">
-            <input id="mask_patterns_list" type="text" placeholder="Mask form fields matching comma-separated pattern(s)" style="width: 100%" value="" />
+          <div style="float: left;width: 58%;">
+            <input id="mask_patterns_list" type="text" placeholder="Mask headers, form fields matching comma-separated pattern(s)" style="width: 99%" value="" />
+          </div>
+          <div id="info_mask" style="float: left;width: 2%;">
           </div>
           <div style="float: left; width: 15%;text-align: right;">
             <input id="enable_mask_patterns" type="checkbox" checked />
@@ -136,17 +141,29 @@
           <div class="empty_div">&nbsp;</div>
         </div>
         <div style="height: 30px;">
-          <div style="width: 25%; float: left; text-align: center;">
+          <div style="width: 20%; float: left;">
+            <button id="delete_cookies_button" type="button" class="web_event_button_delete_all" title="Delete all cookies for this domain">Delete cookies</button>
+          </div>
+          <div style="float: left;width: 75%;">
+            <input id="delete_cookies" type="text" placeholder="Enter a valid domain name to delete cookies" style="width: 100%" value="" />
+          </div>
+          <div class="empty_div">&nbsp;</div>
+        </div>
+        <div style="height: 30px;">
+          <div style="width: 20%; float: left; text-align: center;">
             <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered" title="Delete all filtered list of events">Delete filtered</button>
           </div>
-          <div style="width: 25%; float: left; text-align: center;">
+          <div style="width: 20%; float: left; text-align: center;">
             <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected" title="Delete selected event">Delete selected</button>
           </div>
-          <div style="width: 25%; float:left; text-align: center;">
+          <div style="width: 20%; float:left; text-align: center;">
             <button id="delete_all_web_events" type="button" class="web_event_button_delete_all" title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete all</button>
           </div>
-          <div style="width: 25%; float:left; text-align: center;">
+          <div style="width: 20%; float:left; text-align: center;">
             <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track" title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
+          </div>
+          <div style="width: 20%; float:left; text-align: center;">
+            <button id="delete_cookies" type="button" class="web_event_button_toggle_track" title="Delete all cookies for the selected domain">Delete cookies</button>
           </div>
         </div>
       </div>
@@ -160,7 +177,7 @@
       <div class="web_event_list_cache">Cache</div>
     </div>
     <div id="urls_list" class="web_event_list_container" tabindex="0"></div>
-    <div style="height: 15px;">&nbsp;</div>
+    <div style="height: 5px;">&nbsp;</div>
     <div id="web_details_selected_container">
       <div style="margin-top: 5px;">
         <table class="web_event_details">
@@ -174,7 +191,7 @@
         <table class="web_event_details">
           <tr>
             <td id="web_event_details_selected_request" class="web_event_detail_td">
-              <table id="request_headers_details"></table>
+              <table id="request_headers_details" class="web_event_request_header_details"></table>
             </td>
             <td id="web_event_details_selected_response" class="web_event_detail_td">
               <table id="response_headers_details" class="web_event_response_header_details"></table>

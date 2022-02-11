@@ -13,6 +13,7 @@ let eventTracker = (function() {
   let filterWithValue = "";
   let filterWithValueTimeout = null;
   let globalExcludeURLsList;
+  let globalIncludeURLsList;
   let globalMaskPatternsList;
   let maskAttributesCheckboxValue = false;
   let maskedAttributesList;
@@ -25,6 +26,7 @@ let eventTracker = (function() {
   let findPatternsTimeout = null;
   let multipleSearchPatterns = "";
   let isANDFilter = false;
+  let selectedDomain = "";
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
@@ -151,12 +153,20 @@ let eventTracker = (function() {
   }
 
   function urlMatchIncludePattern(webEvent) {
-    if (includeURLsList) {
-      return includeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
-    } else if (webEvent.requestIdEnhanced.includes("fakeRequest")) {
+    if (webEvent.requestIdEnhanced.includes("fakeRequest")) {
       return false;
-    } else {
+    }
+    if (!includeURLsList && !globalIncludeURLsList) {
       return true;
+    }
+    let found = false;
+    if (includeURLsList && includeURLsList.length) {
+      found = includeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+    }
+    if (!found && globalIncludeURLsList && globalIncludeURLsList.length) {
+      found = globalIncludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+    } {
+      return found;
     }
   }
 
@@ -217,15 +227,15 @@ let eventTracker = (function() {
       getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
     }
-    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ?? "N/A";
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ? webEvent.fromCache : "N/A";
   }
 
   function filterEventList(webEvent) {
-    if (multipleSearchPatterns.length > 0) {
+    if (multipleSearchPatterns.length) {
       let type = getById("web_event_filter_key").selectedOptions[0].innerText;
       let value = "";
       if (type === "CACHE") {
-        value = webEvent.fromCache ?? "N/A";
+        value = webEvent.fromCache ? webEvent.fromCache : "N/A";
       }
       if (type === "METHOD") {
         value = webEvent.method;
@@ -318,6 +328,18 @@ let eventTracker = (function() {
     getById("web_details_selected_container").style = "visibility: visible;";
   }
 
+  function deleteCookiesForSelectedDomain() {
+    // var cookiesList = httpTracker.browser.cookies.getAll({
+    //   domain: selectedDomain
+    // });
+    // cookiesList.then(removeCookies);
+
+    cookiesList = httpTracker.browser.cookies.getAll({
+      domain: getById("delete_cookies").value
+    }, removeCookies);
+    // cookiesList.then(removeCookies);
+  }
+
   function buildURLDetailsContainer(webEventIdDetails, detailsType) {
     let tableContent = "";
     let headersContent = "";
@@ -353,7 +375,7 @@ let eventTracker = (function() {
   function generateHeaderKeyValueContent(key, value) {
     if (maskFieldsPattern(key)) {
       value = value.toString().trim();
-      if (value.length > 0) {
+      if (value.length) {
         value = value.charAt(0) + "*****" + value.charAt(value.length - 1);
       }
     }
@@ -361,7 +383,7 @@ let eventTracker = (function() {
   }
 
   function addMarkTag(text) {
-    if (findPatterns.length > 0) {
+    if (findPatterns.length) {
       let findStr = new RegExp(findPatterns, "gi");
       let markedText = text.toString().replace(findStr, (match) => `<mark>${match}</mark>`);
       return markedText;
@@ -477,6 +499,18 @@ let eventTracker = (function() {
     });
   }
 
+  function removeCookies(cookies) {
+    for (let cookie of cookies) {
+      let protocol = cookie.secure ? "https:" : "http:";
+      let cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
+      var removed = httpTracker.browser.cookies.remove({
+        url: cookieUrl,
+        name: cookie.name,
+        storeId: cookie.storeId,
+      });
+    }
+  }
+
   function getCookieNameValue(cookie) {
     let firstOccurance = cookie.indexOf("=");
     let cookieObj = {};
@@ -492,6 +526,10 @@ let eventTracker = (function() {
             // toLowerCase : chrome sends as domain, FF sends as Domain
             if (attributeKeyValue[0].toLowerCase() === "domain" || attributeKeyValue[0].toLowerCase() === "path") {
               cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
+            }
+            if (attributeKeyValue[0].toLowerCase() === "domain") {
+              // console.log(attributeKeyValue[1]);
+              selectedDomain = attributeKeyValue[1];
             }
           }
         });
@@ -606,8 +644,9 @@ let eventTracker = (function() {
     getById("header_button_add_0").onclick = addNewHeaderContainer;
     getById("add_modify_headers").oninput = generateHeadersToAddOrModify; // either on text change
     getById("find_in_details_pattern").oninput = setFindPatterns;
+    getById("delete_cookies_button").onclick = deleteCookiesForSelectedDomain;
     getById("preferences").addEventListener("click", function() {
-      chrome.runtime.openOptionsPage();
+      openAddonOptions();
     });
   }
 
@@ -644,7 +683,7 @@ let eventTracker = (function() {
       }
     });
     setRequestHeadersList(headersObject);
-    if (headersObject.length > 0 || conatiners.length > 1) {
+    if (headersObject.length || conatiners.length) {
       getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers: ${headersObject.length}`;
     } else {
       getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers:`;
@@ -927,6 +966,40 @@ let eventTracker = (function() {
     blockURLSList = stringToArray(getById("block_urls_pattern").value);
     updateAllButtons();
     hideOrShowURLList();
+    hideOrShowInfoIcons();
+  }
+
+  function hideOrShowInfoIcons() {
+    if (globalIncludeURLsList && globalIncludeURLsList.length) {
+      let element = getById("info_include");
+      element.innerHTML = "&#9432;";
+      element.title = `Patterns extended from preferences: ${globalIncludeURLsList}`;
+      element.style.color = "red";
+    } else {
+      let element = getById("info_include");
+      element.innerHTML = "";
+      element.title = "";
+    }
+    if (globalExcludeURLsList && globalExcludeURLsList.length) {
+      let element = getById("info_exclude");
+      element.innerHTML = "&#9432;";
+      element.title = `Patterns extended from preferences: ${globalExcludeURLsList}`;
+      element.style.color = "red";
+    } else {
+      let element = getById("info_exclude");
+      element.innerHTML = "";
+      element.title = "";
+    }
+    if (globalMaskPatternsList && globalMaskPatternsList.length) {
+      let element = getById("info_mask");
+      element.innerHTML = "&#9432;";
+      element.title = `Patterns extended from preferences: ${globalMaskPatternsList}`;
+      element.style.color = "red";
+    } else {
+      let element = getById("info_mask");
+      element.innerHTML = "";
+      element.title = "";
+    }
   }
 
   function updateAllButtons() {
@@ -994,19 +1067,25 @@ let eventTracker = (function() {
   function getGlobalOptions(details) {
     globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
     globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
+    globalIncludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
   }
 
   function getChangesFromStorge(changes, namespace) {
     for (var key in changes) {
       if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
         globalExcludeURLsList = changes[key].newValue;
-        break;
+      } else if (key === httpTracker.STORAGE_KEY_INCLUDE_PATTERN) {
+        globalIncludeURLsList = changes[key].newValue;
+      } else if (key === httpTracker.STORAGE_KEY_MASK_PATTERN) {
+        globalMaskPatternsList = changes[key].newValue;
       }
     }
+    hideOrShowInfoIcons();
+    displayEventProperties();
   }
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
-  httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
+  httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails
