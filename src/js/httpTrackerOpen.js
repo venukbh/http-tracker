@@ -8,6 +8,41 @@ const createWindowProperties = {
   state: httpTracker.isFF ? "maximized" : "normal"
 };
 
+// open the addon options window, or if already opened, bring to front preventing multiple windows
+function openAddonOptions() {
+  httpTracker.browser.windows.getAll({ "populate": true }, getAddonOptions);
+}
+
+function getAddonOptions(details) {
+  let existingWindow;
+  if (details.length > 0) {
+    details.some(eachWindow => {
+      if (eachWindow.tabs && eachWindow.tabs.some(tab => tab.url.includes("/src/html/options.html"))) {
+        existingWindow = eachWindow;
+      }
+    })
+  }
+  if (existingWindow) {
+    httpTracker.browser.tabs.query({
+      "windowId": existingWindow.id,
+      "url": httpTracker.browser.runtime.getURL("/src/html/options.html")
+    }, function(tabs) {
+      if (tabs && tabs.length == 1) {
+        httpTracker.browser.windows.update(
+          existingWindow.id, {
+            focused: true
+          }
+        );
+        httpTracker.browser.tabs.update(tabs[0].id, {
+          active: true
+        });
+      }
+    })
+  } else {
+    httpTracker.browser.runtime.openOptionsPage();
+  }
+}
+
 // open the addon window, or if already opened, bring to front preventing multiple windows
 function openAddon() {
   httpTracker.browser.windows.getAll({ "populate": true }, getAddonWindow);
