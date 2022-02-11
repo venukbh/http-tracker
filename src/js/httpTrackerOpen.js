@@ -16,6 +16,9 @@ function openAddon() {
 function getAddonWindow(details) {
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
     let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
+    if (value === undefined) {
+      setPropertyToStorage(httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB, false);
+    }
     if (value) {
       openInTab(details);
     } else {

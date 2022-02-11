@@ -6,26 +6,34 @@
 </head>
 
 <body>
-  <div>
-    <div style="float: left;">
-      Open addon in
+  <div id="persist_options" style="margin: 2% 2% 2% 2%; height: 100%; font-size: 100%; border:dashed;">
+    <div style="float: left; width: 30%; height:50px;">Open addon window in (change takes effect on restart of addon window)</div>
+    <div style="height:50px;">
+      <label style="padding-left: 20px;">
+        <input type="radio" name="uipage" value="true" id="tab">tab
+      </label>
+      <label style="padding-left: 20px;">
+        <input type="radio" name="uipage" value="false" id="popup">popup
+      </label>
     </div>
-    <div id="openAddonStyleTab" style="float: left;">
-      <input type="radio" id="tab" name="uipage" value="tab">
-      <label for="tab">Tab</label>
+    <div style="float:left; width:30%;">
+      Include URL patterns
     </div>
-    <div id="openAddonStylePopup" style="">
-      <input type="radio" id="popup" name="uipage" value="popup">
-      <label for="popup">Popup</label>
+    <div>
+      <textarea id="default_include_patterns" rows="5" cols="100"></textarea>
     </div>
-  </div>
-  <div>
-    <label>Always exclude (persisted) urls patterns (separated by comma or space or new line)</label>
-    <textarea id="default_exclude_patterns" rows="10" cols="50"></textarea>
-  </div>
-  <div>
-    <label>Always mask (persisted) patterns (separated by comma or space or new line)</label>
-    <textarea id="default_mask_patterns" rows="10" cols="50"></textarea>
+    <div style="float:left; width:30%">
+      Exclude URL patterns
+    </div>
+    <div>
+      <textarea id="default_exclude_patterns" rows="5" cols="100"></textarea>
+    </div>
+    <div style="float:left; width:30%">
+      Mask patterns
+    </div>
+    <div>
+      <textarea id="default_mask_patterns" rows="5" cols="100"></textarea>
+    </div>
   </div>
   <script type="text/javascript" src="/src/js/httpTrackerConstants.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
