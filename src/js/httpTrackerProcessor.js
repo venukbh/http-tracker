@@ -329,15 +329,9 @@ let eventTracker = (function() {
   }
 
   function deleteCookiesForSelectedDomain() {
-    // var cookiesList = httpTracker.browser.cookies.getAll({
-    //   domain: selectedDomain
-    // });
-    // cookiesList.then(removeCookies);
-
     cookiesList = httpTracker.browser.cookies.getAll({
       domain: getById("delete_cookies").value
     }, removeCookies);
-    // cookiesList.then(removeCookies);
   }
 
   function buildURLDetailsContainer(webEventIdDetails, detailsType) {
@@ -500,15 +494,20 @@ let eventTracker = (function() {
   }
 
   function removeCookies(cookies) {
+    let removedCookies = [];
     for (let cookie of cookies) {
       let protocol = cookie.secure ? "https:" : "http:";
       let cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
-      var removed = httpTracker.browser.cookies.remove({
+      let removed = httpTracker.browser.cookies.remove({
         url: cookieUrl,
         name: cookie.name,
-        storeId: cookie.storeId,
+        storeId: cookie.storeId
       });
+      removedCookies.push(removed);
     }
+    Promise.all(removedCookies).then((values) => {
+      // console.log(values.length);
+    })
   }
 
   function getCookieNameValue(cookie) {
