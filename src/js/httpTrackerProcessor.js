@@ -14,6 +14,7 @@ let eventTracker = (function() {
   let filterWithValueTimeout = null;
   let globalExcludeURLsList;
   let globalIncludeURLsList;
+  let globalReverseURLsList = false;
   let globalMaskPatternsList;
   let maskAttributesCheckboxValue = false;
   let maskedAttributesList;
@@ -214,7 +215,9 @@ let eventTracker = (function() {
       generateDATETIMEContent(webEvent) +
       generateCACHEContent(webEvent) +
       "</div>";
-    getById("urls_list").insertAdjacentHTML("beforeend", containerContent);
+    const position = globalReverseURLsList ? "afterbegin" : "beforeend";
+    console.log("insert event", position);
+    getById("urls_list").insertAdjacentHTML(position, containerContent);
   }
 
   function updateEventList(webEvent) {
@@ -1067,6 +1070,7 @@ let eventTracker = (function() {
     globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
     globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
     globalIncludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
+    globalReverseURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_REVERSE_LIST);
   }
 
   function getChangesFromStorage(changes, namespace) {
@@ -1084,7 +1088,12 @@ let eventTracker = (function() {
   }
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorage);
-  httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
+  httpTracker.browser.storage.sync.get([
+    httpTracker.STORAGE_KEY_INCLUDE_PATTERN,
+    httpTracker.STORAGE_KEY_EXCLUDE_PATTERN,
+    httpTracker.STORAGE_KEY_MASK_PATTERN,
+    httpTracker.STORAGE_KEY_REVERSE_LIST
+  ], getGlobalOptions);
 
   return {
     logRequestDetails: logRequestDetails

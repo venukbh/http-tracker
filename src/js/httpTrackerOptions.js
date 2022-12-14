@@ -9,19 +9,29 @@ const idToKeyLookup = {
   "default_mask_patterns": httpTracker.STORAGE_KEY_MASK_PATTERN,
   "dark_mode_enabled": httpTracker.STORAGE_KEY_DARK_MODE_ENABLED,
   "dark_mode_disabled": httpTracker.STORAGE_KEY_DARK_MODE_ENABLED,
+  "reverse_list_enabled": httpTracker.STORAGE_KEY_REVERSE_LIST,
+  "reverse_list_disabled": httpTracker.STORAGE_KEY_REVERSE_LIST
 };
 
 const toggles = new Set([
   "tab",
   "popup",
   "dark_mode_enabled",
-  "dark_mode_disabled"
+  "dark_mode_disabled",
+  "reverse_list_disabled",
+  "reverse_list_enabled"
 ]);
 
 // Whenever the contents of the text area is changed and then loses focus, save the new values
 async function storeSettings(event) {
   let id = event.target.id;
   let value = uniqueArray(stringToArray(event.target.value, /\n|\t|\ |\,/));
+  console.log({
+    id,
+    value,
+    toggles: Array.from(toggles),
+    idToKeyLookup
+  });
   const key = idToKeyLookup[id];
   if (!key) {
     console.error(`No id to preference key lookup for id '${id}'`);
@@ -63,6 +73,13 @@ httpTracker.browser.storage.sync.get(httpTracker.allStorageKeys, function (cbRes
   if (!!value) {
     document.documentElement.classList.add("dark-mode");
   }
+
+  value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_REVERSE_LIST);
+  if (value === undefined) {
+    setPropertyToStorage(httpTracker.STORAGE_KEY_REVERSE_LIST, false);
+  }
+  getById("reverse_list_enabled").checked = !!value;
+  getById("reverse_list_disabled").checked = !value;
 });
 
 document.querySelector("#dark_mode_disabled").addEventListener("change", () => {

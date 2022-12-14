@@ -7,7 +7,8 @@ const httpTracker = {
   STORAGE_KEY_BLOCK_PATTERN: "httpTracker_GlobalBlockPatterns",
   STORAGE_KEY_MASK_PATTERN: "httpTracker_GlobalMaskPatterns",
   STORAGE_KEY_OPEN_ADDON_IN_TAB: "httpTracker_OpenAddonInTab",
-  STORAGE_KEY_DARK_MODE_ENABLED: "httpTracker_DarkModeEnabled"
+  STORAGE_KEY_DARK_MODE_ENABLED: "httpTracker_DarkModeEnabled",
+  STORAGE_KEY_REVERSE_LIST: "httpTracker_ReverseList"
 };
 
 httpTracker.allStorageKeys = [
@@ -17,6 +18,7 @@ httpTracker.allStorageKeys = [
   httpTracker.STORAGE_KEY_MASK_PATTERN,
   httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB,
   httpTracker.STORAGE_KEY_DARK_MODE_ENABLED,
+  httpTracker.STORAGE_KEY_REVERSE_LIST,
 ];
 
 const FORBIDDEN_HEADERS = ["Accept-Charset", "Accept-Encoding", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Content-Length", "Cookie", "Cookie2", "Date", "DNT", "Expect", "Feature-Policy", "Host", "Keep-Alive", "Origin", "Proxy-", "Sec-", "Referer", "TE", "Trailer", "Transfer-Encoding", "Upgrade", "Via"];
