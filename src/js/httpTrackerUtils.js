@@ -157,6 +157,19 @@ function addModifyRequestHeaders(webEvent) {
   return webEvent.requestHeaders;
 }
 
+function setupDarkMode() {
+  httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_DARK_MODE_ENABLED], (data => {
+    const
+      stored = getPropertyFromStorage(data, httpTracker.STORAGE_KEY_DARK_MODE_ENABLED),
+      enabled = stored === "true" || stored === true;
+    if (enabled) {
+      document.documentElement.classList.add("dark-mode");
+    }
+
+  }));
+
+}
+
 function getPropertyFromStorage(details, key) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
@@ -175,3 +188,5 @@ function setPropertyToStorage(key, value) {
     // console.log(`Successfully stored ${key} = ${value}`);
   });
 }
+
+window.addEventListener("DOMContentLoaded", setupDarkMode);

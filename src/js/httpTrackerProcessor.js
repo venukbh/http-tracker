@@ -1069,7 +1069,7 @@ let eventTracker = (function() {
     globalIncludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
   }
 
-  function getChangesFromStorge(changes, namespace) {
+  function getChangesFromStorage(changes, namespace) {
     for (var key in changes) {
       if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
         globalExcludeURLsList = changes[key].newValue;
@@ -1083,7 +1083,7 @@ let eventTracker = (function() {
     displayEventProperties();
   }
 
-  httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
+  httpTracker.browser.storage.onChanged.addListener(getChangesFromStorage);
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
 
   return {

@@ -1,3 +1,32 @@
+html.dark-mode body {
+  color: #bbb;
+  background-color: #111;
+}
+
+html.dark-mode input,
+html.dark-mode select,
+html.dark-mode textarea {
+  color: #efefef;
+  background-color: #050505;
+  border: 1px solid #888;
+}
+
+html.dark-mode button {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+html.dark-mode .urls_list_heading {
+  background-color: #181818;
+}
+
+input {
+  border: 1px solid #111;
+  border-radius: 2px;
+}
+
 .web_event_tracker {
   margin: 2% 2% 2% 2%;
   height: 100%;
@@ -83,6 +112,10 @@ input {
   background-color: #DCDCDC;
 }
 
+html.dark-mode .web_event_list_blank:hover {
+  background-color: #444;
+}
+
 .web_event_list_style:first-child {
   border-top: none;
 }
@@ -107,6 +140,10 @@ input {
 
 .web_event_list_selected {
   background-color: #CBE4EC;
+}
+
+html.dark-mode .web_event_list_selected {
+  background-color: #333;
 }
 
 .web_event_list_container {
@@ -160,12 +197,20 @@ input {
   border-color: black;
 }
 
+html.dark-mode .web_event_list_url {
+  border-color: #181818;
+}
+
 .web_event_list_method {
   float: left;
   width: 5%;
   text-align: center;
   border-right: 1px solid;
   border-color: black;
+}
+
+html.dark-mode .web_event_list_method {
+  border-color: #181818;
 }
 
 .web_event_list_status {
@@ -176,12 +221,20 @@ input {
   border-color: black;
 }
 
+html.dark-mode .web_event_list_status {
+  border-color: #181818;
+}
+
 .web_event_list_date_time {
   float: left;
   width: 15%;
   text-align: center;
   border-right: 1px solid;
   border-color: black;
+}
+
+html.dark-mode .web_event_list_time {
+  border-color: #181818;
 }
 
 .web_event_list_cache {
@@ -203,6 +256,10 @@ input {
   text-align: center;
   background-color: cadetblue;
   border: 1px solid;
+}
+
+html.dark-mode .web_event_detail_cookie {
+  background-color: #225;
 }
 
 .web_event_detail_td {
@@ -228,12 +285,21 @@ input {
   width: 50%;
 }
 
+html.dark-mode .web_event_detail_request_heading {
+  background: #333;
+}
+
+
 .web_event_detail_response_heading {
   text-align: center;
   background: #DCDCDC;
   border-top: 1px solid;
   border-right: 1px solid;
   border-bottom: 1px solid;
+}
+
+html.dark-mode .web_event_detail_response_heading {
+  background: #333;
 }
 
 .web_event_response_header_details {

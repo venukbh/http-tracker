@@ -1,5 +1,10 @@
 {
   "author": "Venu Madhav",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "http-tracker@github.com"
+    }
+  },
   "background":
   {
     "scripts": [
