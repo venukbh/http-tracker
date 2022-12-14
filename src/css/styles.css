@@ -6,7 +6,7 @@ html.dark-mode body {
 html.dark-mode input,
 html.dark-mode select,
 html.dark-mode textarea {
-  color: #efefef;
+  color: #eee;
   background-color: #050505;
   border: 1px solid #888;
 }

@@ -59,7 +59,18 @@ httpTracker.browser.storage.sync.get(httpTracker.allStorageKeys, function (cbRes
   }
   getById("dark_mode_enabled").checked = !!value;
   getById("dark_mode_disabled").checked = !value;
+
+  if (!!value) {
+    document.documentElement.classList.add("dark-mode");
+  }
 });
+
+document.querySelector("#dark_mode_disabled").addEventListener("change", () => {
+  document.documentElement.classList.remove("dark-mode");
+})
+document.querySelector("#dark_mode_enabled").addEventListener("change", () => {
+  document.documentElement.classList.add("dark-mode");
+})
 
 function getProcessedValue(value) {
   if (value && value.length) {
