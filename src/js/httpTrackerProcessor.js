@@ -1,16 +1,16 @@
-let eventTracker = (function() {
-  let addedRequestId = [];
-  let allRequestHeaders = new Map();
-  let allResponseHeaders = new Map();
+const eventTracker = (function() {
+  const addedRequestId = [];
+  const allRequestHeaders = new Map();
+  const allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
-  let decoder = new TextDecoder("UTF-8");
-  let inputBoxDelay = 500;
+  const decoder = new TextDecoder('UTF-8');
+  const inputBoxDelay = 500;
   let filterPatternsToExcludeTimeout = null;
   let setPatternsToBlockTimeout = null;
   let filterPatternsToIncludeTimeout = null;
   let filterPatternsToMaskTimeout = null;
-  let filterWithKey = "";
-  let filterWithValue = "";
+  let filterWithKey = '';
+  let filterWithValue = '';
   let filterWithValueTimeout = null;
   let globalExcludeURLsList;
   let globalIncludeURLsList;
@@ -18,29 +18,28 @@ let eventTracker = (function() {
   let maskAttributesCheckboxValue = false;
   let maskedAttributesList;
   let optimizeResponseCookies;
-  let requestFormData = new Map();
-  let requestIdRedirectCount = new Map();
-  let selectedWebEventRequestId = "";
+  const requestFormData = new Map();
+  const requestIdRedirectCount = new Map();
+  let selectedWebEventRequestId = '';
   let toggleCaptureEvents = true;
-  let findPatterns = "";
+  let findPatterns = '';
   let findPatternsTimeout = null;
-  let multipleSearchPatterns = "";
+  let multipleSearchPatterns = '';
   let isANDFilter = false;
-  let selectedDomain = "";
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
   const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>`;
-  const COOKIE_CONTENT_BANNER_OPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>";
-  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = "<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>";
-  const ignoreHeaders = ["frameAncestors", "frameId", "parentFrameId", "tabId", "timeStamp", "type", "callerName", "requestIdEnhanced", "requestId"];
+  const COOKIE_CONTENT_BANNER_OPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (optimized)</td></tr>';
+  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (unoptimized)</td></tr>';
+  const IGNORE_HEADERS = ['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId'];
   const REQUEST_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>`;
   const RESPONSE_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>`;
   const HEADER_CONTENT_KEY = `<tr><td class='web_event_detail_header_key'>`;
   const HEADER_CONTENT_VALUE = `</td><td class='web_event_detail_header_value'>`;
 
   async function logRequestDetails(webEvent) {
-    let inserted = insertEventUrls(webEvent);
+    const inserted = insertEventUrls(webEvent);
     if (inserted) {
       addOrUpdateUrlListToPage(webEvent);
       displaySelectedEventDetails(webEvent);
@@ -48,7 +47,7 @@ let eventTracker = (function() {
   }
 
   function insertEventUrls(webEvent) {
-    let captureEvent = toggleCaptureEvents && isEventToCapture(webEvent);
+    const captureEvent = toggleCaptureEvents && isEventToCapture(webEvent);
     if (captureEvent) {
       setRedirectCount(webEvent);
       actionOnBeforeRequest(webEvent);
@@ -76,25 +75,25 @@ let eventTracker = (function() {
   }
 
   function actionOnBeforeRequest(webEvent) {
-    if (webEvent.callerName === "onBeforeRequest") {
+    if (webEvent.callerName === 'onBeforeRequest') {
       insertRequestBody(webEvent);
     }
   }
 
   function actionOnBeforeSendHeaders(webEvent) {
-    if (webEvent.callerName === "onBeforeSendHeaders") {
+    if (webEvent.callerName === 'onBeforeSendHeaders') {
       insertRequestHeaders(webEvent);
     }
   }
 
   function actionOnSendHeaders(webEvent) {
-    if (webEvent.callerName === "onSendHeaders") {
+    if (webEvent.callerName === 'onSendHeaders') {
       insertRequestHeaders(webEvent);
     }
   }
 
   function actionOnBeforeRedirect(webEvent) {
-    if (webEvent.callerName === "onBeforeRedirect") {
+    if (webEvent.callerName === 'onBeforeRedirect') {
       // A defect in latest FF versions (tested on 79.0)
       // Firefox starts onBeforeRedirect without actual headers as below, and don't capture anything during this process. If the redirect response is as below, it means response headers are on the way. So wait till all the response headers are completed
       // this issue does not exist in chrome
@@ -113,31 +112,31 @@ let eventTracker = (function() {
   }
 
   function actionOnAuthRequired(webEvent) {
-    if (webEvent.callerName === "onAuthRequired") {
+    if (webEvent.callerName === 'onAuthRequired') {
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnHeadersReceived(webEvent) {
-    if (webEvent.callerName === "onHeadersReceived") {
+    if (webEvent.callerName === 'onHeadersReceived') {
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnResponseStarted(webEvent) {
-    if (webEvent.callerName === "onResponseStarted") {
+    if (webEvent.callerName === 'onResponseStarted') {
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnCompleted(webEvent) {
-    if (webEvent.callerName === "onCompleted") {
+    if (webEvent.callerName === 'onCompleted') {
       insertResponseHeaders(webEvent);
     }
   }
 
   function actionOnErrorOccurred(webEvent) {
-    if (webEvent.callerName === "onErrorOccurred") {
+    if (webEvent.callerName === 'onErrorOccurred') {
       insertResponseHeaders(webEvent);
     }
   }
@@ -147,13 +146,13 @@ let eventTracker = (function() {
    * excludeURLsList always takes precedence
    */
   function isEventToCapture(webEvent) {
-    let captureEventInclude = urlMatchIncludePattern(webEvent);
-    let captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
+    const captureEventInclude = urlMatchIncludePattern(webEvent);
+    const captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
     return (captureEventInclude && !captureEventExclude);
   }
 
   function urlMatchIncludePattern(webEvent) {
-    if (webEvent.requestIdEnhanced.includes("fakeRequest")) {
+    if (webEvent.requestIdEnhanced.includes('fakeRequest')) {
       return false;
     }
     if (!includeURLsList && !globalIncludeURLsList) {
@@ -161,10 +160,10 @@ let eventTracker = (function() {
     }
     let found = false;
     if (includeURLsList && includeURLsList.length) {
-      found = includeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+      found = includeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
     }
     if (!found && globalIncludeURLsList && globalIncludeURLsList.length) {
-      found = globalIncludeURLsList.some(v => webEvent.url.toLowerCase().includes(v));
+      found = globalIncludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
     } {
       return found;
     }
@@ -173,9 +172,9 @@ let eventTracker = (function() {
   function urlMatchExcludePattern(webEvent) {
     let toExclude = false;
     if (excludeURLsList) {
-      toExclude = excludeURLsList.some(v => webEvent.url.toLowerCase().includes(v.toLowerCase()));
+      toExclude = excludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v.toLowerCase()));
     } else if (!toExclude && globalExcludeURLsList) {
-      toExclude = globalExcludeURLsList.some(v => webEvent.url.toLowerCase().includes(v.toLowerCase()));
+      toExclude = globalExcludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v.toLowerCase()));
     }
     return toExclude;
   }
@@ -184,10 +183,10 @@ let eventTracker = (function() {
     let masking = false;
     if (maskAttributesCheckboxValue) {
       if (maskedAttributesList) {
-        masking = maskedAttributesList.some(v => value.toLowerCase().includes(v));
+        masking = maskedAttributesList.some((v) => value.toLowerCase().includes(v));
       }
       if (!masking && globalMaskPatternsList) {
-        masking = globalMaskPatternsList.some(v => value.toLowerCase().includes(v));
+        masking = globalMaskPatternsList.some((v) => value.toLowerCase().includes(v));
       }
     }
     return masking;
@@ -207,52 +206,52 @@ let eventTracker = (function() {
 
   function addEventList(webEvent) {
     addedRequestId.push(webEvent.requestIdEnhanced);
-    let containerContent = "<div title='Click to view details' class='" + CLASS_LIST_TO_ADD + "' id='web_events_list_" + webEvent.requestIdEnhanced + "'>" +
+    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\'>' +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
       generateSTATUSContent(webEvent) +
       generateDATETIMEContent(webEvent) +
       generateCACHEContent(webEvent) +
-      "</div>";
-    getById("urls_list").insertAdjacentHTML("beforeend", containerContent);
+      '</div>';
+    getById('urls_list').insertAdjacentHTML('beforeend', containerContent);
   }
 
   function updateEventList(webEvent) {
-    if (webEvent.callerName === "onErrorOccurred") { // onErrorOccurred contains webEvent.error not webEvent.statusCode
-      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_style_error");
+    if (webEvent.callerName === 'onErrorOccurred') { // onErrorOccurred contains webEvent.error not webEvent.statusCode
+      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add('web_event_style_error');
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = STRING_ERROR;
     }
     // do not update if statusCode is not available (ex: service workers, fetch events in FF are missing response events)
     else if (webEvent.statusCode) {
-      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_style_error");
+      getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_style_error');
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
     }
-    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ? webEvent.fromCache : "N/A";
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ? webEvent.fromCache : 'N/A';
   }
 
   function filterEventList(webEvent) {
     if (multipleSearchPatterns.length) {
-      let type = getById("web_event_filter_key").selectedOptions[0].innerText;
-      let value = "";
-      if (type === "CACHE") {
-        value = webEvent.fromCache ? webEvent.fromCache : "N/A";
+      const type = getById('web_event_filter_key').selectedOptions[0].innerText;
+      let value = '';
+      if (type === 'CACHE') {
+        value = webEvent.fromCache ? webEvent.fromCache : 'N/A';
       }
-      if (type === "METHOD") {
+      if (type === 'METHOD') {
         value = webEvent.method;
       }
-      if (type === "STATUS") {
-        value = `${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : "N/A")}`;
+      if (type === 'STATUS') {
+        value = `${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : 'N/A')}`;
       }
-      if (type === "URL") {
+      if (type === 'URL') {
         value = webEvent.url;
       }
-      if (type === "DATE") {
-        value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "N/A")}`;
+      if (type === 'DATE') {
+        value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A')}`;
       }
       if (!value.toString().toLowerCase().includes(filterWithValue)) {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add("web_event_list_hide");
+        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add('web_event_list_hide');
       } else {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove("web_event_list_hide");
+        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_list_hide');
       }
     }
   }
@@ -266,11 +265,11 @@ let eventTracker = (function() {
   }
 
   function generateSTATUSContent(webEvent) {
-    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : "N/A")}</div>`;
+    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : 'N/A')}</div>`;
   }
 
   function generateDATETIMEContent(webEvent) {
-    return `<div class='web_event_list_date_time' id='web_event_time_${webEvent.requestIdEnhanced}'>${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : "N/A")}</div>`;
+    return `<div class='web_event_list_date_time' id='web_event_time_${webEvent.requestIdEnhanced}'>${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A')}</div>`;
   }
 
   function generateCACHEContent(webEvent) {
@@ -278,7 +277,7 @@ let eventTracker = (function() {
   }
 
   function getReadableDate(timestamp) {
-    let date = new Date(timestamp);
+    const date = new Date(timestamp);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   }
 
@@ -310,42 +309,95 @@ let eventTracker = (function() {
    *  build the request container, response container
    */
   function displayEventProperties() {
-    let webEventIdRequest = allRequestHeaders.get(selectedWebEventRequestId);
-    let webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
-    let webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
+    const webEventIdRequest = allRequestHeaders.get(selectedWebEventRequestId);
+    const webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
+    const webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
 
-    let requestContainer = buildURLDetailsContainer(webEventIdRequest, "requestDetails");
-    let responseContainer = buildURLDetailsContainer(webEventIdResponse, "responseDetails");
-    let requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
-    getById("web_event_details_selected_request").style.borderRight = "1px solid";
-    getById("web_event_details_selected_response").style.borderRight = "1px solid";
-    getById("web_event_details_selected_request").style.borderLeft = "1px solid";
-    getById("web_event_details_selected_response").style.borderLeft = "1px solid";
-    getById("web_event_details_selected_request").style.borderBottom = "1px solid";
-    getById("web_event_details_selected_response").style.borderBottom = "1px solid";
-    getById("request_headers_details").innerHTML = requestContainer + requestFormContainer;
-    getById("response_headers_details").innerHTML = responseContainer;
-    getById("web_details_selected_container").style = "visibility: visible;";
+    const requestContainer = buildURLDetailsContainer(webEventIdRequest, 'requestDetails');
+    const responseContainer = buildURLDetailsContainer(webEventIdResponse, 'responseDetails');
+    const requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
+    getById('web_event_details_selected_request').style.borderRight = '1px solid';
+    getById('web_event_details_selected_response').style.borderRight = '1px solid';
+    getById('web_event_details_selected_request').style.borderLeft = '1px solid';
+    getById('web_event_details_selected_response').style.borderLeft = '1px solid';
+    getById('web_event_details_selected_request').style.borderBottom = '1px solid';
+    getById('web_event_details_selected_response').style.borderBottom = '1px solid';
+    getById('request_headers_details').innerHTML = requestContainer + requestFormContainer;
+    getById('response_headers_details').innerHTML = responseContainer;
+    getById('web_details_selected_container').style = 'visibility: visible;';
+    const el = getById('domain_url');
+    el.value = fillDomainName(webEventIdRequest);
+    el.dispatchEvent(new Event('input'));
+  }
+
+  function fillDomainName(webEventIdDetails) {
+    const domain = new URL(webEventIdDetails.url);
+    console.log(`the domain url = ${domain}`);
+    console.log(`the host url = ${domain.hostname}`);
+    console.log(`the registered domain = ${domain.hostname.replace('www.', '')}`);
+    console.log(`the registered domain per algorithm = ${domain.hostname.replace('www.', '').split('.').reverse().join('.')}`);
+    // let parts = domain.hostname.replace('www.', '').split('.');
+    // let x = [];
+    // let i = 0;
+    // while (parts.length > 0) {
+    //   x[i++] = parts.join(".");
+    //   parts.shift();
+    // }
+    // for (let i = 1; i < x.length; i++) {
+    //   if (public_suffix_map.has(x[i])) {
+    //     return `.${x[i - 1]}`;
+    //   }
+    // }
+    // return "";
+  }
+
+  function findCookiesForSelectedDomain() {
+    const deleteDomainName = getById('domain_url').value.trim();
+    if (deleteDomainName.length > 3) { // tld min is 2 and add .
+      if (public_suffix_map.has(deleteDomainName)) {
+        return;
+      }
+      // cookiesList = httpTracker.browser.cookies.getAll({
+      //   domain: deleteDomainName
+      // }, findRemoveCookies);
+      cookiesList = httpTracker.browser.cookies.getAll({
+        domain: deleteDomainName,
+      });
+      Promise.all(cookiesList).then((values) => {
+        console.log(values.length);
+      });
+    }
+
+    // dislayDeleteCookiesWarning = false;
+    // getById("warning-message").style.display="none";
   }
 
   function deleteCookiesForSelectedDomain() {
-    cookiesList = httpTracker.browser.cookies.getAll({
-      domain: getById("delete_cookies").value
-    }, removeCookies);
+    const deleteDomainName = getById('domain_url').value.trim();
+    if (deleteDomainName.length > 3) { // tld min is 2 and add .
+      if (public_suffix_map.has(deleteDomainName)) {
+        return;
+      }
+      cookiesList = httpTracker.browser.cookies.getAll({
+        domain: deleteDomainName,
+      }, findRemoveCookies);
+      // dislayDeleteCookiesWarning = false;
+      // getById("warning-message").style.display="none";
+    }
   }
 
   function buildURLDetailsContainer(webEventIdDetails, detailsType) {
-    let tableContent = "";
-    let headersContent = "";
+    let tableContent = '';
+    let headersContent = '';
     if (webEventIdDetails) {
       tableContent = HEADER_CONTENT_BANNER;
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
-        if (key !== "responseHeaders" && key !== "requestHeaders") { // headers added by browser
-          if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
-            if (typeof value !== "object") {
+        if (key !== 'responseHeaders' && key !== 'requestHeaders') { // headers added by browser
+          if (!IGNORE_HEADERS.includes(key) && value !== undefined && value !== null) {
+            if (typeof value !== 'object') {
               tableContent += generateHeaderKeyValueContent(key, value);
             } else {
-              let content = "";
+              let content = '';
               Object.entries(value).forEach(([k, v]) => {
                 content += `${k}: ${JSON.stringify(v)}, `;
               });
@@ -354,11 +406,11 @@ let eventTracker = (function() {
             }
           }
         } else { // application headers
-          let headers = sortJsonByProperty(value, "name");
+          const headers = sortJsonByProperty(value, 'name');
           headersContent = generateHeaderDetails(headers);
         }
       });
-    } else if (detailsType === "responseDetails") {
+    } else if (detailsType === 'responseDetails') {
       tableContent = RESPONSE_NOT_AVAILABLE;
     } else {
       tableContent = REQUEST_NOT_AVAILABLE;
@@ -370,7 +422,7 @@ let eventTracker = (function() {
     if (maskFieldsPattern(key)) {
       value = value.toString().trim();
       if (value.length) {
-        value = value.charAt(0) + "*****" + value.charAt(value.length - 1);
+        value = value.charAt(0) + '*****' + value.charAt(value.length - 1);
       }
     }
     return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}`;
@@ -378,26 +430,26 @@ let eventTracker = (function() {
 
   function addMarkTag(text) {
     if (findPatterns.length) {
-      let findStr = new RegExp(findPatterns, "gi");
-      let markedText = text.toString().replace(findStr, (match) => `<mark>${match}</mark>`);
+      const findStr = new RegExp(findPatterns, 'gi');
+      const markedText = text.toString().replace(findStr, (match) => `<mark>${match}</mark>`);
       return markedText;
     }
     return text;
   }
 
   function buildRequestFormContainer(webEventIdRequestForm) {
-    let formData = "";
+    let formData = '';
     if (webEventIdRequestForm) {
       if (webEventIdRequestForm.formData) {
-        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (form fields data)</td></tr>";
+        formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (form fields data)</td></tr>';
         Object.entries(webEventIdRequestForm.formData).forEach(([key, value]) => {
           formData += generateHeaderKeyValueContent(key, value);
         });
       } else if (webEventIdRequestForm.raw) {
-        formData = "<tr><td colspan=2 class='web_event_detail_cookie'>Body (raw form data)</td></tr>";
-        for (let eachByte of webEventIdRequestForm.raw) {
-          let dataView = new DataView(eachByte.bytes);
-          let decodedString = decoder.decode(dataView);
+        formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (raw form data)</td></tr>';
+        for (const eachByte of webEventIdRequestForm.raw) {
+          const dataView = new DataView(eachByte.bytes);
+          const decodedString = decoder.decode(dataView);
           formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${addMarkTag(decodedString)}</td></tr>`;
         }
       }
@@ -406,12 +458,12 @@ let eventTracker = (function() {
   }
 
   function generateHeaderDetails(headers) {
-    let generalHeadersContent = "";
+    let generalHeadersContent = '';
     let banner = COOKIE_CONTENT_BANNER; // request cookies
-    let cookieContent = "";
-    let optimizedCookiesMap = new Map();
-    let unoptimizedCookiesList = [];
-    headers.forEach(header => {
+    let cookieContent = '';
+    const optimizedCookiesMap = new Map();
+    const unoptimizedCookiesList = [];
+    headers.forEach((header) => {
       // request cookies
       if (header.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
         cookieContent += generateRequestCookieDetails(header.value, DELIMITER_REQUEST_COOKIE);
@@ -444,14 +496,14 @@ let eventTracker = (function() {
 
   function generateRequestCookieDetails(cookieValue, cookieDelim) {
     // generally request cookies will not be duplicates
-    let cookieList = cookieValue.split(cookieDelim).sort(sortArray);
-    let cookieContent = "";
+    const cookieList = cookieValue.split(cookieDelim).sort(sortArray);
+    let cookieContent = '';
     // convert into map to avoid duplicate cookies though request cookies will not be duplicates
     // the order of cookies will be the order in which they were added to map
-    let cookieMap = new Map();
-    cookieList.forEach(cookie => {
+    const cookieMap = new Map();
+    cookieList.forEach((cookie) => {
       if (cookie) {
-        let firstOccurance = cookie.indexOf("=");
+        const firstOccurance = cookie.indexOf('=');
         if (firstOccurance > -1) {
           cookieMap.set(cookie.substring(0, firstOccurance), cookie.substring(firstOccurance + 1));
         }
@@ -459,16 +511,16 @@ let eventTracker = (function() {
     });
     cookieMap.forEach((value, key) => {
       cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}</td></tr>`;
-    })
+    });
     return cookieContent;
   }
 
   function generateResponseCookieDetails(cookieValue, cookieDelim) {
-    let cookieList = cookieValue.split(cookieDelim);
-    let cookieContent = "";
-    cookieList.forEach(cookie => {
+    const cookieList = cookieValue.split(cookieDelim);
+    let cookieContent = '';
+    cookieList.forEach((cookie) => {
       if (cookie) {
-        let cookieDetails = getCookieNameValue(cookie);
+        const cookieDetails = getCookieNameValue(cookie);
         cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieDetails.cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(cookieDetails.cookieValue)}</td></tr>`;
       }
     });
@@ -476,11 +528,11 @@ let eventTracker = (function() {
   }
 
   function setOptimizedCookiesMap(cookieValue, cookieDelim, optimizedCookiesMap) {
-    let cookieList = cookieValue.split(cookieDelim); // for FF
-    cookieList.forEach(cookie => {
+    const cookieList = cookieValue.split(cookieDelim); // for FF
+    cookieList.forEach((cookie) => {
       if (cookie) {
-        let key = "";
-        let cookieDetails = getCookieNameValue(cookie);
+        let key = '';
+        const cookieDetails = getCookieNameValue(cookie);
         if (cookieDetails.cookieName && cookieDetails.domain && cookieDetails.path) {
           key = `${cookieDetails.cookieName}:${cookieDetails.domain}:${cookieDetails.path}`;
         } else if (cookieDetails.cookieName && cookieDetails.domain) {
@@ -493,41 +545,40 @@ let eventTracker = (function() {
     });
   }
 
-  function removeCookies(cookies) {
-    let removedCookies = [];
-    for (let cookie of cookies) {
-      let protocol = cookie.secure ? "https:" : "http:";
-      let cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
-      let removed = httpTracker.browser.cookies.remove({
+  function findRemoveCookies(cookies) {
+    const removedCookies = [];
+    for (const cookie of cookies) {
+      const protocol = cookie.secure ? 'https:' : 'http:';
+      const cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
+      const removed = httpTracker.browser.cookies.remove({
         url: cookieUrl,
         name: cookie.name,
-        storeId: cookie.storeId
+        storeId: cookie.storeId,
       });
       removedCookies.push(removed);
     }
     Promise.all(removedCookies).then((values) => {
-      // console.log(values.length);
-    })
+      getById('delete_cookies_banner').innerHTML = `  Delete cookies : deleted=${values.length}`;
+    });
   }
 
   function getCookieNameValue(cookie) {
-    let firstOccurance = cookie.indexOf("=");
-    let cookieObj = {};
+    const firstOccurance = cookie.indexOf('=');
+    const cookieObj = {};
     if (firstOccurance > -1) {
       cookieObj.cookieName = cookie.substring(0, firstOccurance);
       cookieObj.cookieValue = cookie.substring(firstOccurance + 1);
       // https://tools.ietf.org/html/rfc6265#page-10
       // https://tools.ietf.org/html/rfc6265#section-4.1.1
       if (cookieObj.cookieValue) {
-        stringToArray(cookieObj.cookieValue, ";").forEach(attribute => {
+        stringToArray(cookieObj.cookieValue, ';').forEach((attribute) => {
           if (attribute) {
-            let attributeKeyValue = attribute.trim().split("=");
+            const attributeKeyValue = attribute.trim().split('=');
             // toLowerCase : chrome sends as domain, FF sends as Domain
-            if (attributeKeyValue[0].toLowerCase() === "domain" || attributeKeyValue[0].toLowerCase() === "path") {
+            if (attributeKeyValue[0].toLowerCase() === 'domain' || attributeKeyValue[0].toLowerCase() === 'path') {
               cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
             }
-            if (attributeKeyValue[0].toLowerCase() === "domain") {
-              // console.log(attributeKeyValue[1]);
+            if (attributeKeyValue[0].toLowerCase() === 'domain') {
               selectedDomain = attributeKeyValue[1];
             }
           }
@@ -538,9 +589,9 @@ let eventTracker = (function() {
   }
 
   function displayHiddenURLList() {
-    let urlsList = getHiddenUrlsList();
+    const urlsList = getHiddenUrlsList();
     while (urlsList.length) {
-      urlsList[0].classList.remove("web_event_list_hide");
+      urlsList[0].classList.remove('web_event_list_hide');
     }
   }
 
@@ -554,18 +605,18 @@ let eventTracker = (function() {
     if (multipleSearchPatterns.length == 0) {
       displayHiddenURLList();
     } else {
-      let allUrlsList = Array.prototype.slice.call(getAllUrlsList());
-      for (let element of allUrlsList) {
-        let string = element.childNodes[filterWithKey].innerHTML.toLowerCase();
+      const allUrlsList = Array.prototype.slice.call(getAllUrlsList());
+      for (const element of allUrlsList) {
+        const string = element.childNodes[filterWithKey].innerHTML.toLowerCase();
         if (!isANDFilter) {
-          if (multipleSearchPatterns.some(v => string.includes(v))) {
-            element.classList.remove("web_event_list_hide");
+          if (multipleSearchPatterns.some((v) => string.includes(v))) {
+            element.classList.remove('web_event_list_hide');
           } else {
-            element.classList.add("web_event_list_hide");
+            element.classList.add('web_event_list_hide');
           }
         } else {
           let index = 0;
-          multipleSearchPatterns.forEach(e => {
+          multipleSearchPatterns.forEach((e) => {
             if (index !== -1) {
               index = string.indexOf(e, index);
               if (index !== -1) {
@@ -574,9 +625,9 @@ let eventTracker = (function() {
             }
           });
           if (index === -1) {
-            element.classList.add("web_event_list_hide");
+            element.classList.add('web_event_list_hide');
           } else {
-            element.classList.remove("web_event_list_hide");
+            element.classList.remove('web_event_list_hide');
           }
         }
       }
@@ -584,17 +635,17 @@ let eventTracker = (function() {
   }
 
   function removeEntry(node) {
-    let requestIdToRemove = node.id.substring(16, node.id.length);
+    const requestIdToRemove = node.id.substring(16, node.id.length);
     requestIdRedirectCount.delete(requestIdToRemove);
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
     requestFormData.delete(requestIdToRemove);
     node.remove();
     if (requestIdToRemove === selectedWebEventRequestId) {
-      getById("delete_selected_web_event").disabled = true;
-      getById("response_headers_details").innerHTML = "";
-      getById("request_headers_details").innerHTML = "";
-      getById("web_details_selected_container").style = "visibility: hidden;";
+      getById('delete_selected_web_event').disabled = true;
+      getById('response_headers_details').innerHTML = '';
+      getById('request_headers_details').innerHTML = '';
+      getById('web_details_selected_container').style = 'visibility: hidden;';
       selectedWebEventRequestId = null;
       selectedEvent = null;
     }
@@ -604,13 +655,13 @@ let eventTracker = (function() {
    *  This method always returns a live collection of hidden URLs list
    */
   function getHiddenUrlsList() {
-    return getById("urls_list").getElementsByClassName("web_event_list_blank web_event_list_hide"); // this returns a live collection
+    return getById('urls_list').getElementsByClassName('web_event_list_blank web_event_list_hide'); // this returns a live collection
   }
 
   function getVisibleUrlsList() {
-    let allUrls = getAllUrlsList(); // this gives live list
-    let visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
-      return !eachUrl.classList.contains("web_event_list_hide");
+    const allUrls = getAllUrlsList(); // this gives live list
+    const visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
+      return !eachUrl.classList.contains('web_event_list_hide');
     });
     return visibleUrls;
   }
@@ -619,34 +670,49 @@ let eventTracker = (function() {
    *  This method always returns a live collection of all URLs list (hidden and not hidden)
    */
   function getAllUrlsList() {
-    return getById("urls_list").getElementsByClassName("web_event_list_blank"); // this returns a live collection
+    return getById('urls_list').getElementsByClassName('web_event_list_blank'); // this returns a live collection
   }
 
   function bindDefaultEvents() {
-    getById("track_urls_pattern").oninput = setPatternsToInclude;
-    getById("exclude_urls_pattern").oninput = setPatternsToExclude;
-    getById("block_urls_pattern").oninput = setPatternsToBlock;
-    getById("mask_patterns_list").oninput = setPatternsToMask;
-    getById("enable_mask_patterns").onchange = maskFieldsCheckbox;
-    getById("include_form_data").onchange = captureFormDataCheckbox;
-    getById("optimize_response_cookies").onchange = optimizeResponseCookiesCheckbox;
-    getById("filter_web_events").oninput = filterEvents;
-    getById("web_event_filter_key").oninput = filterEvents;
-    getById("clear_filter_web_events").onclick = clearFilterBoxDisplayAllURLsAndUpdateButtons;
-    getById("delete_all_filtered_web_events").onclick = deleteFilteredEvents;
-    getById("delete_selected_web_event").onclick = removeSelectedEvent;
-    getById("delete_all_web_events").onclick = clearAllEvents;
-    getById("urls_list").onclick = setEventRowAsSelected;
-    getById("urls_list").onkeydown = updateSelectedEventToContainer;
-    getById("toggle_track_web_events").onclick = updateToggleCaptureEvents;
-    getById("header_button_remove_0").onclick = clearAndRemoveHeaderContents;
-    getById("header_button_add_0").onclick = addNewHeaderContainer;
-    getById("add_modify_headers").oninput = generateHeadersToAddOrModify; // either on text change
-    getById("find_in_details_pattern").oninput = setFindPatterns;
-    getById("delete_cookies_button").onclick = deleteCookiesForSelectedDomain;
-    getById("preferences").addEventListener("click", function() {
+    getById('track_urls_pattern').oninput = setPatternsToInclude;
+    getById('exclude_urls_pattern').oninput = setPatternsToExclude;
+    getById('block_urls_pattern').oninput = setPatternsToBlock;
+    getById('mask_patterns_list').oninput = setPatternsToMask;
+    getById('enable_mask_patterns').onchange = maskFieldsCheckbox;
+    getById('include_form_data').onchange = captureFormDataCheckbox;
+    getById('optimize_response_cookies').onchange = optimizeResponseCookiesCheckbox;
+    getById('filter_web_events').oninput = filterEvents;
+    getById('web_event_filter_key').oninput = filterEvents;
+    getById('clear_filter_web_events').onclick = clearFilterBoxDisplayAllURLsAndUpdateButtons;
+    getById('delete_all_filtered_web_events').onclick = deleteFilteredEvents;
+    getById('delete_selected_web_event').onclick = removeSelectedEvent;
+    getById('delete_all_web_events').onclick = clearAllEvents;
+    getById('urls_list').onclick = setEventRowAsSelected;
+    getById('urls_list').onkeydown = updateSelectedEventToContainer;
+    getById('toggle_track_web_events').onclick = updateToggleCaptureEvents;
+    getById('header_button_remove_0').onclick = clearAndRemoveHeaderContents;
+    getById('header_button_add_0').onclick = addNewHeaderContainer;
+    getById('add_modify_headers').oninput = generateHeadersToAddOrModify; // either on text change
+    getById('find_in_details_pattern').oninput = setFindPatterns;
+    getById('domain_url').oninput = setDomainInvalidWarningMessage;
+    getById('delete_cookies').onclick = deleteCookiesForSelectedDomain;
+    getById('find_cookies').onclick = findCookiesForSelectedDomain;
+    getById('preferences').addEventListener('click', function() {
       openAddonOptions();
     });
+  }
+
+  function setDomainInvalidWarningMessage(event) {
+    getById('delete_cookies_banner').innerHTML = `Delete cookies :`;
+    let text = event.target.value.trim();
+    if (text.startsWith('.')) {
+      text = text.substring(1);
+    }
+    if ((text && text !== '.' && public_suffix_map.has(text)) || text.length < 4 || !text) {
+      getById('delete_cookies').disabled = true;
+    } else {
+      getById('delete_cookies').disabled = false;
+    }
   }
 
   function setFindPatterns(event) {
@@ -660,117 +726,117 @@ let eventTracker = (function() {
   }
 
   function generateHeadersToAddOrModify() {
-    let headersObject = [];
-    let conatiners = getByClassNames("single_header_container");
+    const headersObject = [];
+    const conatiners = getByClassNames('single_header_container');
     Array.prototype.filter.call(conatiners, function(headerContainer) {
       index = headerContainer.id.substring(15);
-      headerName = headerContainer.querySelector(".header_input_name").value.trim();
+      headerName = headerContainer.querySelector('.header_input_name').value.trim();
       if (headerName) {
-        if (!FORBIDDEN_HEADERS.some(v => headerName.toLowerCase() === v.toLowerCase()) &&
-          !FORBIDDEN_HEADERS_PATTERN.some(v => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
-          headerContainer.querySelector(".add_header_name").style.color = "";
-          if (headerContainer.querySelector(".header_input_apply").checked) {
-            let x = {};
+        if (!FORBIDDEN_HEADERS.some((v) => headerName.toLowerCase() === v.toLowerCase()) &&
+          !FORBIDDEN_HEADERS_PATTERN.some((v) => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
+          headerContainer.querySelector('.add_header_name').style.color = '';
+          if (headerContainer.querySelector('.header_input_apply').checked) {
+            const x = {};
             x.name = headerName;
-            x.value = headerContainer.querySelector(".header_input_value").value;
-            x.url = headerContainer.querySelector(".header_input_url").value.trim();
+            x.value = headerContainer.querySelector('.header_input_value').value;
+            x.url = headerContainer.querySelector('.header_input_url').value.trim();
             headersObject.push(x);
           }
         } else {
-          headerContainer.querySelector(".add_header_name").style.color = "red";
+          headerContainer.querySelector('.add_header_name').style.color = 'red';
         }
       }
     });
     setRequestHeadersList(headersObject);
     if (headersObject.length || conatiners.length) {
-      getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers: ${headersObject.length}`;
+      getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers: ${headersObject.length}`;
     } else {
-      getById("add_modify_headers_banner").innerHTML = `Add/Modify request headers:`;
+      getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers:`;
     }
   }
 
   function clearAndRemoveHeaderContents(event) {
-    if (event.target.id.substring(21) === "0") {
-      getById("header_name_0").value = "";
-      getById("header_value_0").value = "";
-      getById("header_url_0").value = "";
+    if (event.target.id.substring(21) === '0') {
+      getById('header_name_0').value = '';
+      getById('header_value_0').value = '';
+      getById('header_url_0').value = '';
     } else {
-      getById("header_details_" + event.target.id.substring(21)).remove();
+      getById('header_details_' + event.target.id.substring(21)).remove();
     }
     generateHeadersToAddOrModify();
   }
 
   function addNewHeaderContainer(event) {
-    let currentContainers = getByClassNames("single_header_container");
-    let nextIndex = currentContainers.length;
+    const currentContainers = getByClassNames('single_header_container');
+    const nextIndex = currentContainers.length;
 
-    var headerDiv = document.createElement('div');
-    headerDiv.id = "header_details_" + nextIndex;
-    headerDiv.classList = "single_header_container";
+    const headerDiv = document.createElement('div');
+    headerDiv.id = 'header_details_' + nextIndex;
+    headerDiv.classList = 'single_header_container';
 
-    var urlDiv = document.createElement("div");
-    urlDiv.classList = "add_header_url";
-    var urlTextNode = document.createTextNode("URL ");
-    var urlInput = document.createElement("input");
-    urlInput.setAttribute("type", "text");
-    urlInput.id = "header_url_" + nextIndex;
-    urlInput.classList = "header_input_url";
+    const urlDiv = document.createElement('div');
+    urlDiv.classList = 'add_header_url';
+    const urlTextNode = document.createTextNode('URL ');
+    const urlInput = document.createElement('input');
+    urlInput.setAttribute('type', 'text');
+    urlInput.id = 'header_url_' + nextIndex;
+    urlInput.classList = 'header_input_url';
     urlDiv.append(urlTextNode);
     urlDiv.append(urlInput);
 
-    var valueDiv = document.createElement("div");
-    valueDiv.classList = "add_header_value";
-    var valueTextNode = document.createTextNode("Value ");
-    var valueInput = document.createElement("input");
-    valueInput.setAttribute("type", "text");
-    valueInput.id = "header_value_" + nextIndex;
-    valueInput.classList = "header_input_value";
+    const valueDiv = document.createElement('div');
+    valueDiv.classList = 'add_header_value';
+    const valueTextNode = document.createTextNode('Value ');
+    const valueInput = document.createElement('input');
+    valueInput.setAttribute('type', 'text');
+    valueInput.id = 'header_value_' + nextIndex;
+    valueInput.classList = 'header_input_value';
     valueDiv.append(valueTextNode);
     valueDiv.append(valueInput);
 
-    var nameDiv = document.createElement("div");
-    nameDiv.classList = "add_header_name";
-    var nameTextNode = document.createTextNode("Name ");
-    var nameInput = document.createElement("input");
-    nameInput.setAttribute("type", "text");
-    nameInput.id = "header_name_" + nextIndex;
-    nameInput.classList = "header_input_name";
+    const nameDiv = document.createElement('div');
+    nameDiv.classList = 'add_header_name';
+    const nameTextNode = document.createTextNode('Name ');
+    const nameInput = document.createElement('input');
+    nameInput.setAttribute('type', 'text');
+    nameInput.id = 'header_name_' + nextIndex;
+    nameInput.classList = 'header_input_name';
     nameDiv.append(nameTextNode);
     nameDiv.append(nameInput);
 
-    var applyDiv = document.createElement("div");
-    applyDiv.classList = "add_header_apply";
-    var applyInput = document.createElement("input");
-    applyInput.setAttribute("type", "checkbox");
-    applyInput.id = "header_apply_" + nextIndex;
-    applyInput.classList = "header_input_apply";
-    var applyLabel = document.createElement("label");
-    applyLabel.htmlFor = "header_apply_" + nextIndex;
-    applyLabel.innerHTML = "Apply";
+    const applyDiv = document.createElement('div');
+    applyDiv.classList = 'add_header_apply';
+    const applyInput = document.createElement('input');
+    applyInput.setAttribute('type', 'checkbox');
+    applyInput.id = 'header_apply_' + nextIndex;
+    applyInput.classList = 'header_input_apply';
+    const applyLabel = document.createElement('label');
+    applyLabel.htmlFor = 'header_apply_' + nextIndex;
+    applyLabel.innerHTML = 'Apply';
     applyDiv.append(applyInput, applyLabel);
 
-    var headerButtonsDiv = document.createElement("div");
-    headerButtonsDiv.style = "width: 12%;float: left;text-align: right;";
+    const headerButtonsDiv = document.createElement('div');
+    headerButtonsDiv.style = 'width: 12%;float: left;text-align: right;';
 
-    var simpleDiv = document.createElement("div");
-    simpleDiv.style = "display: flex;";
+    const simpleDiv = document.createElement('div');
+    simpleDiv.style = 'display: flex;';
 
-    var removeButton = document.createElement("input");
-    removeButton.setAttribute("type", "button");
-    removeButton.value = "-";
-    removeButton.id = "header_button_remove_" + nextIndex;
+    const removeButton = document.createElement('input');
+    removeButton.setAttribute('type', 'button');
+    removeButton.value = '-';
+    removeButton.id = 'header_button_remove_' + nextIndex;
     removeButton.onclick = clearAndRemoveHeaderContents;
 
-    var removeDiv = document.createElement("div");
-    removeDiv.style = "margin-right: 5px;float: left;flex-grow: 1;";
+    const removeDiv = document.createElement('div');
+    removeDiv.style = 'margin-right: 5px;float: left;flex-grow: 1;';
     removeDiv.append(removeButton);
 
-    var addButton = document.createElement("input");
-    addButton.setAttribute("type", "button");
-    addButton.value = "+";
-    addButton.style = "visibility: hidden;";
+    const addButton = document.createElement('input');
+    addButton.setAttribute('type', 'button');
+    addButton.value = '+';
+    addButton.style = 'visibility: hidden;';
 
-    var addDiv = document.createElement("div");
+    const addDiv = document.createElement('div');
     addDiv.append(addButton);
 
     simpleDiv.append(removeDiv, addDiv);
@@ -782,24 +848,24 @@ let eventTracker = (function() {
   function updateToggleCaptureEvents() {
     if (toggleCaptureEvents) {
       toggleCaptureEvents = false;
-      getById("toggle_track_web_events").innerHTML = "Resume tracker";
+      getById('toggle_track_web_events').innerHTML = 'Resume tracker';
     } else {
       toggleCaptureEvents = true;
-      getById("toggle_track_web_events").innerHTML = "Pause tracker";
+      getById('toggle_track_web_events').innerHTML = 'Pause tracker';
     }
   }
 
   function captureFormDataCheckbox() {
-    captureFormDataCheckboxValue = getById("include_form_data").checked;
+    captureFormDataCheckboxValue = getById('include_form_data').checked;
   }
 
   function optimizeResponseCookiesCheckbox() {
-    optimizeResponseCookies = getById("optimize_response_cookies").checked;
+    optimizeResponseCookies = getById('optimize_response_cookies').checked;
     displayEventProperties();
   }
 
   function maskFieldsCheckbox() {
-    maskAttributesCheckboxValue = getById("enable_mask_patterns").checked;
+    maskAttributesCheckboxValue = getById('enable_mask_patterns').checked;
     displayEventProperties();
   }
 
@@ -818,16 +884,16 @@ let eventTracker = (function() {
     allRequestHeaders.clear();
     allResponseHeaders.clear();
     addedRequestId.length = 0;
-    getById("web_event_details_selected_request").style.border = "none";
-    getById("web_event_details_selected_response").style.border = "none";
-    getById("response_headers_details").innerHTML = "";
-    getById("request_headers_details").innerHTML = "";
-    getById("urls_list").innerHTML = "";
-    getById("web_details_selected_container").style = "visibility: hidden;";
+    getById('web_event_details_selected_request').style.border = 'none';
+    getById('web_event_details_selected_response').style.border = 'none';
+    getById('response_headers_details').innerHTML = '';
+    getById('request_headers_details').innerHTML = '';
+    getById('urls_list').innerHTML = '';
+    getById('web_details_selected_container').style = 'visibility: hidden;';
   }
 
   function deleteFilteredEvents() {
-    let visibleUrlList = getVisibleUrlsList();
+    const visibleUrlList = getVisibleUrlsList();
     if (visibleUrlList) {
       for (node of visibleUrlList) {
         removeEntry(node);
@@ -843,13 +909,13 @@ let eventTracker = (function() {
   }
 
   function clearFilterBox() {
-    filterWithValue = getById("filter_web_events").value = "";
-    multipleSearchPatterns = "";
+    filterWithValue = getById('filter_web_events').value = '';
+    multipleSearchPatterns = '';
   }
 
   function updateSelectedEventToContainer(event) {
-    if (event.target && event.target.classList.contains("web_event_list_container")) {
-      let selectedEvent = getSelectedEvent();
+    if (event.target && event.target.classList.contains('web_event_list_container')) {
+      const selectedEvent = getSelectedEvent();
       selectNextEligibleEvent(selectedEvent, event.keyCode);
     }
   }
@@ -858,7 +924,7 @@ let eventTracker = (function() {
     if (keyCode == 40) { // down arrow
       let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
       while (nextElement) {
-        if (nextElement.classList.contains("web_event_list_hide")) {
+        if (nextElement.classList.contains('web_event_list_hide')) {
           nextElement = nextElement.nextElementSibling;
         } else {
           markSelectedRequest(nextElement.id);
@@ -868,7 +934,7 @@ let eventTracker = (function() {
     } else if (keyCode == 38) { // up arrow
       let previousElement = selectedEvent ? selectedEvent.previousElementSibling : selectedEvent;
       while (previousElement) {
-        if (previousElement.classList.contains("web_event_list_hide")) {
+        if (previousElement.classList.contains('web_event_list_hide')) {
           previousElement = previousElement.previousElementSibling;
         } else {
           markSelectedRequest(previousElement.id);
@@ -882,16 +948,16 @@ let eventTracker = (function() {
     let selectedEvent = getSelectedEvent();
     if (selectedEvent) {
       removeEntry(selectedEvent);
-      getById("delete_selected_web_event").disabled = true;
+      getById('delete_selected_web_event').disabled = true;
       selectedEvent = null;
     }
   }
 
   function setEventRowAsSelected(event) {
-    if (event.target && event.target.parentElement.classList.contains("web_event_list_blank")) {
+    if (event.target && event.target.parentElement.classList.contains('web_event_list_blank')) {
       markSelectedRequest(event.target.parentElement.id);
-      getById("delete_selected_web_event").disabled = false;
-      getById("delete_selected_web_event").classList.remove("web_event_list_filtered");
+      getById('delete_selected_web_event').disabled = false;
+      getById('delete_selected_web_event').classList.remove('web_event_list_filtered');
     }
   }
 
@@ -907,10 +973,10 @@ let eventTracker = (function() {
   }
 
   function updateFilterOptions() {
-    filterWithKey = getById("web_event_filter_key").selectedOptions[0].value; // get the selected key(index) from drop down
-    filterWithValue = getById("filter_web_events").value.toLowerCase().trim(); // get the value from filter text box
+    filterWithKey = getById('web_event_filter_key').selectedOptions[0].value; // get the selected key(index) from drop down
+    filterWithValue = getById('filter_web_events').value.toLowerCase().trim(); // get the value from filter text box
     isANDFilter = false;
-    multipleSearchPatterns = "";
+    multipleSearchPatterns = '';
     if (filterWithValue) {
       if (filterWithValue.length < 3 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
         // invalid search filter text, do nothing
@@ -955,14 +1021,14 @@ let eventTracker = (function() {
   }
 
   function setInitialStateOfPage() {
-    filterWithValue = getById("filter_web_events").value;
-    captureFormDataCheckboxValue = getById("include_form_data").checked;
-    optimizeResponseCookies = getById("optimize_response_cookies").checked;
-    includeURLsList = stringToArray(getById("track_urls_pattern").value);
-    excludeURLsList = stringToArray(getById("exclude_urls_pattern").value);
-    maskedAttributesList = stringToArray(getById("mask_patterns_list").value);
-    maskAttributesCheckboxValue = getById("enable_mask_patterns").checked;
-    blockURLSList = stringToArray(getById("block_urls_pattern").value);
+    filterWithValue = getById('filter_web_events').value;
+    captureFormDataCheckboxValue = getById('include_form_data').checked;
+    optimizeResponseCookies = getById('optimize_response_cookies').checked;
+    includeURLsList = stringToArray(getById('track_urls_pattern').value);
+    excludeURLsList = stringToArray(getById('exclude_urls_pattern').value);
+    maskedAttributesList = stringToArray(getById('mask_patterns_list').value);
+    maskAttributesCheckboxValue = getById('enable_mask_patterns').checked;
+    blockURLSList = stringToArray(getById('block_urls_pattern').value);
     updateAllButtons();
     hideOrShowURLList();
     hideOrShowInfoIcons();
@@ -970,34 +1036,34 @@ let eventTracker = (function() {
 
   function hideOrShowInfoIcons() {
     if (globalIncludeURLsList && globalIncludeURLsList.length) {
-      let element = getById("info_include");
-      element.innerHTML = "&#9432;";
+      const element = getById('info_include');
+      element.innerHTML = '&#9432;';
       element.title = `Patterns extended from preferences: ${globalIncludeURLsList}`;
-      element.style.color = "red";
+      element.style.color = 'red';
     } else {
-      let element = getById("info_include");
-      element.innerHTML = "";
-      element.title = "";
+      const element = getById('info_include');
+      element.innerHTML = '';
+      element.title = '';
     }
     if (globalExcludeURLsList && globalExcludeURLsList.length) {
-      let element = getById("info_exclude");
-      element.innerHTML = "&#9432;";
+      const element = getById('info_exclude');
+      element.innerHTML = '&#9432;';
       element.title = `Patterns extended from preferences: ${globalExcludeURLsList}`;
-      element.style.color = "red";
+      element.style.color = 'red';
     } else {
-      let element = getById("info_exclude");
-      element.innerHTML = "";
-      element.title = "";
+      const element = getById('info_exclude');
+      element.innerHTML = '';
+      element.title = '';
     }
     if (globalMaskPatternsList && globalMaskPatternsList.length) {
-      let element = getById("info_mask");
-      element.innerHTML = "&#9432;";
+      const element = getById('info_mask');
+      element.innerHTML = '&#9432;';
       element.title = `Patterns extended from preferences: ${globalMaskPatternsList}`;
-      element.style.color = "red";
+      element.style.color = 'red';
     } else {
-      let element = getById("info_mask");
-      element.innerHTML = "";
-      element.title = "";
+      const element = getById('info_mask');
+      element.innerHTML = '';
+      element.title = '';
     }
   }
 
@@ -1009,55 +1075,54 @@ let eventTracker = (function() {
 
   function updateButonClearFilterWebEvents() {
     if (!filterWithValue) {
-      getById("clear_filter_web_events").disabled = true;
+      getById('clear_filter_web_events').disabled = true;
     } else {
-      getById("clear_filter_web_events").disabled = false;
+      getById('clear_filter_web_events').disabled = false;
     }
   }
 
   function updateButonDeleteAllFilteredWebEvents() {
     if (filterWithValue && filterWithValue.length > 2) {
-      let visibleUrlList = getVisibleUrlsList();
+      const visibleUrlList = getVisibleUrlsList();
       if (visibleUrlList && visibleUrlList.length > 0) {
-        getById("delete_all_filtered_web_events").disabled = false;
+        getById('delete_all_filtered_web_events').disabled = false;
       } else {
-        getById("delete_all_filtered_web_events").disabled = true;
+        getById('delete_all_filtered_web_events').disabled = true;
       }
     } else {
-      getById("delete_all_filtered_web_events").disabled = true;
+      getById('delete_all_filtered_web_events').disabled = true;
     }
-
   }
 
   function updateButonDeleteSelectedWebEvent() {
-    let selectedEvent = getSelectedEvent();
+    const selectedEvent = getSelectedEvent();
     if (!selectedEvent) {
-      getById("delete_selected_web_event").disabled = true;
+      getById('delete_selected_web_event').disabled = true;
     }
   }
 
   function markSelectedRequest(requestId) {
-    getById("web_event_detail_request_head").style.removeProperty("display");
-    getById("web_event_detail_response_head").style.removeProperty("display");
+    getById('web_event_detail_request_head').style.removeProperty('display');
+    getById('web_event_detail_response_head').style.removeProperty('display');
     deselectEvent();
-    let element = getById(requestId);
-    element.classList.add("web_event_list_selected");
+    const element = getById(requestId);
+    element.classList.add('web_event_list_selected');
     selectedWebEventRequestId = requestId.substring(16);
     displayEventProperties();
   }
 
   function deselectEvent() {
-    let selectedEvent = getSelectedEvent();
+    const selectedEvent = getSelectedEvent();
     if (selectedEvent) {
-      selectedEvent.classList.remove("web_event_list_selected");
+      selectedEvent.classList.remove('web_event_list_selected');
     }
   }
 
   function getSelectedEvent() {
-    return getByClassNames("web_event_list_selected")[0];
+    return getByClassNames('web_event_list_selected')[0];
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener('DOMContentLoaded', function() {
     document.title = getManifestDetails().title;
     bindDefaultEvents();
     setInitialStateOfPage();
@@ -1070,7 +1135,7 @@ let eventTracker = (function() {
   }
 
   function getChangesFromStorge(changes, namespace) {
-    for (var key in changes) {
+    for (const key in changes) {
       if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
         globalExcludeURLsList = changes[key].newValue;
       } else if (key === httpTracker.STORAGE_KEY_INCLUDE_PATTERN) {
@@ -1087,6 +1152,6 @@ let eventTracker = (function() {
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
 
   return {
-    logRequestDetails: logRequestDetails
-  }
+    logRequestDetails: logRequestDetails,
+  };
 })();

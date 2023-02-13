@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="/src/css/styles.css" />
+  <script type="text/javascript" src="/src/js/httpTrackerPublicTLD.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerConstants.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
   <script type="text/javascript" src="/src/js/httpTrackerProcessor.js"></script>
@@ -97,73 +98,86 @@
               </div>
             </div>
           </div>
-          <div class="empty_div">&nbsp;</div>
         </div>
       </div>
       <div class="right_pane">
-        <div style="float: left; margin-right: 20px; height: 30px;" title="Check this to track form data along with headers and cookies">
-          <input id="include_form_data" type="checkbox" checked />
-          <label for="include_form_data">
-            Capture form data
-          </label>
-        </div>
-        <div style="float: left; margin-right: 20px; height: 30px;">
-          <input id="optimize_response_cookies" type="checkbox" checked>
-          <label for="optimize_response_cookies" title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize response cookies</label>
+        <div style="width: 90%;">
+          <div style="float: left; height: 30px; width: 20%;" title="Check this to track form data along with headers and cookies">
+            <input id="include_form_data" type="checkbox" checked />
+            <label for="include_form_data">
+              Capture form data
+            </label>
+          </div>
+          <div style="float: left; height: 30px; width: 70%;">
+            <input id="optimize_response_cookies" type="checkbox" checked>
+            <label for="optimize_response_cookies" title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize response cookies</label>
+          </div>
         </div>
         <div style="height: 30px;" title="Global preferences to persist across browser sessions.">
           <button id="preferences" type="button" class="web_event_button_preferences">Preferences</button>
         </div>
-        <div style="height: 30px;">
-        </div>
-        <div style="height: 30px;" title="Mask any attributes (headers, form data) containing one of the words from this list while dispalying. Will not mask if the data is raw data for a POST event. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
+        <div style="height: 30px;">&nbsp;</div>
+        <div style="height: 30px; width: 90%;" title="Mask any attributes (headers, form data) containing one of the words from this list while dispalying. Will not mask if the data is raw data for a POST event. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
           <div style="width: 20%; float: left;">
             Mask fields :
           </div>
-          <div style="float: left;width: 58%;">
-            <input id="mask_patterns_list" type="text" placeholder="Mask headers, form fields matching comma-separated pattern(s)" style="width: 99%" value="" />
+          <div style="width: 80%; float: left;">
+            <div style="float: left; width: 80%;">
+              <input id="mask_patterns_list" type="text" placeholder="Mask headers, form fields matching comma-separated pattern(s)" style="width: 99%" value="" />
+            </div>
+            <div id="info_mask" style="float: left; width: 2%;">
+              &nbsp;
+            </div>
+            <div style="text-align: right;">
+              <input id="enable_mask_patterns" type="checkbox" checked />
+              <label for="enable_mask_patterns">Mask fields</label>
+            </div>
           </div>
-          <div id="info_mask" style="float: left;width: 2%;">
-          </div>
-          <div style="float: left; width: 15%;text-align: right;">
-            <input id="enable_mask_patterns" type="checkbox" checked />
-            <label for="enable_mask_patterns">Mask fields</label>
-          </div>
-          <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;" title="Find content in the details pane of the selected url">
+        <div style="height: 30px; width: 90%;" title="Find content in the details pane of the selected url">
           <div style="width: 20%; float: left;">
             Find in details :
           </div>
-          <div style="float: left;width: 75%;">
-            <input id="find_in_details_pattern" type="text" placeholder="Find text in details containing words" style="width: 100%" value="" />
+          <div style="float: left;width: 80%;">
+            <div style="float: left;width: 80%;">
+              <input id="find_in_details_pattern" type="text" placeholder="Find text in details containing words"
+                style="width: 99%" value="" />
+            </div>
           </div>
-          <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;">
-          <div style="width: 20%; float: left;">
-            <button id="delete_cookies_button" type="button" class="web_event_button_delete_all" title="Delete all cookies for this domain">Delete cookies</button>
+        <div id="delete_cookies_container" style="height: 30px; margin-bottom: 10px; width: 90%;"
+          title="Provide a valid domain to delete all cookies of that domain. Deleting cookies of TLD domains are not allowed.&#013;&#013;examples&#013;&#013;1: Deleting cookies for google.com domain only&#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google.com&#013;2: Deleting all cookies for google.com and its subdomains&#013;&nbsp;&nbsp;&nbsp;&nbsp;url:.google.com (NOTE the . as a prefix)&#013;&#013;NOTES:&#013;&nbsp;&nbsp;1: Deleting cookies for forbidden domains is not allowed and will mark the domain label in RED color for indication.&#013;&nbsp;&nbsp;2:Its always good to keep more specific the url.">
+          <div id="delete_cookies_banner" style="width: 20%; float: left;">
+            Delete cookies :
           </div>
-          <div style="float: left;width: 75%;">
-            <input id="delete_cookies" type="text" placeholder="Enter a valid domain name to delete cookies" style="width: 100%" value="" />
+          <div id="delete_cookies_text" style="width: 80%;float: left;">
+            <div id="cookie_domain_url" style="float: left;width: 80%;">
+              <input id="domain_url" type="text" style="width: 99%" placeholder="Enter url / domain to delete cookies"
+                value="" />
+            </div>
+            <div style="float: right;">
+              <button id="find_cookies" type="button">Find</button>
+              <button id="delete_cookies" type="button" disabled>Delete</button>
+            </div>
           </div>
-          <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;">
-          <div style="width: 20%; float: left; text-align: center;">
-            <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered" title="Delete all filtered list of events">Delete filtered</button>
-          </div>
-          <div style="width: 20%; float: left; text-align: center;">
-            <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected" title="Delete selected event">Delete selected</button>
-          </div>
-          <div style="width: 20%; float:left; text-align: center;">
-            <button id="delete_all_web_events" type="button" class="web_event_button_delete_all" title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete all</button>
-          </div>
-          <div style="width: 20%; float:left; text-align: center;">
-            <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track" title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
-          </div>
-          <div style="width: 20%; float:left; text-align: center;">
-            <button id="delete_cookies" type="button" class="web_event_button_toggle_track" title="Delete all cookies for the selected domain">Delete cookies</button>
+        <div style="height: 30px; width: 90%;" title="Find content in the details pane of the selected url">
+          <div style="width: 20%; float: left;">&nbsp;</div>
+          <div style="float: left;width: 80%;">
+            <div style="float: left;width: 80%;">
+              <div style=" width: 25%; float: left; text-align: center;">
+                <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered" title="Delete all filtered list of events">Delete filtered</button>
+              </div>
+              <div style="width: 25%; float: left; text-align: center;">
+                <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected" title="Delete selected event">Delete selected</button>
+              </div>
+              <div style="width: 25%; float:left; text-align: center;">
+                <button id="delete_all_web_events" type="button" class="web_event_button_delete_all" title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete all</button>
+              </div>
+              <div style="width: 25%; float:left; text-align: center;">
+                <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track" title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
