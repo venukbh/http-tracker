@@ -2,9 +2,7 @@
   "author": "Venu Madhav",
   "background":
   {
-    "scripts": [
-      "/src/js/httpTrackerConstants.js", "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
-    ]
+    "page":"/src/html/http-tracker.html"
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
   "manifest_version": 2,
