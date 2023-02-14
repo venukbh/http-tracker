@@ -1,43 +1,45 @@
 const bringToFront = {
-  focused: true
+  focused: true,
 };
 
 const createWindowProperties = {
-  type: "popup",
+  type: 'popup',
   url: httpTracker.browser.extension.getURL(httpTracker.PAGE_PATH),
-  state: httpTracker.isFF ? "maximized" : "normal"
+  state: httpTracker.isFF ? 'maximized' : 'normal',
 };
 
 // open the addon options window, or if already opened, bring to front preventing multiple windows
 function openAddonOptions() {
-  httpTracker.browser.windows.getAll({ "populate": true }, getAddonOptions);
+  httpTracker.browser.windows.getAll({
+    'populate': true,
+  }, getAddonOptions);
 }
 
 function getAddonOptions(details) {
   let existingWindow;
   if (details.length > 0) {
-    details.some(eachWindow => {
-      if (eachWindow.tabs && eachWindow.tabs.some(tab => tab.url.includes("/src/html/options.html"))) {
+    details.some((eachWindow) => {
+      if (eachWindow.tabs && eachWindow.tabs.some((tab) => tab.url.includes('/src/html/options.html'))) {
         existingWindow = eachWindow;
       }
-    })
+    });
   }
   if (existingWindow) {
     httpTracker.browser.tabs.query({
-      "windowId": existingWindow.id,
-      "url": httpTracker.browser.runtime.getURL("/src/html/options.html")
+      'windowId': existingWindow.id,
+      'url': httpTracker.browser.runtime.getURL('/src/html/options.html'),
     }, function(tabs) {
       if (tabs && tabs.length == 1) {
         httpTracker.browser.windows.update(
-          existingWindow.id, {
-            focused: true
-          }
+            existingWindow.id, {
+              focused: true,
+            },
         );
         httpTracker.browser.tabs.update(tabs[0].id, {
-          active: true
+          active: true,
         });
       }
-    })
+    });
   } else {
     httpTracker.browser.runtime.openOptionsPage();
   }
@@ -45,12 +47,14 @@ function getAddonOptions(details) {
 
 // open the addon window, or if already opened, bring to front preventing multiple windows
 function openAddon() {
-  httpTracker.browser.windows.getAll({ "populate": true }, getAddonWindow);
+  httpTracker.browser.windows.getAll({
+    'populate': true,
+  }, getAddonWindow);
 }
 
 function getAddonWindow(details) {
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
-    let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
+    const value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
     if (value === undefined) {
       setPropertyToStorage(httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB, false);
     }
@@ -63,26 +67,26 @@ function getAddonWindow(details) {
 }
 
 function openInTab(details) {
-  let existingWindow = getExistingAddonWindow(details);
+  const existingWindow = getExistingAddonWindow(details);
   if (existingWindow) {
     httpTracker.browser.tabs.query({
-      "windowId": existingWindow.id,
-      "url": httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH)
+      'windowId': existingWindow.id,
+      'url': httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
     }, function(tabs) {
       if (tabs && tabs.length == 1) {
         httpTracker.browser.windows.update(
-          existingWindow.id, {
-            focused: true
-          }
+            existingWindow.id, {
+              focused: true,
+            },
         );
         httpTracker.browser.tabs.update(tabs[0].id, {
-          active: true
+          active: true,
         });
       }
-    })
+    });
   } else {
     httpTracker.browser.tabs.create({
-      "url": httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH)
+      'url': httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
     });
   }
 }
@@ -90,17 +94,17 @@ function openInTab(details) {
 function getExistingAddonWindow(details) {
   let existingWindow;
   if (details.length > 0) {
-    details.some(eachWindow => {
-      if (eachWindow.tabs && eachWindow.tabs.some(tab => tab.url.includes(httpTracker.PAGE_PATH))) {
+    details.some((eachWindow) => {
+      if (eachWindow.tabs && eachWindow.tabs.some((tab) => tab.url.includes(httpTracker.PAGE_PATH))) {
         existingWindow = eachWindow;
       }
-    })
+    });
   }
   return existingWindow;
 }
 
 function openInPopWindow(details) {
-  let existingWindow = getExistingAddonWindow(details);
+  const existingWindow = getExistingAddonWindow(details);
   if (existingWindow) {
     httpTracker.browser.windows.get(existingWindow.id, focusExistingWindow);
   } else {
@@ -118,6 +122,8 @@ function focusExistingWindow(addOnWindowDetails) {
   }
 }
 
-httpTracker.browser.browserAction.setTitle({ "title": getManifestDetails().title });
+httpTracker.browser.browserAction.setTitle({
+  'title': getManifestDetails().title,
+});
 
 httpTracker.browser.browserAction.onClicked.addListener(openAddon);

@@ -1,8 +1,8 @@
-var customManifestDetails;
-var addModifyRequestHeadersList;
-var blockURLSList;
-var includeURLsList;
-var excludeURLsList;
+let customManifestDetails;
+let addModifyRequestHeadersList;
+let blockURLSList;
+let includeURLsList;
+let excludeURLsList;
 
 function onError(e) {
   console.error(e);
@@ -37,10 +37,10 @@ function sortArray(a, b) {
   return 0;
 }
 
-function stringToArray(stringWithDelimiter, delimiter = ",") {
+function stringToArray(stringWithDelimiter, delimiter = ',') {
   if (stringWithDelimiter && stringWithDelimiter.trim().length > 0) {
     // split, trim empty spaces, then remove empty strings
-    return (stringWithDelimiter.split(delimiter).map(e => e.trim()).filter(e => e));
+    return (stringWithDelimiter.split(delimiter).map((e) => e.trim()).filter((e) => e));
   } else {
     return undefined;
   }
@@ -48,7 +48,7 @@ function stringToArray(stringWithDelimiter, delimiter = ",") {
 
 function filterWithLength(array, length = 0) {
   if (array && array.length > 0) {
-    return (array.filter(e => e.length > length));
+    return (array.filter((e) => e.length > length));
   }
 }
 
@@ -56,7 +56,7 @@ function uniqueArray(arrayWithEntries) {
   if (arrayWithEntries && arrayWithEntries.length) {
     return [...new Set(arrayWithEntries)];
   } else {
-    return "";
+    return '';
   }
 }
 
@@ -74,7 +74,7 @@ function sortMapByKey(unsortedMap) {
    *
 */
 function sortJsonByProperty(jsonObjectArray, property) {
-  let sortedObject = jsonObjectArray.sort(function(a, b) {
+  const sortedObject = jsonObjectArray.sort(function(a, b) {
     return a[property].localeCompare(b[property]);
   });
   return sortedObject;
@@ -98,7 +98,7 @@ function setRequestHeadersList(headersList) {
 
 function getManifestDetails() {
   if (!customManifestDetails) {
-    let manifest = httpTracker.browser.runtime.getManifest();
+    const manifest = httpTracker.browser.runtime.getManifest();
     if (manifest) {
       customManifestDetails = {};
       customManifestDetails.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
@@ -110,7 +110,7 @@ function getManifestDetails() {
 function blockRequests(webEvent) {
   let block = false;
   if (blockURLSList) {
-    blockURLSList.some(value => {
+    blockURLSList.some((value) => {
       if (webEvent.url.includes(value)) {
         block = true;
       }
@@ -120,25 +120,25 @@ function blockRequests(webEvent) {
 }
 
 function addModifyRequestHeaders(webEvent) {
-  let addHeaders = true;
+  const addHeaders = true;
   if (includeURLsList) {
-    if (!(includeURLsList.some(value => webEvent.url.toLowerCase().includes(value)))) {
+    if (!(includeURLsList.some((value) => webEvent.url.toLowerCase().includes(value)))) {
       return webEvent.requestHeaders;
     }
   }
   if (excludeURLsList) {
-    if (excludeURLsList.some(value =>
-        webEvent.url.includes(value)
-      )) {
+    if (excludeURLsList.some((value) =>
+      webEvent.url.includes(value),
+    )) {
       return webEvent.requestHeaders;
     }
   }
   if (addHeaders && addModifyRequestHeadersList) {
-    addModifyRequestHeadersList.forEach(newHeader => {
-      if ((newHeader.hasOwnProperty("url") && webEvent.url.includes(newHeader['url'])) ||
-        !newHeader.hasOwnProperty("url")) {
+    addModifyRequestHeadersList.forEach((newHeader) => {
+      if ((newHeader.hasOwnProperty('url') && webEvent.url.includes(newHeader['url'])) ||
+        !newHeader.hasOwnProperty('url')) {
         let found = false;
-        for (let header of webEvent.requestHeaders) {
+        for (const header of webEvent.requestHeaders) {
           if (header.name.toLowerCase() === newHeader.name.toLowerCase()) {
             header.value = newHeader.value;
             found = true;
@@ -148,7 +148,7 @@ function addModifyRequestHeaders(webEvent) {
         if (!found) {
           webEvent.requestHeaders.push({
             'name': newHeader.name,
-            'value': newHeader.value
+            'value': newHeader.value,
           });
         }
       }
@@ -169,7 +169,7 @@ function getPropertyFromStorage(details, key) {
 function setPropertyToStorage(key, value) {
   // console.log(`saving values into storage for ${key} = ${value}`);
   httpTracker.browser.storage.sync.set({
-    [key]: value
+    [key]: value,
   }, function() {
     // nothing to do after successful storing
     // console.log(`Successfully stored ${key} = ${value}`);
