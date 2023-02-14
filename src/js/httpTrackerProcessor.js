@@ -227,7 +227,7 @@ const eventTracker = (function() {
       getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_style_error');
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
     }
-    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ? webEvent.fromCache : 'N/A';
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ??= 'N/A';
   }
 
   function filterEventList(webEvent) {
@@ -235,13 +235,13 @@ const eventTracker = (function() {
       const type = getById('web_event_filter_key').selectedOptions[0].innerText;
       let value = '';
       if (type === 'CACHE') {
-        value = webEvent.fromCache ? webEvent.fromCache : 'N/A';
+        value = webEvent.fromCache ??= 'N/A';
       }
       if (type === 'METHOD') {
         value = webEvent.method;
       }
       if (type === 'STATUS') {
-        value = `${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : 'N/A')}`;
+        value = `${(webEvent.statusCode ??= webEvent.error ? STRING_ERROR : 'N/A')}`;
       }
       if (type === 'URL') {
         value = webEvent.url;
