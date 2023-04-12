@@ -249,7 +249,8 @@ const eventTracker = (function() {
       if (type === 'DATE') {
         value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A')}`;
       }
-      if (!value.toString().toLowerCase().includes(filterWithValue)) {
+      if (!value.toString().toLowerCase()
+          .includes(filterWithValue)) {
         getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add('web_event_list_hide');
       } else {
         getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_list_hide');

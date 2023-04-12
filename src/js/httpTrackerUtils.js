@@ -40,7 +40,8 @@ function sortArray(a, b) {
 function stringToArray(stringWithDelimiter, delimiter = ',') {
   if (stringWithDelimiter && stringWithDelimiter.trim().length > 0) {
     // split, trim empty spaces, then remove empty strings
-    return (stringWithDelimiter.split(delimiter).map((e) => e.trim()).filter((e) => e));
+    return (stringWithDelimiter.split(delimiter).map((e) => e.trim())
+        .filter((e) => e));
   } else {
     return undefined;
   }

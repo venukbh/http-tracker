@@ -1,42 +1,48 @@
 {
-    "env": {
-        "browser": true,
-        "es2021": true,
-        "webextensions": true
-    },
-    "extends": "google",
-    "ignorePatterns": [
-        "**/*untitled*.js"
-    ],
-    "parserOptions": {
-        "ecmaFeatures": {},
-        "ecmaVersion": "latest",
-        "sourceType": "module"
-    },
-    "overrides": [
-        {
-            "files": [
-                "*.js"
-            ],
-            "rules": {
-                "object-curly-newline": [
-                    "error",
-                    {
-                        "minProperties": 1
-                    }
-                ],
-                "no-multi-spaces": [
-                    "error",
-                    {
-                        "ignoreEOLComments": false
-                    }
-                ],
-                "arrow-parens": [
-                    "error",
-                    "always"
-                ],
-                "require-jsdoc": "off"
-            }
-        }
-    ]
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "webextensions": true
+  },
+  "extends": "google",
+  "ignorePatterns": [
+    "**/*untitled*.js"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {},
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.js"
+      ],
+      "rules": {
+        "object-curly-newline": [
+          "error",
+          {
+            "minProperties": 1
+          }
+        ],
+        "no-multi-spaces": [
+          "error",
+          {
+            "ignoreEOLComments": false
+          }
+        ],
+        "arrow-parens": [
+          "error",
+          "always"
+        ],
+        "require-jsdoc": "off",
+        "newline-per-chained-call": [
+          "error",
+          {
+            "ignoreChainWithDepth": 2
+          }
+        ]
+      }
+    }
+  ]
 }
