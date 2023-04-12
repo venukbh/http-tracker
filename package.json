@@ -1,0 +1,26 @@
+{
+    "name": "http-tracker",
+    "description": "",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "keywords": [],
+    "author": "Venu Madhav",
+    "license": "MIT",
+    "bugs": {
+        "url": ""
+    },
+    "homepage": "",
+    "dependencies": {},
+    "devDependencies": {
+        "eslint": "^8.22.0",
+        "eslint-config-google": "^0.14.0"
+    },
+    "scripts": {
+        "lint-fix": "eslint . --fix",
+        "lint": "eslint .",
+        "build": "npm run lint"
+    }
+}
