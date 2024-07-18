@@ -21,7 +21,8 @@ function listener(details) {
     // Just change any instance of Example in the HTTP response
     // to WebExtension Example.
     // str = str.replace(/Example/g, "WebExtension Example");
-    console.log('debugging filter ondata str', str);
+    // console.log('debugging filter ondata str', str);
+    // TODO: log response content in detail
     filter.write(encoder.encode(str));
     filter.disconnect();
   };
