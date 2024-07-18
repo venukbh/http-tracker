@@ -217,7 +217,7 @@ const eventTracker = (function() {
     getById('urls_list').insertAdjacentHTML('beforeend', containerContent);
 
     const autoscroll = getById('urls_autoscroll').checked;
-    //console.log('debugging autoscroll', autoscroll);
+    // console.log('debugging autoscroll', autoscroll);
     if (autoscroll) {
       getById('urls_list').scrollTop =
         getById('urls_list').scrollHeight -
