@@ -215,6 +215,14 @@ const eventTracker = (function() {
       generateCACHEContent(webEvent) +
       '</div>';
     getById('urls_list').insertAdjacentHTML('beforeend', containerContent);
+
+    const autoscroll = getById('urls_autoscroll').checked;
+    //console.log('debugging autoscroll', autoscroll);
+    if (autoscroll) {
+      getById('urls_list').scrollTop =
+        getById('urls_list').scrollHeight -
+        getById('urls_list').clientHeight;
+    }
   }
 
   function updateEventList(webEvent) {
