@@ -9,11 +9,34 @@ const resHeaders = httpTracker.isFF ? ['responseHeaders'] : ['responseHeaders', 
 const errorHeaders = ['extraHeaders'];
 const r = httpTracker.browser.webRequest;
 
+function listener(details) {
+  const filter = r.filterResponseData(details.requestId);
+  const decoder = new TextDecoder('utf-8');
+  const encoder = new TextEncoder();
+
+  filter.ondata = (event) => {
+    const str = decoder.decode(event.data, {
+      stream: true,
+    });
+    // Just change any instance of Example in the HTTP response
+    // to WebExtension Example.
+    // str = str.replace(/Example/g, "WebExtension Example");
+    console.log('debugging filter ondata str', str);
+    filter.write(encoder.encode(str));
+    filter.disconnect();
+  };
+
+  return {};
+}
+
 r.onBeforeRequest.addListener(
     function(details) {
       details.callerName = 'onBeforeRequest';
       details.requestIdEnhanced = details.requestId;
       eventTracker.logRequestDetails(details);
+      if (r.filterResponseData) {
+        listener(details);
+      }
     }, trackUrls, reqBodyHeaders,
 );
 
