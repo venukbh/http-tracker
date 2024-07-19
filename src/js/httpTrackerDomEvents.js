@@ -35,9 +35,12 @@ r.onBeforeRequest.addListener(
       details.callerName = 'onBeforeRequest';
       details.requestIdEnhanced = details.requestId;
       eventTracker.logRequestDetails(details);
-      if (r.filterResponseData) {
-        listener(details);
-      }
+      // TODO: this makes network slow(find a way to make it work and fast)
+      /*
+       * if (r.filterResponseData) {
+       *  listener(details);
+       *}
+       */
     }, trackUrls, reqBodyHeaders,
 );
 
