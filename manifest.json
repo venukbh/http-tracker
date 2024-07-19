@@ -1,5 +1,4 @@
 {
-  "author": "Venu Madhav",
   "background":
   {
     "scripts": [
@@ -8,7 +7,7 @@
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
   "manifest_version": 2,
-  "name": "HTTP-TRACKER",
+  "name": "HTTP-TRACKER Dark",
   "permissions": [
     "storage",
     "webRequest",
