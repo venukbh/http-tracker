@@ -1,7 +1,14 @@
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
 .web_event_tracker {
   margin: 2% 2% 2% 2%;
-  height: 100%;
+  height: 96%;
   font-size: 100%;
+  overflow: hidden;
 }
 
 .empty_div {
@@ -101,6 +108,20 @@ input {
   color: #FF0000;
 }
 
+.darkmode {
+  background: #000;
+  color: darkgreen;
+}
+
+.darkmode input {
+  background-color: lightblue;
+}
+
+.darkmode button:disabled {
+  background-color: darkgrey; /* Replace 'lightgray' with your desired color */
+  color: #000;
+  border-radius: 5px;
+}
 .web_event_list_hide {
   display: none;
 }

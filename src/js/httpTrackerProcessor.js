@@ -629,12 +629,22 @@ const eventTracker = (function() {
     return getById('urls_list').getElementsByClassName('web_event_list_blank'); // this returns a live collection
   }
 
+  function switchDarkMode(e) {
+    const checked = e.target.checked;
+    if (checked) {
+      document.body.classList.add('darkmode');
+    } else {
+      document.body.classList.remove('darkmode');
+    }
+  };
+
   function bindDefaultEvents() {
     getById('track_urls_pattern').oninput = setPatternsToInclude;
     getById('exclude_urls_pattern').oninput = setPatternsToExclude;
     getById('block_urls_pattern').oninput = setPatternsToBlock;
     getById('mask_patterns_list').oninput = setPatternsToMask;
     getById('enable_mask_patterns').onchange = maskFieldsCheckbox;
+    getById('darkmode').onchange = switchDarkMode;
     getById('include_form_data').onchange = captureFormDataCheckbox;
     getById('optimize_response_cookies').onchange = optimizeResponseCookiesCheckbox;
     getById('filter_web_events').oninput = filterEvents;
