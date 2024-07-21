@@ -638,6 +638,15 @@ const eventTracker = (function() {
     }
   };
 
+  function toggleSettings(e) {
+    const checked = e.target.checked;
+    if (checked) {
+      getById('settings').style.display = 'none';
+    } else {
+      getById('settings').style.display = '';
+    }
+  }
+
   function bindDefaultEvents() {
     getById('track_urls_pattern').oninput = setPatternsToInclude;
     getById('exclude_urls_pattern').oninput = setPatternsToExclude;
@@ -645,6 +654,7 @@ const eventTracker = (function() {
     getById('mask_patterns_list').oninput = setPatternsToMask;
     getById('enable_mask_patterns').onchange = maskFieldsCheckbox;
     getById('darkmode').onchange = switchDarkMode;
+    getById('collapse-settings').onchange = toggleSettings;
     getById('include_form_data').onchange = captureFormDataCheckbox;
     getById('optimize_response_cookies').onchange = optimizeResponseCookiesCheckbox;
     getById('filter_web_events').oninput = filterEvents;
