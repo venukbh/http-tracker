@@ -2,10 +2,12 @@
   "background":
   {
     "scripts": [
-      "/src/js/httpTrackerConstants.js", "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
+      "/src/js/httpTrackerConstants.js",
+      "/src/js/httpTrackerUtils.js",
+      "/src/js/httpTrackerOpen.js"
     ]
   },
-  "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
+  "description": "forked version of HTTP-Tracker",
   "manifest_version": 2,
   "name": "HTTP-TRACKER Dark",
   "permissions": [
@@ -22,10 +24,10 @@
     "browser_style": true,
     "default_icon":
     {
-      "16": "/src/assets/icon_320px.png",
-      "32": "/src/assets/icon_320px.png"
+      "16": "/src/assets/logo.jpg",
+      "32": "/src/assets/logo.jpg"
     },
-    "default_title": "HTTP-TRACKER : Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests"
+    "default_title": "HTTP-TRACKER Dark"
   },
   "commands":
   {
@@ -45,6 +47,6 @@
   },
   "icons":
   {
-    "320": "/src/assets/icon_320px.png"
+    "320": "/src/assets/logo.jpg"
   }
 }
