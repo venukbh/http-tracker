@@ -18,7 +18,7 @@
     "tabs",
     "cookies"
   ],
-  "version": "2.2.6",
+  "version": "1.0.0",
   "browser_action":
   {
     "browser_style": true,
