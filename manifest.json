@@ -24,8 +24,8 @@
     "browser_style": true,
     "default_icon":
     {
-      "16": "/src/assets/logo.jpg",
-      "32": "/src/assets/logo.jpg"
+      "16": "/src/assets/logo.png",
+      "32": "/src/assets/logo.png"
     },
     "default_title": "HTTP-TRACKER Dark"
   },
@@ -47,6 +47,6 @@
   },
   "icons":
   {
-    "320": "/src/assets/logo.jpg"
+    "320": "/src/assets/logo.png"
   }
 }
