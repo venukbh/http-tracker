@@ -21,7 +21,7 @@
     "scripts": {
         "lint-fix": "eslint . --fix",
         "lint": "eslint .",
-        "build": "npm run zip && mv -v *.tgz archives",
-        "zip": "tar czvf http-tracker-dark.tgz manifest.json src"
+        "build": "npm run zip && mv -v *.zip archives",
+        "zip": "zip -r http-tracker-dark.zip manifest.json src"
     }
 }
