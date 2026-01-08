@@ -57,7 +57,7 @@
   width: 70%;
 }
 
-.header_input_apply {}
+/* .header_input_apply {} */
 
 .all_headers_containers {
   float: left;
@@ -77,7 +77,7 @@ input {
   box-sizing: border-box;
 }
 
-.web_event_list_blank {}
+/* .web_event_list_blank {} */
 
 .web_event_list_blank:hover {
   background-color: #DCDCDC;
@@ -248,4 +248,21 @@ input {
   text-align: center;
   border: 1px solid;
   background-color: #DCDCDC;
+}
+
+.web_event_body_content {
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  padding: 10px;
+  background-color: #f4f4f4;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  color: #333;
+  overflow-x: auto;
+}
+
+.web_event_response_body_row td {
+  padding: 0;
+  border: 1px solid #ddd;
 }

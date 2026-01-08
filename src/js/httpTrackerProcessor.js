@@ -1,8 +1,9 @@
-const eventTracker = (function() {
+const eventTracker = (function () {
   const addedRequestId = [];
   const allRequestHeaders = new Map();
   const allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
+  let captureResponseBodyCheckboxValue = false;
   const decoder = new TextDecoder('UTF-8');
   const inputBoxDelay = 500;
   let filterPatternsToExcludeTimeout = null;
@@ -19,6 +20,7 @@ const eventTracker = (function() {
   let maskedAttributesList;
   let optimizeResponseCookies;
   const requestFormData = new Map();
+  const responseBodyData = new Map();
   const requestIdRedirectCount = new Map();
   let selectedWebEventRequestId = '';
   let toggleCaptureEvents = true;
@@ -78,6 +80,9 @@ const eventTracker = (function() {
   function actionOnBeforeRequest(webEvent) {
     if (webEvent.callerName === 'onBeforeRequest') {
       insertRequestBody(webEvent);
+      if (captureResponseBodyCheckboxValue && webEvent.tabId !== -1) {
+        debuggerTracker.attachToTab(webEvent.tabId);
+      }
     }
   }
 
@@ -298,6 +303,28 @@ const eventTracker = (function() {
     allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
   }
 
+  // Store response body by URL since DevTools and WebRequest use different ID systems
+  function insertResponseBodyByUrl(url, body, isBase64) {
+    console.log('insertResponseBodyByUrl called for URL:', url, 'body length:', body?.length);
+    if (captureResponseBodyCheckboxValue) {
+      if (isBase64) {
+        responseBodyData.set(url, BINARY_RESPONSE_MESSAGE);
+      } else {
+        responseBodyData.set(url, body);
+      }
+      console.log('responseBodyData now has', responseBodyData.size, 'entries');
+
+      // Check if the currently selected event matches this URL
+      if (selectedWebEventRequestId) {
+        const currentEvent = allRequestHeaders.get(selectedWebEventRequestId);
+        if (currentEvent && currentEvent.url === url) {
+          console.log('URL matches selected event, refreshing display');
+          displayEventProperties();
+        }
+      }
+    }
+  }
+
   function displaySelectedEventDetails(webEvent) {
     if (selectedWebEventRequestId && webEvent.requestIdEnhanced === selectedWebEventRequestId) {
       displayEventProperties();
@@ -314,8 +341,16 @@ const eventTracker = (function() {
     const webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
     const webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
 
+    // Retrieve body using the URL from the event object
+    let webEventIdResponseBody;
+    if (webEventIdRequest && webEventIdRequest.url) {
+      webEventIdResponseBody = responseBodyData.get(webEventIdRequest.url);
+      console.log('displayEventProperties: Looking for body with URL:', webEventIdRequest.url, 'found:', !!webEventIdResponseBody);
+    }
+
     const requestContainer = buildURLDetailsContainer(webEventIdRequest, 'requestDetails');
     const responseContainer = buildURLDetailsContainer(webEventIdResponse, 'responseDetails');
+    const responseBodyContainer = buildResponseBodyContainer(webEventIdResponseBody);
     const requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
     getById('web_event_details_selected_request').style.borderRight = '1px solid';
     getById('web_event_details_selected_response').style.borderRight = '1px solid';
@@ -324,7 +359,7 @@ const eventTracker = (function() {
     getById('web_event_details_selected_request').style.borderBottom = '1px solid';
     getById('web_event_details_selected_response').style.borderBottom = '1px solid';
     getById('request_headers_details').innerHTML = requestContainer + requestFormContainer;
-    getById('response_headers_details').innerHTML = responseContainer;
+    getById('response_headers_details').innerHTML = responseContainer + responseBodyContainer;
     getById('web_details_selected_container').style = 'visibility: visible;';
   }
 
@@ -397,12 +432,42 @@ const eventTracker = (function() {
         formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (raw form data)</td></tr>';
         for (const eachByte of webEventIdRequestForm.raw) {
           const dataView = new DataView(eachByte.bytes);
-          const decodedString = decoder.decode(dataView);
-          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${addMarkTag(decodedString)}</td></tr>`;
+          let decodedString = decoder.decode(dataView);
+
+          // Try to beautify JSON if it's a JSON payload
+          try {
+            const json = JSON.parse(decodedString);
+            decodedString = JSON.stringify(json, null, 2);
+          } catch (e) {
+            // Not JSON, keep as is
+          }
+
+          formData += `<tr class='web_event_response_body_row'><td colspan=2><pre class='web_event_body_content'>${addMarkTag(decodedString)}</pre></td></tr>`;
         }
       }
     }
     return formData;
+  }
+
+  function buildResponseBodyContainer(responseBody) {
+    let bodyData = '';
+    if (responseBody !== undefined) {
+      bodyData = RESPONSE_BODY_BANNER;
+      if (responseBody.length > MAX_RESPONSE_BODY_SIZE) {
+        responseBody = responseBody.substring(0, MAX_RESPONSE_BODY_SIZE) + '\n... [Content Truncated]';
+      }
+
+      // Try to beautify JSON
+      try {
+        const json = JSON.parse(responseBody);
+        responseBody = JSON.stringify(json, null, 2);
+      } catch (e) {
+        // Not JSON, keep as is
+      }
+
+      bodyData += `<tr class='web_event_response_body_row'><td colspan=2><pre class='web_event_body_content'>${addMarkTag(responseBody)}</pre></td></tr>`;
+    }
+    return bodyData;
   }
 
   function generateHeaderDetails(headers) {
@@ -589,6 +654,7 @@ const eventTracker = (function() {
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
     requestFormData.delete(requestIdToRemove);
+    responseBodyData.delete(requestIdToRemove);
     node.remove();
     if (requestIdToRemove === selectedWebEventRequestId) {
       getById('delete_selected_web_event').disabled = true;
@@ -609,7 +675,7 @@ const eventTracker = (function() {
 
   function getVisibleUrlsList() {
     const allUrls = getAllUrlsList(); // this gives live list
-    const visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
+    const visibleUrls = Array.prototype.filter.call(allUrls, function (eachUrl) {
       return !eachUrl.classList.contains('web_event_list_hide');
     });
     return visibleUrls;
@@ -629,6 +695,7 @@ const eventTracker = (function() {
     getById('mask_patterns_list').oninput = setPatternsToMask;
     getById('enable_mask_patterns').onchange = maskFieldsCheckbox;
     getById('include_form_data').onchange = captureFormDataCheckbox;
+    getById('include_response_body').onchange = captureResponseBodyCheckbox;
     getById('optimize_response_cookies').onchange = optimizeResponseCookiesCheckbox;
     getById('filter_web_events').oninput = filterEvents;
     getById('web_event_filter_key').oninput = filterEvents;
@@ -644,7 +711,7 @@ const eventTracker = (function() {
     getById('add_modify_headers').oninput = generateHeadersToAddOrModify; // either on text change
     getById('find_in_details_pattern').oninput = setFindPatterns;
     getById('delete_cookies_button').onclick = deleteCookiesForSelectedDomain;
-    getById('preferences').addEventListener('click', function() {
+    getById('preferences').addEventListener('click', function () {
       openAddonOptions();
     });
   }
@@ -653,7 +720,7 @@ const eventTracker = (function() {
     if (findPatternsTimeout) {
       clearTimeout(findPatternsTimeout);
     }
-    findPatternsTimeout = setTimeout(function() {
+    findPatternsTimeout = setTimeout(function () {
       findPatterns = event.target.value.trim();
       displayEventProperties();
     }, inputBoxDelay);
@@ -662,7 +729,7 @@ const eventTracker = (function() {
   function generateHeadersToAddOrModify() {
     const headersObject = [];
     const conatiners = getByClassNames('single_header_container');
-    Array.prototype.filter.call(conatiners, function(headerContainer) {
+    Array.prototype.filter.call(conatiners, function (headerContainer) {
       index = headerContainer.id.substring(15);
       headerName = headerContainer.querySelector('.header_input_name').value.trim();
       if (headerName) {
@@ -793,6 +860,14 @@ const eventTracker = (function() {
     captureFormDataCheckboxValue = getById('include_form_data').checked;
   }
 
+  function captureResponseBodyCheckbox() {
+    captureResponseBodyCheckboxValue = getById('include_response_body').checked;
+    if (!captureResponseBodyCheckboxValue) {
+      debuggerTracker.detachAll();
+    }
+  }
+
+
   function optimizeResponseCookiesCheckbox() {
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
     displayEventProperties();
@@ -807,7 +882,7 @@ const eventTracker = (function() {
     if (filterPatternsToMaskTimeout) {
       clearTimeout(filterPatternsToMaskTimeout);
     }
-    filterPatternsToMaskTimeout = setTimeout(function() {
+    filterPatternsToMaskTimeout = setTimeout(function () {
       maskedAttributesList = stringToArray(event.target.value);
       displayEventProperties();
     }, inputBoxDelay);
@@ -817,6 +892,7 @@ const eventTracker = (function() {
     requestFormData.clear();
     allRequestHeaders.clear();
     allResponseHeaders.clear();
+    responseBodyData.clear();
     addedRequestId.length = 0;
     getById('web_event_details_selected_request').style.border = 'none';
     getById('web_event_details_selected_response').style.border = 'none';
@@ -899,7 +975,7 @@ const eventTracker = (function() {
     if (filterWithValueTimeout) {
       clearTimeout(filterWithValueTimeout);
     }
-    filterWithValueTimeout = setTimeout(function() {
+    filterWithValueTimeout = setTimeout(function () {
       updateFilterOptions();
       hideOrShowURLList();
       updateAllButtons();
@@ -931,7 +1007,7 @@ const eventTracker = (function() {
     if (filterPatternsToExcludeTimeout) {
       clearTimeout(filterPatternsToExcludeTimeout);
     }
-    filterPatternsToExcludeTimeout = setTimeout(function() {
+    filterPatternsToExcludeTimeout = setTimeout(function () {
       excludeURLsList = stringToArray(event.target.value);
     }, inputBoxDelay);
   }
@@ -940,7 +1016,7 @@ const eventTracker = (function() {
     if (setPatternsToBlockTimeout) {
       clearTimeout(setPatternsToBlockTimeout);
     }
-    setPatternsToBlockTimeout = setTimeout(function() {
+    setPatternsToBlockTimeout = setTimeout(function () {
       blockURLSList = stringToArray(event.target.value);
     }, inputBoxDelay);
   }
@@ -949,7 +1025,7 @@ const eventTracker = (function() {
     if (filterPatternsToIncludeTimeout) {
       clearTimeout(filterPatternsToIncludeTimeout);
     }
-    filterPatternsToIncludeTimeout = setTimeout(function() {
+    filterPatternsToIncludeTimeout = setTimeout(function () {
       includeURLsList = stringToArray(event.target.value);
     }, inputBoxDelay);
   }
@@ -957,6 +1033,7 @@ const eventTracker = (function() {
   function setInitialStateOfPage() {
     filterWithValue = getById('filter_web_events').value;
     captureFormDataCheckboxValue = getById('include_form_data').checked;
+    captureResponseBodyCheckboxValue = getById('include_response_body').checked;
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
     includeURLsList = stringToArray(getById('track_urls_pattern').value);
     excludeURLsList = stringToArray(getById('exclude_urls_pattern').value);
@@ -1056,7 +1133,7 @@ const eventTracker = (function() {
     return getByClassNames('web_event_list_selected')[0];
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     document.title = getManifestDetails().title;
     bindDefaultEvents();
     setInitialStateOfPage();
@@ -1087,5 +1164,6 @@ const eventTracker = (function() {
 
   return {
     logRequestDetails: logRequestDetails,
+    insertResponseBodyByUrl: insertResponseBodyByUrl,
   };
 })();

@@ -1,9 +1,10 @@
 {
   "author": "Venu Madhav",
-  "background":
-  {
+  "background": {
     "scripts": [
-      "/src/js/httpTrackerConstants.js", "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
+      "/src/js/httpTrackerConstants.js",
+      "/src/js/httpTrackerUtils.js",
+      "/src/js/httpTrackerOpen.js"
     ]
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
@@ -15,37 +16,31 @@
     "<all_urls>",
     "webRequestBlocking",
     "tabs",
-    "cookies"
+    "cookies",
+    "debugger"
   ],
   "version": "2.2.6",
-  "browser_action":
-  {
+  "browser_action": {
     "browser_style": true,
-    "default_icon":
-    {
+    "default_icon": {
       "16": "/src/assets/icon_320px.png",
       "32": "/src/assets/icon_320px.png"
     },
     "default_title": "HTTP-TRACKER : Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests"
   },
-  "commands":
-  {
-    "_execute_browser_action":
-    {
-      "suggested_key":
-      {
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
         "default": "Ctrl+Shift+1"
       },
       "description": "Open HTTP-TRACKER if not opened, or bring to front if already opened"
     }
   },
-  "options_ui":
-  {
+  "options_ui": {
     "page": "/src/html/options.html",
     "open_in_tab": true
   },
-  "icons":
-  {
+  "icons": {
     "320": "/src/assets/icon_320px.png"
   }
 }

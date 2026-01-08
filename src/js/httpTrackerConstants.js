@@ -7,7 +7,12 @@ const httpTracker = {
   STORAGE_KEY_BLOCK_PATTERN: 'httpTracker_GlobalBlockPatterns',
   STORAGE_KEY_MASK_PATTERN: 'httpTracker_GlobalMaskPatterns',
   STORAGE_KEY_OPEN_ADDON_IN_TAB: 'httpTracker_OpenAddonInTab',
+  STORAGE_KEY_CAPTURE_RESPONSE_BODY: 'httpTracker_CaptureResponseBody',
 };
+
+const RESPONSE_BODY_BANNER = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Response Body</td></tr>';
+const MAX_RESPONSE_BODY_SIZE = 1024 * 1024; // 1MB limit for display
+const BINARY_RESPONSE_MESSAGE = 'Binary content - Preview not available';
 
 const FORBIDDEN_HEADERS = ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers', 'Access-Control-Request-Method', 'Connection', 'Content-Length', 'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Feature-Policy', 'Host', 'Keep-Alive', 'Origin', 'Proxy-', 'Sec-', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade', 'Via'];
 const FORBIDDEN_HEADERS_PATTERN = ['Proxy-', 'Sec-'];
