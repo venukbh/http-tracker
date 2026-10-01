@@ -4,7 +4,6 @@ const trackUrls = {
 
 const reqBodyHeaders = httpTracker.isFF ? ['requestBody'] : ['requestBody', 'extraHeaders'];
 const reqHeaders = httpTracker.isFF ? ['requestHeaders'] : ['requestHeaders', 'extraHeaders'];
-const reqHeadersBlocking = httpTracker.isFF ? ['blocking', 'requestHeaders'] : ['blocking', 'requestHeaders', 'extraHeaders'];
 const resHeaders = httpTracker.isFF ? ['responseHeaders'] : ['responseHeaders', 'extraHeaders'];
 const errorHeaders = ['extraHeaders'];
 const r = httpTracker.browser.webRequest;
@@ -21,17 +20,8 @@ r.onBeforeSendHeaders.addListener(
     function(details) {
       details.callerName = 'onBeforeSendHeaders';
       details.requestIdEnhanced = details.requestId;
-      addModifyRequestHeaders(details);
       eventTracker.logRequestDetails(details);
-      if (blockRequests(details)) {
-        return {
-          cancel: true,
-        };
-      }
-      return {
-        requestHeaders: details.requestHeaders,
-      };
-    }, trackUrls, reqHeadersBlocking,
+    }, trackUrls, reqHeaders,
 );
 
 r.onSendHeaders.addListener(

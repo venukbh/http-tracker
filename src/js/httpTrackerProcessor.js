@@ -682,6 +682,7 @@ const eventTracker = (function() {
       }
     });
     setRequestHeadersList(headersObject);
+    updateHeaderModifySessionRules(headersObject);
     if (headersObject.length || conatiners.length) {
       getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers: ${headersObject.length}`;
     } else {
@@ -942,6 +943,7 @@ const eventTracker = (function() {
     }
     setPatternsToBlockTimeout = setTimeout(function() {
       blockURLSList = stringToArray(event.target.value);
+      updateBlockSessionRules(blockURLSList || []);
     }, inputBoxDelay);
   }
 
@@ -1084,6 +1086,8 @@ const eventTracker = (function() {
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
+
+  window.addEventListener('beforeunload', clearAllSessionRules);
 
   return {
     logRequestDetails: logRequestDetails,

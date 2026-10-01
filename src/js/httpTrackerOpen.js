@@ -4,7 +4,7 @@ const bringToFront = {
 
 const createWindowProperties = {
   type: 'popup',
-  url: httpTracker.browser.extension.getURL(httpTracker.PAGE_PATH),
+  url: httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
   state: httpTracker.isFF ? 'maximized' : 'normal',
 };
 
@@ -122,8 +122,8 @@ function focusExistingWindow(addOnWindowDetails) {
   }
 }
 
-httpTracker.browser.browserAction.setTitle({
+httpTracker.browser.action.setTitle({
   'title': getManifestDetails().title,
 });
 
-httpTracker.browser.browserAction.onClicked.addListener(openAddon);
+httpTracker.browser.action.onClicked.addListener(openAddon);
