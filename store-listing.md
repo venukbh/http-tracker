@@ -1,4 +1,4 @@
-Monitors browser network for all tabs, pages in a single extension window. Track network traffic like request headers, cookies sent from each tab for each request, and corresponding response headers, cookies. This extension provides feasibility to filter and capture only a set of requests, or to exclude a set of requests, block a set of requests. Works like a "tamper data", "web interceptor", "web sniffer", "network monitor", "headers editor", "headers monitor", "cookies editor", "http headers", "request interceptor", "network interceptor", "HTTP analyzer", "traffic inspector", "header modifier", "cookie manager".
+Monitors browser network for all tabs, pages in a single extension window. Track network traffic like request headers, cookies sent from each tab for each request, and corresponding response headers, cookies. This extension provides feasibility to filter and capture only a set of requests, or to exclude a set of requests, block a set of requests. Works like a "tamper data", "web interceptor", "web sniffer", "network monitor", "headers editor", "headers monitor", "cookies editor", "http headers", "request interceptor".
 
 Now upgraded to Manifest V3 (MV3) - the latest Chrome and Firefox extension standard, ensuring long-term support and enhanced security. Built entirely with vanilla JavaScript - no external frameworks or dependencies.
 
@@ -6,7 +6,6 @@ From the captured data, you can filter requests to view based on various attribu
 
 Add/modify the request headers before sending the request for all requests or for a domain or for a single url.
 Delete all cookies for the selected domain, or for a domain of your wish.
-
 
 Features:
         - Single instance extension - Always loads a single instance popup/tab which gets activated on further clicks
@@ -44,8 +43,9 @@ Accessibility:
         - Easy access to the extension : use command/Control + Shift + 1 any time to open the extension window
         - Single instance window
 
-Other links
-        - Link to Firefox add-on : https://addons.mozilla.org/en-US/firefox/addon/http-tracker/
+Links
+        - Link to Chrome extension : <https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi>
+        - Link to Firefox add-on : <https://addons.mozilla.org/en-US/firefox/addon/http-tracker/>
 
 Reviews / Ratings:
         - Please like and rate the extension - A lot of effort has been put in developing this extension
