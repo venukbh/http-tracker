@@ -1,14 +1,15 @@
-Monitors browser network for all tabs, pages in a single extension window. Track network traffic like request headers, cookies sent from each tab for each request, and corresponding response headers, cookies. This extension provides feasibility to filter and capture only a set of requests, or 
- to exclude a set of requests, block a set of requests. Works like a "tamper data", "web interceptor", "web sniffer", "network monitor", "headers editor", "headers monitor", "cookies editor", "http headers", "request interceptor", etc
+Monitors browser network for all tabs, pages in a single extension window. Track network traffic like request headers, cookies sent from each tab for each request, and corresponding response headers, cookies. This extension provides feasibility to filter and capture only a set of requests, or to exclude a set of requests, block a set of requests. Works like a "tamper data", "web interceptor", "web sniffer", "network monitor", "headers editor", "headers monitor", "cookies editor", "http headers", "request interceptor", "network interceptor", "HTTP analyzer", "traffic inspector", "header modifier", "cookie manager".
 
-From the captured data, you can filter requests to view based on various attributes, clear all captured data, compare with previous/different requests, single page to see all the traffic in a centralized place instead of each tab. 
+Now upgraded to Manifest V3 (MV3) - the latest Chrome and Firefox extension standard, ensuring long-term support and enhanced security. Built entirely with vanilla JavaScript - no external frameworks or dependencies.
 
-Add/modify the request headers before sending the request for all requests or for a domain or for a single url
+From the captured data, you can filter requests to view based on various attributes, clear all captured data, compare with previous/different requests, single page to see all the traffic in a centralized place instead of each tab.
+
+Add/modify the request headers before sending the request for all requests or for a domain or for a single url.
 Delete all cookies for the selected domain, or for a domain of your wish.
 
 
 Features:
-        - Single instance add-on - Always loads a single instance popup/tab which gets activated on further clicks
+        - Single instance extension - Always loads a single instance popup/tab which gets activated on further clicks
         - Non blocking (async) monitoring of the browser traffic, with no additional delay to the actual requests
         - request-response pairing
         - Capture only required url's containing particular pattern(s)
@@ -33,18 +34,18 @@ Features:
 
 Security:
         - Mask form fields data like usernames, passwords, etc providing high security
-        - Information about your browsing is never transmitted or disclosed to either the add-on developers or any other party
+        - Information about your browsing is never transmitted or disclosed to either the extension developers or any other party
 
 Performance:
         - Works async - Near to zero delay to the actual http request
         - Filter results in < 100 ms when the captured results are more than 10K
 
 Accessibility:
-        - Easy access to the add-on : use command/Control + Shift + 1 any time to open the add-on window
+        - Easy access to the extension : use command/Control + Shift + 1 any time to open the extension window
         - Single instance window
 
 Other links
         - Link to Firefox add-on : https://addons.mozilla.org/en-US/firefox/addon/http-tracker/
 
 Reviews / Ratings:
-        - Please like and rate the add-on - A lot of effort has been put in developing this add-on
+        - Please like and rate the extension - A lot of effort has been put in developing this extension

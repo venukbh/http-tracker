@@ -2,25 +2,28 @@
   "author": "Venu Madhav",
   "background":
   {
+    "service_worker": "/src/js/httpTrackerSW.js",
     "scripts": [
-      "/src/js/httpTrackerConstants.js", "/src/js/httpTrackerUtils.js", "/src/js/httpTrackerOpen.js"
+      "/src/js/httpTrackerConstants.js",
+      "/src/js/httpTrackerUtils.js",
+      "/src/js/httpTrackerOpen.js"
     ]
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "HTTP-TRACKER",
   "permissions": [
     "storage",
     "webRequest",
-    "<all_urls>",
-    "webRequestBlocking",
     "tabs",
-    "cookies"
+    "cookies",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
-  "version": "2.2.6",
-  "browser_action":
+  "host_permissions": ["<all_urls>"],
+  "version": "3.0.0",
+  "action":
   {
-    "browser_style": true,
     "default_icon":
     {
       "16": "/src/assets/icon_320px.png",
@@ -30,7 +33,7 @@
   },
   "commands":
   {
-    "_execute_browser_action":
+    "_execute_action":
     {
       "suggested_key":
       {
@@ -47,5 +50,13 @@
   "icons":
   {
     "320": "/src/assets/icon_320px.png"
+  },
+  "browser_specific_settings":
+  {
+    "gecko":
+    {
+      "id": "http-tracker@extension",
+      "strict_min_version": "113.0"
+    }
   }
 }

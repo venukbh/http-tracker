@@ -101,60 +101,82 @@ function getManifestDetails() {
     const manifest = httpTracker.browser.runtime.getManifest();
     if (manifest) {
       customManifestDetails = {};
-      customManifestDetails.title = `${manifest.browser_action.default_title} (version : ${manifest.version})`;
+      customManifestDetails.title = `${manifest.action.default_title} (version : ${manifest.version})`;
     }
   }
   return customManifestDetails;
 }
 
-function blockRequests(webEvent) {
-  let block = false;
-  if (blockURLSList) {
-    blockURLSList.some((value) => {
-      if (webEvent.url.includes(value)) {
-        block = true;
-      }
-    });
-  }
-  return block;
+const DNR_BLOCK_RULE_BASE = 1000;
+const DNR_HEADER_RULE_BASE = 2000;
+const DNR_MAX_BLOCK_RULES = 100;
+const DNR_MAX_HEADER_RULES = 100;
+
+const ALL_RESOURCE_TYPES = [
+  'main_frame', 'sub_frame', 'xmlhttprequest', 'other',
+  'script', 'stylesheet', 'image', 'font', 'object', 'media', 'websocket', 'ping',
+];
+
+function updateBlockSessionRules(patterns) {
+  const removeRuleIds = Array.from({
+    length: DNR_MAX_BLOCK_RULES,
+  }, (_, i) => DNR_BLOCK_RULE_BASE + i);
+  const addRules = (patterns || [])
+      .filter((p) => p.trim().length > 0)
+      .map((pattern, index) => ({
+        id: DNR_BLOCK_RULE_BASE + index,
+        priority: 1,
+        action: {
+          type: 'block',
+        },
+        condition: {
+          urlFilter: `*${pattern.trim()}*`, resourceTypes: ALL_RESOURCE_TYPES,
+        },
+      }));
+  httpTracker.browser.declarativeNetRequest.updateSessionRules({
+    removeRuleIds, addRules,
+  });
 }
 
-function addModifyRequestHeaders(webEvent) {
-  const addHeaders = true;
-  if (includeURLsList) {
-    if (!(includeURLsList.some((value) => webEvent.url.toLowerCase().includes(value)))) {
-      return webEvent.requestHeaders;
-    }
-  }
-  if (excludeURLsList) {
-    if (excludeURLsList.some((value) =>
-      webEvent.url.includes(value),
-    )) {
-      return webEvent.requestHeaders;
-    }
-  }
-  if (addHeaders && addModifyRequestHeadersList) {
-    addModifyRequestHeadersList.forEach((newHeader) => {
-      if ((newHeader.hasOwnProperty('url') && webEvent.url.includes(newHeader['url'])) ||
-        !newHeader.hasOwnProperty('url')) {
-        let found = false;
-        for (const header of webEvent.requestHeaders) {
-          if (header.name.toLowerCase() === newHeader.name.toLowerCase()) {
-            header.value = newHeader.value;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          webEvent.requestHeaders.push({
-            'name': newHeader.name,
-            'value': newHeader.value,
-          });
-        }
-      }
-    });
-  }
-  return webEvent.requestHeaders;
+function updateHeaderModifySessionRules(headerRows) {
+  const removeRuleIds = Array.from({
+    length: DNR_MAX_HEADER_RULES,
+  }, (_, i) => DNR_HEADER_RULE_BASE + i);
+  const addRules = (headerRows || [])
+      .filter((row) => row.name && row.name.trim() && row.value !== undefined)
+      .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
+                       !FORBIDDEN_HEADERS_PATTERN.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
+      .map((row, index) => ({
+        id: DNR_HEADER_RULE_BASE + index,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [{
+            header: row.name.trim(), operation: 'set', value: String(row.value),
+          }],
+        },
+        condition: {
+          urlFilter: row.url && row.url.trim() ? `*${row.url.trim()}*` : '*',
+          resourceTypes: ALL_RESOURCE_TYPES,
+        },
+      }));
+  httpTracker.browser.declarativeNetRequest.updateSessionRules({
+    removeRuleIds, addRules,
+  });
+}
+
+function clearAllSessionRules() {
+  const allIds = [
+    ...Array.from({
+      length: DNR_MAX_BLOCK_RULES,
+    }, (_, i) => DNR_BLOCK_RULE_BASE + i),
+    ...Array.from({
+      length: DNR_MAX_HEADER_RULES,
+    }, (_, i) => DNR_HEADER_RULE_BASE + i),
+  ];
+  httpTracker.browser.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: allIds, addRules: [],
+  });
 }
 
 function getPropertyFromStorage(details, key) {

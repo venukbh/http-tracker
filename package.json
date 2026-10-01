@@ -1,7 +1,7 @@
 {
     "name": "http-tracker",
     "description": "",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "repository": {
         "type": "git",
         "url": ""
@@ -9,9 +9,7 @@
     "keywords": [],
     "author": "Venu Madhav",
     "license": "MIT",
-    "bugs": {
-        "url": ""
-    },
+    "bugs": {},
     "homepage": "",
     "dependencies": {},
     "devDependencies": {
@@ -21,6 +19,10 @@
     "scripts": {
         "lint-fix": "eslint . --fix",
         "lint": "eslint .",
-        "build": "npm run lint"
+        "build": "npm run lint",
+        "prepackage": "node -e \"const {execSync}=require('child_process'); const v=require('./manifest.json').version; const tags=execSync('git tag').toString().trim().split('\\n'); if(tags.includes('v'+v)){console.error('\\x1b[31mERROR: v'+v+' is already tagged. Bump the version in manifest.json before packaging.\\x1b[0m'); process.exit(1);} else {console.log('\\x1b[32mVersion check passed: v'+v+' is ready to package.\\x1b[0m');}\"",
+        "package": "zip -r http-tracker-$(node -e \"process.stdout.write(require('./manifest.json').version)\").zip manifest.json src/",
+        "postpackage": "node -e \"const v=require('./manifest.json').version; console.log('\\x1b[32mPackage ready: http-tracker-'+v+'.zip\\x1b[0m');\"",
+        "package:dry-run": "find manifest.json src/ -type f | sort"
     }
 }
