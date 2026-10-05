@@ -1,43 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
+  <title>HTTP-TRACKER Preferences</title>
+  <link rel="stylesheet" type="text/css" href="/src/css/styles.css" />
+  <script type="text/javascript" src="/src/js/httpTrackerConstants.js" defer></script>
+  <script type="text/javascript" src="/src/js/httpTrackerUtils.js" defer></script>
+  <script type="text/javascript" src="/src/js/httpTrackerOptions.js" defer></script>
 </head>
 
 <body>
-  <div id="persist_options" style="margin: 2% 2% 2% 2%; height: 100%; font-size: 100%; border:dashed;">
-    <div style="float: left; width: 30%; height:50px;">Open addon window in (change takes effect on restart of addon window)</div>
-    <div style="height:50px;">
+  <div id="persist_options" class="options_wrapper">
+    <fieldset style="border: none; padding: 0; margin: 0;">
+      <legend>Open addon window in (change takes effect on restart of addon window)</legend>
       <label style="padding-left: 20px;">
         <input type="radio" name="uipage" value="true" id="tab">tab
       </label>
       <label style="padding-left: 20px;">
         <input type="radio" name="uipage" value="false" id="popup">popup
       </label>
-    </div>
-    <div style="float:left; width:30%;">
-      Include URL patterns
-    </div>
+    </fieldset>
+    <label for="default_include_patterns" style="float:left; width:30%;">Include URL patterns</label>
     <div>
       <textarea id="default_include_patterns" rows="5" cols="100"></textarea>
     </div>
-    <div style="float:left; width:30%">
-      Exclude URL patterns
-    </div>
+    <label for="default_exclude_patterns" style="float:left; width:30%">Exclude URL patterns</label>
     <div>
       <textarea id="default_exclude_patterns" rows="5" cols="100"></textarea>
     </div>
-    <div style="float:left; width:30%">
-      Mask patterns
-    </div>
+    <label for="default_mask_patterns" style="float:left; width:30%">Mask patterns</label>
     <div>
       <textarea id="default_mask_patterns" rows="5" cols="100"></textarea>
     </div>
   </div>
-  <script type="text/javascript" src="/src/js/httpTrackerConstants.js"></script>
-  <script type="text/javascript" src="/src/js/httpTrackerUtils.js"></script>
-  <script type="text/javascript" src="/src/js/httpTrackerOptions.js"></script>
 </body>
 
 </html>

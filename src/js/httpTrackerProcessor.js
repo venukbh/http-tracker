@@ -1,17 +1,12 @@
 const eventTracker = (function() {
-  const addedRequestId = [];
+  const addedRequestId = new Set();
   const allRequestHeaders = new Map();
   const allResponseHeaders = new Map();
   let captureFormDataCheckboxValue = false;
   const decoder = new TextDecoder('UTF-8');
   const inputBoxDelay = 500;
-  let filterPatternsToExcludeTimeout = null;
-  let setPatternsToBlockTimeout = null;
-  let filterPatternsToIncludeTimeout = null;
-  let filterPatternsToMaskTimeout = null;
   let filterWithKey = '';
   let filterWithValue = '';
-  let filterWithValueTimeout = null;
   let globalExcludeURLsList;
   let globalIncludeURLsList;
   let globalMaskPatternsList;
@@ -23,17 +18,19 @@ const eventTracker = (function() {
   let selectedWebEventRequestId = '';
   let toggleCaptureEvents = true;
   let findPatterns = '';
-  let findPatternsTimeout = null;
+  let compiledFindPattern = null;
   let multipleSearchPatterns = '';
   let isANDFilter = false;
-  let selectedDomain = '';
+  let excludeURLsList;
+  let includeURLsList;
+  let blockURLSList;
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
-  const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted by symbols, Aa-Zz)</td></tr>`;
+  const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted: symbols, 0-9, Aa-Zz)</td></tr>`;
   const COOKIE_CONTENT_BANNER_OPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (optimized)</td></tr>';
   const COOKIE_CONTENT_BANNER_UNOPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (unoptimized)</td></tr>';
-  const ignoreHeaders = ['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId'];
+  const ignoreHeaders = new Set(['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId']);
   const REQUEST_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>`;
   const RESPONSE_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>`;
   const HEADER_CONTENT_KEY = `<tr><td class='web_event_detail_header_key'>`;
@@ -51,15 +48,11 @@ const eventTracker = (function() {
     const captureEvent = toggleCaptureEvents && isEventToCapture(webEvent);
     if (captureEvent) {
       setRedirectCount(webEvent);
-      actionOnBeforeRequest(webEvent);
-      actionOnBeforeSendHeaders(webEvent);
-      actionOnSendHeaders(webEvent);
-      actionOnBeforeRedirect(webEvent);
-      actionOnAuthRequired(webEvent);
-      actionOnHeadersReceived(webEvent);
-      actionOnResponseStarted(webEvent);
-      actionOnCompleted(webEvent);
-      actionOnErrorOccurred(webEvent);
+      if (webEvent.callerName === 'onBeforeRedirect') {
+        actionOnBeforeRedirect(webEvent);
+      } else {
+        CALLER_ACTION_MAP[webEvent.callerName]?.(webEvent);
+      }
       return true;
     }
     return false;
@@ -75,69 +68,24 @@ const eventTracker = (function() {
     }
   }
 
-  function actionOnBeforeRequest(webEvent) {
-    if (webEvent.callerName === 'onBeforeRequest') {
-      insertRequestBody(webEvent);
-    }
-  }
-
-  function actionOnBeforeSendHeaders(webEvent) {
-    if (webEvent.callerName === 'onBeforeSendHeaders') {
-      insertRequestHeaders(webEvent);
-    }
-  }
-
-  function actionOnSendHeaders(webEvent) {
-    if (webEvent.callerName === 'onSendHeaders') {
-      insertRequestHeaders(webEvent);
-    }
-  }
+  const CALLER_ACTION_MAP = {
+    onBeforeRequest:     (e) => insertRequestBody(e),
+    onBeforeSendHeaders: (e) => insertRequestHeaders(e),
+    onSendHeaders:       (e) => insertRequestHeaders(e),
+    onAuthRequired:      (e) => insertResponseHeaders(e),
+    onHeadersReceived:   (e) => insertResponseHeaders(e),
+    onResponseStarted:   (e) => insertResponseHeaders(e),
+    onCompleted:         (e) => insertResponseHeaders(e),
+    onErrorOccurred:     (e) => insertResponseHeaders(e),
+  };
 
   function actionOnBeforeRedirect(webEvent) {
-    if (webEvent.callerName === 'onBeforeRedirect') {
-      // A defect in latest FF versions (tested on 79.0)
-      // Firefox starts onBeforeRedirect without actual headers as below, and don't capture anything during this process. If the redirect response is as below, it means response headers are on the way. So wait till all the response headers are completed
-      // this issue does not exist in chrome
-      // {
-      //   "method": "GET",
-      //   "redirectUrl": "blah/blah/blah",
-      //   "url": "blah/blah",
-      //   "urlClassification": "firstParty: [], thirdParty: []"
-      // }
-      if (webEvent.ip) { // webEvent.ip && webEvent.statusCode && webEvent.statusLine && webEvent.redirectUrl
-        let redirectCount = requestIdRedirectCount.get(webEvent.requestId);
-        requestIdRedirectCount.set(webEvent.requestId, ++redirectCount);
-        insertResponseHeaders(webEvent);
-      }
-    }
-  }
-
-  function actionOnAuthRequired(webEvent) {
-    if (webEvent.callerName === 'onAuthRequired') {
-      insertResponseHeaders(webEvent);
-    }
-  }
-
-  function actionOnHeadersReceived(webEvent) {
-    if (webEvent.callerName === 'onHeadersReceived') {
-      insertResponseHeaders(webEvent);
-    }
-  }
-
-  function actionOnResponseStarted(webEvent) {
-    if (webEvent.callerName === 'onResponseStarted') {
-      insertResponseHeaders(webEvent);
-    }
-  }
-
-  function actionOnCompleted(webEvent) {
-    if (webEvent.callerName === 'onCompleted') {
-      insertResponseHeaders(webEvent);
-    }
-  }
-
-  function actionOnErrorOccurred(webEvent) {
-    if (webEvent.callerName === 'onErrorOccurred') {
+    // A defect in latest FF versions (tested on 79.0): Firefox starts onBeforeRedirect
+    // without actual headers — wait for webEvent.ip to confirm headers are available.
+    // This issue does not exist in Chrome.
+    if (webEvent.ip) {
+      let redirectCount = requestIdRedirectCount.get(webEvent.requestId);
+      requestIdRedirectCount.set(webEvent.requestId, ++redirectCount);
       insertResponseHeaders(webEvent);
     }
   }
@@ -160,14 +108,13 @@ const eventTracker = (function() {
       return true;
     }
     let found = false;
-    if (includeURLsList && includeURLsList.length) {
+    if (includeURLsList?.length) {
       found = includeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
     }
-    if (!found && globalIncludeURLsList && globalIncludeURLsList.length) {
+    if (!found && globalIncludeURLsList?.length) {
       found = globalIncludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
-    } {
-      return found;
     }
+    return found;
   }
 
   function urlMatchExcludePattern(webEvent) {
@@ -197,7 +144,7 @@ const eventTracker = (function() {
    * populate the events list by adding or updating existing one
    */
   function addOrUpdateUrlListToPage(webEvent) {
-    if (addedRequestId.indexOf(webEvent.requestIdEnhanced) === -1) {
+    if (!addedRequestId.has(webEvent.requestIdEnhanced)) {
       addEventList(webEvent);
     } else {
       updateEventList(webEvent);
@@ -206,7 +153,7 @@ const eventTracker = (function() {
   }
 
   function addEventList(webEvent) {
-    addedRequestId.push(webEvent.requestIdEnhanced);
+    addedRequestId.add(webEvent.requestIdEnhanced);
     const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\'>' +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
@@ -227,21 +174,21 @@ const eventTracker = (function() {
       getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_style_error');
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
     }
-    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ? webEvent.fromCache : 'N/A';
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache !== undefined ? webEvent.fromCache : 'N/A';
   }
 
-  function filterEventList(webEvent) {
+  function filterEventList(webEvent) { // NOSONAR javascript:S3776
     if (multipleSearchPatterns.length) {
       const type = getById('web_event_filter_key').selectedOptions[0].innerText;
       let value = '';
       if (type === 'CACHE') {
-        value = webEvent.fromCache ? webEvent.fromCache : 'N/A';
+        value = webEvent.fromCache !== undefined ? String(webEvent.fromCache) : 'N/A';
       }
       if (type === 'METHOD') {
         value = webEvent.method;
       }
       if (type === 'STATUS') {
-        value = `${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : 'N/A')}`;
+        value = `${webEvent.statusCode || (webEvent.error ? STRING_ERROR : 'N/A')}`;
       }
       if (type === 'URL') {
         value = webEvent.url;
@@ -249,7 +196,23 @@ const eventTracker = (function() {
       if (type === 'DATE') {
         value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A')}`;
       }
-      if (!value.toString().toLowerCase().includes(filterWithValue)) {
+      const string = value.toString().toLowerCase();
+      let hide;
+      if (!isANDFilter) {
+        hide = !multipleSearchPatterns.some((v) => string.includes(v));
+      } else {
+        let index = 0;
+        multipleSearchPatterns.forEach((e) => {
+          if (index !== -1) {
+            index = string.indexOf(e, index);
+            if (index !== -1) {
+              index += e.length;
+            }
+          }
+        });
+        hide = index === -1;
+      }
+      if (hide) {
         getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add('web_event_list_hide');
       } else {
         getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_list_hide');
@@ -258,15 +221,16 @@ const eventTracker = (function() {
   }
 
   function generateURLContent(webEvent) {
-    return `<div class='web_event_list_url' id='web_event_url_${webEvent.requestIdEnhanced}'>${webEvent.url}</div>`;
+    return `<div class='web_event_list_url' id='web_event_url_${webEvent.requestIdEnhanced}'>${escapeHtml(webEvent.url)}</div>`;
   }
 
   function generateMETHODContent(webEvent) {
-    return `<div class='web_event_list_method' id='web_event_method_${webEvent.requestIdEnhanced}'>${webEvent.method}</div>`;
+    return `<div class='web_event_list_method' id='web_event_method_${webEvent.requestIdEnhanced}'>${escapeHtml(webEvent.method)}</div>`;
   }
 
   function generateSTATUSContent(webEvent) {
-    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${(webEvent.statusCode ? webEvent.statusCode : webEvent.error ? STRING_ERROR : 'N/A')}</div>`;
+    const status = webEvent.statusCode || (webEvent.error ? STRING_ERROR : 'N/A');
+    return `<div class='web_event_list_status' id='web_event_status_${webEvent.requestIdEnhanced}'>${status}</div>`;
   }
 
   function generateDATETIMEContent(webEvent) {
@@ -274,12 +238,17 @@ const eventTracker = (function() {
   }
 
   function generateCACHEContent(webEvent) {
-    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>N/A</div>`;
+    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>${webEvent.fromCache !== undefined ? webEvent.fromCache : 'N/A'}</div>`;
   }
 
   function getReadableDate(timestamp) {
-    const date = new Date(timestamp);
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    const d = new Date(timestamp);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    return `${mm}/${dd} ${hh}:${min}:${ss}`;
   }
 
   function insertRequestBody(webEvent) {
@@ -299,6 +268,10 @@ const eventTracker = (function() {
   }
 
   function displaySelectedEventDetails(webEvent) {
+    // Performance note: this triggers a full re-render of the header panel on every network event
+    // for the selected request (up to 6 renders per request: onBeforeRequest → onCompleted).
+    // Optimization opportunity: skip re-render if neither allRequestHeaders nor allResponseHeaders
+    // changed since the last render — track a render counter and compare before calling displayEventProperties.
     if (selectedWebEventRequestId && webEvent.requestIdEnhanced === selectedWebEventRequestId) {
       displayEventProperties();
     }
@@ -310,6 +283,7 @@ const eventTracker = (function() {
    *  build the request container, response container
    */
   function displayEventProperties() {
+    if (!selectedWebEventRequestId) return;
     const webEventIdRequest = allRequestHeaders.get(selectedWebEventRequestId);
     const webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
     const webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
@@ -317,21 +291,19 @@ const eventTracker = (function() {
     const requestContainer = buildURLDetailsContainer(webEventIdRequest, 'requestDetails');
     const responseContainer = buildURLDetailsContainer(webEventIdResponse, 'responseDetails');
     const requestFormContainer = buildRequestFormContainer(webEventIdRequestForm);
-    getById('web_event_details_selected_request').style.borderRight = '1px solid';
-    getById('web_event_details_selected_response').style.borderRight = '1px solid';
-    getById('web_event_details_selected_request').style.borderLeft = '1px solid';
-    getById('web_event_details_selected_response').style.borderLeft = '1px solid';
-    getById('web_event_details_selected_request').style.borderBottom = '1px solid';
-    getById('web_event_details_selected_response').style.borderBottom = '1px solid';
+    const reqEl = getById('web_event_details_selected_request');
+    const resEl = getById('web_event_details_selected_response');
+    reqEl.style.border = '1px solid';
+    resEl.style.border = '1px solid';
     getById('request_headers_details').innerHTML = requestContainer + requestFormContainer;
     getById('response_headers_details').innerHTML = responseContainer;
     getById('web_details_selected_container').style = 'visibility: visible;';
   }
 
   function deleteCookiesForSelectedDomain() {
-    cookiesList = httpTracker.browser.cookies.getAll({
+    httpTracker.browser.cookies.getAll({
       domain: getById('delete_cookies').value,
-    }, removeCookies);
+    }).then(removeCookies).catch(onError);
   }
 
   function buildURLDetailsContainer(webEventIdDetails, detailsType) {
@@ -341,15 +313,13 @@ const eventTracker = (function() {
       tableContent = HEADER_CONTENT_BANNER;
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
         if (key !== 'responseHeaders' && key !== 'requestHeaders') { // headers added by browser
-          if (!ignoreHeaders.includes(key) && value !== undefined && value !== null) {
+          if (!ignoreHeaders.has(key) && value !== undefined && value !== null) {
             if (typeof value !== 'object') {
               tableContent += generateHeaderKeyValueContent(key, value);
             } else {
-              let content = '';
-              Object.entries(value).forEach(([k, v]) => {
-                content += `${k}: ${JSON.stringify(v)}, `;
-              });
-              content = content.substring(0, content.length - 2); // removing last ", " from the above loop
+              const content = Object.entries(value)
+                  .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+                  .join(', ');
               tableContent += generateHeaderKeyValueContent(key, content);
             }
           }
@@ -373,16 +343,52 @@ const eventTracker = (function() {
         value = value.charAt(0) + '*****' + value.charAt(value.length - 1);
       }
     }
-    return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}`;
+    return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}</td></tr>`;
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   function addMarkTag(text) {
-    if (findPatterns.length) {
-      const findStr = new RegExp(findPatterns, 'gi');
-      const markedText = text.toString().replace(findStr, (match) => `<mark>${match}</mark>`);
-      return markedText;
+    const escaped = escapeHtml(text);
+    if (compiledFindPattern) {
+      compiledFindPattern.lastIndex = 0;
+      return escaped.replace(compiledFindPattern, (match) => `<mark>${match}</mark>`);
     }
-    return text;
+    return escaped;
+  }
+
+  function isBinaryData(str) {
+    const sampleSize = Math.min(str.length, 500);
+    let nonPrintable = 0;
+    for (let i = 0; i < sampleSize; i++) {
+      const code = str.codePointAt(i);
+      if (code === 0xFFFD || (code < 32 && code !== 9 && code !== 10 && code !== 13)) {
+        nonPrintable++;
+      }
+    }
+    return nonPrintable / sampleSize > 0.15;
+  }
+
+  function detectCompressionType(dataView) {
+    if (dataView.byteLength < 2) return 'binary';
+    const b0 = dataView.getUint8(0);
+    const b1 = dataView.getUint8(1);
+    if (b0 === 0x1f && b1 === 0x8b) return 'gzip';
+    if (b0 === 0x78 && (b1 === 0x9c || b1 === 0xda || b1 === 0x01 || b1 === 0x5e)) return 'deflate';
+    if (dataView.byteLength >= 4) {
+      const b2 = dataView.getUint8(2);
+      const b3 = dataView.getUint8(3);
+      if (b0 === 0xfd && b1 === 0x2f && b2 === 0xb5 && b3 === 0x2f) return 'zstd';
+      if (b0 === 0x04 && b1 === 0x22 && b2 === 0x4d && b3 === 0x18) return 'lz4';
+    }
+    return 'compressed or binary';
   }
 
   function buildRequestFormContainer(webEventIdRequestForm) {
@@ -398,7 +404,14 @@ const eventTracker = (function() {
         for (const eachByte of webEventIdRequestForm.raw) {
           const dataView = new DataView(eachByte.bytes);
           const decodedString = decoder.decode(dataView);
-          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${addMarkTag(decodedString)}</td></tr>`;
+          let displayContent;
+          if (isBinaryData(decodedString)) {
+            const type = detectCompressionType(dataView);
+            displayContent = `<span style='color:#888;font-style:italic;'>[Binary data — ${dataView.byteLength} bytes, likely ${type}. Cannot display compressed content.]</span>`;
+          } else {
+            displayContent = addMarkTag(decodedString);
+          }
+          formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2>${displayContent}</td></tr>`;
         }
       }
     }
@@ -410,7 +423,6 @@ const eventTracker = (function() {
     let banner = COOKIE_CONTENT_BANNER; // request cookies
     let cookieContent = '';
     const optimizedCookiesMap = new Map();
-    const unoptimizedCookiesList = [];
     headers.forEach((header) => {
       // request cookies
       if (header.name === DELIMITER_REQUEST_COOKIE_KEY_NAME) {
@@ -428,12 +440,12 @@ const eventTracker = (function() {
       }
       // other headers
       else {
-        generalHeadersContent += `${HEADER_CONTENT_KEY}${addMarkTag(header.name)}${HEADER_CONTENT_VALUE}${addMarkTag(header.value)}</td></tr>`;
+        generalHeadersContent += generateHeaderKeyValueContent(header.name, header.value);
       }
     });
     if (optimizeResponseCookies) {
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
-        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key.split(':', 1))}${HEADER_CONTENT_VALUE}${addMarkTag(value.cookieValue)}</td></tr>`;
+        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key.split(':', 1)[0])}${HEADER_CONTENT_VALUE}${addMarkTag(value.cookieValue)}</td></tr>`;
       });
     }
     if (cookieContent) {
@@ -454,6 +466,8 @@ const eventTracker = (function() {
         const firstOccurance = cookie.indexOf('=');
         if (firstOccurance > -1) {
           cookieMap.set(cookie.substring(0, firstOccurance), cookie.substring(firstOccurance + 1));
+        } else {
+          cookieMap.set(cookie, '');
         }
       }
     });
@@ -505,9 +519,7 @@ const eventTracker = (function() {
       });
       removedCookies.push(removed);
     }
-    Promise.all(removedCookies).then((values) => {
-      // console.log(values.length);
-    });
+    Promise.all(removedCookies).catch(onError);
   }
 
   function getCookieNameValue(cookie) {
@@ -519,16 +531,12 @@ const eventTracker = (function() {
       // https://tools.ietf.org/html/rfc6265#page-10
       // https://tools.ietf.org/html/rfc6265#section-4.1.1
       if (cookieObj.cookieValue) {
-        stringToArray(cookieObj.cookieValue, ';').forEach((attribute) => {
+        (stringToArray(cookieObj.cookieValue, ';') || []).forEach((attribute) => {
           if (attribute) {
             const attributeKeyValue = attribute.trim().split('=');
             // toLowerCase : chrome sends as domain, FF sends as Domain
             if (attributeKeyValue[0].toLowerCase() === 'domain' || attributeKeyValue[0].toLowerCase() === 'path') {
               cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
-            }
-            if (attributeKeyValue[0].toLowerCase() === 'domain') {
-              // console.log(attributeKeyValue[1]);
-              selectedDomain = attributeKeyValue[1];
             }
           }
         });
@@ -550,7 +558,7 @@ const eventTracker = (function() {
    *  b. For each key entry in the filter box
    *  c. on clear filter button click
    */
-  function hideOrShowURLList() {
+  function hideOrShowURLList() { // NOSONAR javascript:S3776
     if (multipleSearchPatterns.length == 0) {
       displayHiddenURLList();
     } else {
@@ -589,14 +597,14 @@ const eventTracker = (function() {
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
     requestFormData.delete(requestIdToRemove);
+    addedRequestId.delete(requestIdToRemove);
     node.remove();
     if (requestIdToRemove === selectedWebEventRequestId) {
       getById('delete_selected_web_event').disabled = true;
       getById('response_headers_details').innerHTML = '';
       getById('request_headers_details').innerHTML = '';
       getById('web_details_selected_container').style = 'visibility: hidden;';
-      selectedWebEventRequestId = null;
-      selectedEvent = null;
+      selectedWebEventRequestId = '';
     }
   }
 
@@ -644,44 +652,47 @@ const eventTracker = (function() {
     getById('add_modify_headers').oninput = generateHeadersToAddOrModify; // either on text change
     getById('find_in_details_pattern').oninput = setFindPatterns;
     getById('delete_cookies_button').onclick = deleteCookiesForSelectedDomain;
+    getById('delete_cookies').oninput = function() {
+      getById('delete_cookies_button').disabled = !this.value.trim();
+    };
     getById('preferences').addEventListener('click', function() {
       openAddonOptions();
     });
   }
 
-  function setFindPatterns(event) {
-    if (findPatternsTimeout) {
-      clearTimeout(findPatternsTimeout);
+  const setFindPatterns = debounce(function(event) {
+    findPatterns = event.target.value.trim();
+    try {
+      compiledFindPattern = findPatterns ? new RegExp(findPatterns, 'gi') : null;
+    } catch (e) {
+      compiledFindPattern = null;
     }
-    findPatternsTimeout = setTimeout(function() {
-      findPatterns = event.target.value.trim();
-      displayEventProperties();
-    }, inputBoxDelay);
-  }
+    displayEventProperties();
+  }, inputBoxDelay);
 
   function generateHeadersToAddOrModify() {
     const headersObject = [];
     const conatiners = getByClassNames('single_header_container');
-    Array.prototype.filter.call(conatiners, function(headerContainer) {
-      index = headerContainer.id.substring(15);
-      headerName = headerContainer.querySelector('.header_input_name').value.trim();
+    Array.prototype.forEach.call(conatiners, function(headerContainer) {
+      const nameInput = headerContainer.querySelector('.header_input_name');
+      const nameLabel = headerContainer.querySelector('.add_header_name');
+      const applyChk = headerContainer.querySelector('.header_input_apply');
+      const valueInput = headerContainer.querySelector('.header_input_value');
+      const urlInput = headerContainer.querySelector('.header_input_url');
+
+      const headerName = nameInput.value.trim();
       if (headerName) {
         if (!FORBIDDEN_HEADERS.some((v) => headerName.toLowerCase() === v.toLowerCase()) &&
           !FORBIDDEN_HEADERS_PATTERN.some((v) => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
-          headerContainer.querySelector('.add_header_name').style.color = '';
-          if (headerContainer.querySelector('.header_input_apply').checked) {
-            const x = {};
-            x.name = headerName;
-            x.value = headerContainer.querySelector('.header_input_value').value;
-            x.url = headerContainer.querySelector('.header_input_url').value.trim();
-            headersObject.push(x);
+          nameLabel.style.color = '';
+          if (applyChk.checked) {
+            headersObject.push({name: headerName, value: valueInput.value, url: urlInput.value.trim()});
           }
         } else {
-          headerContainer.querySelector('.add_header_name').style.color = 'red';
+          nameLabel.style.color = 'red';
         }
       }
     });
-    setRequestHeadersList(headersObject);
     updateHeaderModifySessionRules(headersObject);
     if (headersObject.length || conatiners.length) {
       getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers: ${headersObject.length}`;
@@ -701,7 +712,7 @@ const eventTracker = (function() {
     generateHeadersToAddOrModify();
   }
 
-  function addNewHeaderContainer(event) {
+  function addNewHeaderContainer() {
     const currentContainers = getByClassNames('single_header_container');
     const nextIndex = currentContainers.length;
 
@@ -711,33 +722,39 @@ const eventTracker = (function() {
 
     const urlDiv = document.createElement('div');
     urlDiv.classList = 'add_header_url';
-    const urlTextNode = document.createTextNode('URL ');
+    const urlLabel = document.createElement('label');
+    urlLabel.htmlFor = 'header_url_' + nextIndex;
+    urlLabel.textContent = 'URL';
     const urlInput = document.createElement('input');
     urlInput.setAttribute('type', 'text');
     urlInput.id = 'header_url_' + nextIndex;
     urlInput.classList = 'header_input_url';
-    urlDiv.append(urlTextNode);
-    urlDiv.append(urlInput);
+    urlInput.placeholder = 'e.g. api.example.com (blank = all URLs)';
+    urlDiv.append(urlLabel, ' ', urlInput);
 
     const valueDiv = document.createElement('div');
     valueDiv.classList = 'add_header_value';
-    const valueTextNode = document.createTextNode('Value ');
+    const valueLabel = document.createElement('label');
+    valueLabel.htmlFor = 'header_value_' + nextIndex;
+    valueLabel.textContent = 'Value';
     const valueInput = document.createElement('input');
     valueInput.setAttribute('type', 'text');
     valueInput.id = 'header_value_' + nextIndex;
     valueInput.classList = 'header_input_value';
-    valueDiv.append(valueTextNode);
-    valueDiv.append(valueInput);
+    valueInput.placeholder = 'e.g. my-value';
+    valueDiv.append(valueLabel, ' ', valueInput);
 
     const nameDiv = document.createElement('div');
     nameDiv.classList = 'add_header_name';
-    const nameTextNode = document.createTextNode('Name ');
+    const nameLabel = document.createElement('label');
+    nameLabel.htmlFor = 'header_name_' + nextIndex;
+    nameLabel.textContent = 'Name';
     const nameInput = document.createElement('input');
     nameInput.setAttribute('type', 'text');
     nameInput.id = 'header_name_' + nextIndex;
     nameInput.classList = 'header_input_name';
-    nameDiv.append(nameTextNode);
-    nameDiv.append(nameInput);
+    nameInput.placeholder = 'e.g. X-Custom-Header';
+    nameDiv.append(nameLabel, ' ', nameInput);
 
     const applyDiv = document.createElement('div');
     applyDiv.classList = 'add_header_apply';
@@ -756,9 +773,9 @@ const eventTracker = (function() {
     const simpleDiv = document.createElement('div');
     simpleDiv.style = 'display: flex;';
 
-    const removeButton = document.createElement('input');
-    removeButton.setAttribute('type', 'button');
-    removeButton.value = '-';
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.textContent = '-';
     removeButton.id = 'header_button_remove_' + nextIndex;
     removeButton.onclick = clearAndRemoveHeaderContents;
 
@@ -766,10 +783,10 @@ const eventTracker = (function() {
     removeDiv.style = 'margin-right: 5px;float: left;flex-grow: 1;';
     removeDiv.append(removeButton);
 
-    const addButton = document.createElement('input');
-    addButton.setAttribute('type', 'button');
-    addButton.value = '+';
-    addButton.style = 'visibility: hidden;';
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.textContent = '+';
+    addButton.style.visibility = 'hidden';
 
     const addDiv = document.createElement('div');
     addDiv.append(addButton);
@@ -804,33 +821,30 @@ const eventTracker = (function() {
     displayEventProperties();
   }
 
-  function setPatternsToMask(event) {
-    if (filterPatternsToMaskTimeout) {
-      clearTimeout(filterPatternsToMaskTimeout);
-    }
-    filterPatternsToMaskTimeout = setTimeout(function() {
-      maskedAttributesList = stringToArray(event.target.value);
-      displayEventProperties();
-    }, inputBoxDelay);
-  }
+  const setPatternsToMask = debounce(function(event) {
+    maskedAttributesList = stringToArray(event.target.value);
+    displayEventProperties();
+  }, inputBoxDelay);
 
   function clearAllEvents() {
     requestFormData.clear();
     allRequestHeaders.clear();
     allResponseHeaders.clear();
-    addedRequestId.length = 0;
+    addedRequestId.clear();
+    requestIdRedirectCount.clear();
+    selectedWebEventRequestId = '';
     getById('web_event_details_selected_request').style.border = 'none';
     getById('web_event_details_selected_response').style.border = 'none';
     getById('response_headers_details').innerHTML = '';
     getById('request_headers_details').innerHTML = '';
-    getById('urls_list').innerHTML = '';
+    Array.from(getByClassNames('web_event_list_blank')).forEach((el) => el.remove());
     getById('web_details_selected_container').style = 'visibility: hidden;';
   }
 
   function deleteFilteredEvents() {
     const visibleUrlList = getVisibleUrlsList();
     if (visibleUrlList) {
-      for (node of visibleUrlList) {
+      for (const node of visibleUrlList) {
         removeEntry(node);
       }
     }
@@ -849,14 +863,12 @@ const eventTracker = (function() {
   }
 
   function updateSelectedEventToContainer(event) {
-    if (event.target && event.target.classList.contains('web_event_list_container')) {
-      const selectedEvent = getSelectedEvent();
-      selectNextEligibleEvent(selectedEvent, event.keyCode);
-    }
+    const selectedEvent = getSelectedEvent();
+    selectNextEligibleEvent(selectedEvent, event.key);
   }
 
-  function selectNextEligibleEvent(selectedEvent, keyCode) {
-    if (keyCode == 40) { // down arrow
+  function selectNextEligibleEvent(selectedEvent, key) { // NOSONAR javascript:S3776
+    if (key === 'ArrowDown') {
       let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
       while (nextElement) {
         if (nextElement.classList.contains('web_event_list_hide')) {
@@ -866,7 +878,7 @@ const eventTracker = (function() {
           break;
         }
       }
-    } else if (keyCode == 38) { // up arrow
+    } else if (key === 'ArrowUp') {
       let previousElement = selectedEvent ? selectedEvent.previousElementSibling : selectedEvent;
       while (previousElement) {
         if (previousElement.classList.contains('web_event_list_hide')) {
@@ -889,23 +901,18 @@ const eventTracker = (function() {
   }
 
   function setEventRowAsSelected(event) {
-    if (event.target && event.target.parentElement.classList.contains('web_event_list_blank')) {
+    if (event.target?.parentElement.classList.contains('web_event_list_blank')) {
       markSelectedRequest(event.target.parentElement.id);
       getById('delete_selected_web_event').disabled = false;
       getById('delete_selected_web_event').classList.remove('web_event_list_filtered');
     }
   }
 
-  function filterEvents(event) {
-    if (filterWithValueTimeout) {
-      clearTimeout(filterWithValueTimeout);
-    }
-    filterWithValueTimeout = setTimeout(function() {
-      updateFilterOptions();
-      hideOrShowURLList();
-      updateAllButtons();
-    }, inputBoxDelay);
-  }
+  const filterEvents = debounce(function() {
+    updateFilterOptions();
+    hideOrShowURLList();
+    updateAllButtons();
+  }, inputBoxDelay);
 
   function updateFilterOptions() {
     filterWithKey = getById('web_event_filter_key').selectedOptions[0].value; // get the selected key(index) from drop down
@@ -928,33 +935,18 @@ const eventTracker = (function() {
     }
   }
 
-  function setPatternsToExclude(event) {
-    if (filterPatternsToExcludeTimeout) {
-      clearTimeout(filterPatternsToExcludeTimeout);
-    }
-    filterPatternsToExcludeTimeout = setTimeout(function() {
-      excludeURLsList = stringToArray(event.target.value);
-    }, inputBoxDelay);
-  }
+  const setPatternsToExclude = debounce(function(event) {
+    excludeURLsList = stringToArray(event.target.value);
+  }, inputBoxDelay);
 
-  function setPatternsToBlock(event) {
-    if (setPatternsToBlockTimeout) {
-      clearTimeout(setPatternsToBlockTimeout);
-    }
-    setPatternsToBlockTimeout = setTimeout(function() {
-      blockURLSList = stringToArray(event.target.value);
-      updateBlockSessionRules(blockURLSList || []);
-    }, inputBoxDelay);
-  }
+  const setPatternsToBlock = debounce(function(event) {
+    blockURLSList = stringToArray(event.target.value);
+    updateBlockSessionRules(blockURLSList || []);
+  }, inputBoxDelay);
 
-  async function setPatternsToInclude(event) {
-    if (filterPatternsToIncludeTimeout) {
-      clearTimeout(filterPatternsToIncludeTimeout);
-    }
-    filterPatternsToIncludeTimeout = setTimeout(function() {
-      includeURLsList = stringToArray(event.target.value);
-    }, inputBoxDelay);
-  }
+  const setPatternsToInclude = debounce(function(event) {
+    includeURLsList = stringToArray(event.target.value);
+  }, inputBoxDelay);
 
   function setInitialStateOfPage() {
     filterWithValue = getById('filter_web_events').value;
@@ -970,37 +962,23 @@ const eventTracker = (function() {
     hideOrShowInfoIcons();
   }
 
+  function updateInfoIcon(elementId, list) {
+    const element = getById(elementId);
+    if (list?.length) {
+      element.innerHTML = '&#9432;';
+      element.title = `Patterns extended from preferences: ${list}`;
+      element.style.color = 'red';
+    } else {
+      element.innerHTML = '';
+      element.title = '';
+      element.style.color = '';
+    }
+  }
+
   function hideOrShowInfoIcons() {
-    if (globalIncludeURLsList && globalIncludeURLsList.length) {
-      const element = getById('info_include');
-      element.innerHTML = '&#9432;';
-      element.title = `Patterns extended from preferences: ${globalIncludeURLsList}`;
-      element.style.color = 'red';
-    } else {
-      const element = getById('info_include');
-      element.innerHTML = '';
-      element.title = '';
-    }
-    if (globalExcludeURLsList && globalExcludeURLsList.length) {
-      const element = getById('info_exclude');
-      element.innerHTML = '&#9432;';
-      element.title = `Patterns extended from preferences: ${globalExcludeURLsList}`;
-      element.style.color = 'red';
-    } else {
-      const element = getById('info_exclude');
-      element.innerHTML = '';
-      element.title = '';
-    }
-    if (globalMaskPatternsList && globalMaskPatternsList.length) {
-      const element = getById('info_mask');
-      element.innerHTML = '&#9432;';
-      element.title = `Patterns extended from preferences: ${globalMaskPatternsList}`;
-      element.style.color = 'red';
-    } else {
-      const element = getById('info_mask');
-      element.innerHTML = '';
-      element.title = '';
-    }
+    updateInfoIcon('info_include', globalIncludeURLsList);
+    updateInfoIcon('info_exclude', globalExcludeURLsList);
+    updateInfoIcon('info_mask',    globalMaskPatternsList);
   }
 
   function updateAllButtons() {
@@ -1018,9 +996,9 @@ const eventTracker = (function() {
   }
 
   function updateButonDeleteAllFilteredWebEvents() {
-    if (filterWithValue && filterWithValue.length > 2) {
+    if (filterWithValue?.length > 2) {
       const visibleUrlList = getVisibleUrlsList();
-      if (visibleUrlList && visibleUrlList.length > 0) {
+      if (visibleUrlList?.length > 0) {
         getById('delete_all_filtered_web_events').disabled = false;
       } else {
         getById('delete_all_filtered_web_events').disabled = true;
@@ -1068,9 +1046,10 @@ const eventTracker = (function() {
     globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
     globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
     globalIncludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
+    hideOrShowInfoIcons();
   }
 
-  function getChangesFromStorge(changes, namespace) {
+  function getChangesFromStorage(changes) {
     for (const key in changes) {
       if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
         globalExcludeURLsList = changes[key].newValue;
@@ -1084,7 +1063,7 @@ const eventTracker = (function() {
     displayEventProperties();
   }
 
-  httpTracker.browser.storage.onChanged.addListener(getChangesFromStorge);
+  httpTracker.browser.storage.onChanged.addListener(getChangesFromStorage);
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
 
   window.addEventListener('beforeunload', clearAllSessionRules);

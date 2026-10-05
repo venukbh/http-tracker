@@ -1,5 +1,5 @@
 const httpTracker = {
-  browser: (typeof globalThis.browser !== 'undefined' ? globalThis.browser : globalThis.chrome),
+  browser: (globalThis.browser !== undefined ? globalThis.browser : globalThis.chrome),
   isFF: navigator.userAgent.includes('Firefox'),
   PAGE_PATH: '/src/html/http-tracker.html',
   STORAGE_KEY_EXCLUDE_PATTERN: 'httpTrackerGlobalExcludePatterns',
@@ -9,7 +9,7 @@ const httpTracker = {
   STORAGE_KEY_OPEN_ADDON_IN_TAB: 'httpTracker_OpenAddonInTab',
 };
 
-const FORBIDDEN_HEADERS = ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers', 'Access-Control-Request-Method', 'Connection', 'Content-Length', 'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Feature-Policy', 'Host', 'Keep-Alive', 'Origin', 'Proxy-', 'Sec-', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade', 'Via'];
+const FORBIDDEN_HEADERS = ['Accept-Charset', 'Accept-Encoding', 'Access-Control-Request-Headers', 'Access-Control-Request-Method', 'Access-Control-Request-Private-Network', 'Connection', 'Content-Length', 'Cookie', 'Cookie2', 'Date', 'DNT', 'Expect', 'Host', 'Keep-Alive', 'Origin', 'Referer', 'TE', 'Trailer', 'Transfer-Encoding', 'Upgrade', 'Via'];
 const FORBIDDEN_HEADERS_PATTERN = ['Proxy-', 'Sec-'];
 const DELIMITER_AND = '&';
 const DELIMITER_OR = '|';

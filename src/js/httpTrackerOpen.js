@@ -19,8 +19,9 @@ function getAddonOptions(details) {
   let existingWindow;
   if (details.length > 0) {
     details.some((eachWindow) => {
-      if (eachWindow.tabs && eachWindow.tabs.some((tab) => tab.url.includes('/src/html/options.html'))) {
+      if (eachWindow.tabs?.some((tab) => tab.url?.includes('/src/html/options.html'))) {
         existingWindow = eachWindow;
+        return true;
       }
     });
   }
@@ -29,7 +30,7 @@ function getAddonOptions(details) {
       'windowId': existingWindow.id,
       'url': httpTracker.browser.runtime.getURL('/src/html/options.html'),
     }, function(tabs) {
-      if (tabs && tabs.length == 1) {
+      if (tabs?.length === 1) {
         httpTracker.browser.windows.update(
             existingWindow.id, {
               focused: true,
@@ -73,7 +74,7 @@ function openInTab(details) {
       'windowId': existingWindow.id,
       'url': httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
     }, function(tabs) {
-      if (tabs && tabs.length == 1) {
+      if (tabs?.length === 1) {
         httpTracker.browser.windows.update(
             existingWindow.id, {
               focused: true,
@@ -95,8 +96,9 @@ function getExistingAddonWindow(details) {
   let existingWindow;
   if (details.length > 0) {
     details.some((eachWindow) => {
-      if (eachWindow.tabs && eachWindow.tabs.some((tab) => tab.url.includes(httpTracker.PAGE_PATH))) {
+      if (eachWindow.tabs?.some((tab) => tab.url?.includes(httpTracker.PAGE_PATH))) {
         existingWindow = eachWindow;
+        return true;
       }
     });
   }
@@ -118,7 +120,7 @@ function focusExistingWindow(addOnWindowDetails) {
   } else if (addOnWindowDetails) {
     httpTracker.browser.windows.update(addOnWindowDetails.id, bringToFront);
   } else {
-    createNewAddonPopup();
+    httpTracker.browser.windows.create(createWindowProperties);
   }
 }
 
