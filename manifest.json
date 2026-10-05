@@ -2,12 +2,7 @@
   "author": "Venu Madhav",
   "background":
   {
-    "service_worker": "/src/js/httpTrackerSW.js",
-    "scripts": [
-      "/src/js/httpTrackerConstants.js",
-      "/src/js/httpTrackerUtils.js",
-      "/src/js/httpTrackerOpen.js"
-    ]
+    "service_worker": "/src/js/httpTrackerSW.js"
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
   "manifest_version": 3,
@@ -21,7 +16,7 @@
     "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": ["<all_urls>"],
-  "version": "3.0.0",
+  "version": "3.0.1",
   "action":
   {
     "default_icon":

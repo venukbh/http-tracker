@@ -8,84 +8,32 @@ const resHeaders = httpTracker.isFF ? ['responseHeaders'] : ['responseHeaders', 
 const errorHeaders = ['extraHeaders'];
 const r = httpTracker.browser.webRequest;
 
-r.onBeforeRequest.addListener(
-    function(details) {
-      details.callerName = 'onBeforeRequest';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, reqBodyHeaders,
-);
+const LISTENER_CONFIG = [
+  {event: 'onBeforeRequest', headers: reqBodyHeaders},
+  {event: 'onBeforeSendHeaders', headers: reqHeaders},
+  {event: 'onSendHeaders', headers: reqHeaders},
+  {event: 'onHeadersReceived', headers: resHeaders},
+  {event: 'onAuthRequired', headers: resHeaders},
+  {event: 'onBeforeRedirect', headers: resHeaders},
+  {event: 'onResponseStarted', headers: resHeaders},
+  {event: 'onCompleted', headers: resHeaders},
+];
 
-r.onBeforeSendHeaders.addListener(
-    function(details) {
-      details.callerName = 'onBeforeSendHeaders';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, reqHeaders,
-);
-
-r.onSendHeaders.addListener(
-    function(details) {
-      details.callerName = 'onSendHeaders';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, reqHeaders,
-);
-
-r.onHeadersReceived.addListener(
-    function(details) {
-      details.callerName = 'onHeadersReceived';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, resHeaders,
-);
-
-r.onAuthRequired.addListener(
-    function(details) {
-      details.callerName = 'onAuthRequired';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, resHeaders,
-);
-
-r.onBeforeRedirect.addListener(
-    function(details) {
-      details.callerName = 'onBeforeRedirect';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, resHeaders,
-);
-
-r.onResponseStarted.addListener(
-    function(details) {
-      details.callerName = 'onResponseStarted';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, resHeaders,
-);
-
-r.onCompleted.addListener(
-    function(details) {
-      details.callerName = 'onCompleted';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, resHeaders,
-);
-
-if (httpTracker.isFF) {
-  r.onErrorOccurred.addListener(
+LISTENER_CONFIG.forEach(({event, headers}) => {
+  r[event].addListener(
       function(details) {
-        details.callerName = 'onErrorOccurred';
+        details.callerName = event;
         details.requestIdEnhanced = details.requestId;
         eventTracker.logRequestDetails(details);
-      }, trackUrls,
+      }, trackUrls, headers,
   );
-} else {
-  r.onErrorOccurred.addListener(
-      function(details) {
-        details.callerName = 'onErrorOccurred';
-        details.requestIdEnhanced = details.requestId;
-        eventTracker.logRequestDetails(details);
-      }, trackUrls, errorHeaders,
-  );
-}
+});
+
+// Firefox does not support extraHeaders on onErrorOccurred
+r.onErrorOccurred.addListener(
+    function(details) {
+      details.callerName = 'onErrorOccurred';
+      details.requestIdEnhanced = details.requestId;
+      eventTracker.logRequestDetails(details);
+    }, trackUrls, httpTracker.isFF ? undefined : errorHeaders,
+);

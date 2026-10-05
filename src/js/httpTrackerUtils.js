@@ -1,8 +1,4 @@
 let customManifestDetails;
-let addModifyRequestHeadersList;
-let blockURLSList;
-let includeURLsList;
-let excludeURLsList;
 
 function onError(e) {
   console.error(e);
@@ -21,7 +17,7 @@ function getByClassNames(classNamesSpaceDelimited) {
 function sortArray(a, b) {
   const digitRegex = /^\d/;
   const alphabetRegex = /^[a-zA-Z]/;
-  const symbolRegex = /^[^\w\s]/;
+  const symbolRegex = /^[^\w]/;
   a = a.toLowerCase();
   b = b.toLowerCase();
   const scoreA = symbolRegex.test(a) * 1 || digitRegex.test(a) * 10 || alphabetRegex.test(a) * 100;
@@ -38,7 +34,7 @@ function sortArray(a, b) {
 }
 
 function stringToArray(stringWithDelimiter, delimiter = ',') {
-  if (stringWithDelimiter && stringWithDelimiter.trim().length > 0) {
+  if (stringWithDelimiter?.trim().length > 0) {
     // split, trim empty spaces, then remove empty strings
     return (stringWithDelimiter.split(delimiter).map((e) => e.trim()).filter((e) => e));
   } else {
@@ -47,13 +43,13 @@ function stringToArray(stringWithDelimiter, delimiter = ',') {
 }
 
 function filterWithLength(array, length = 0) {
-  if (array && array.length > 0) {
+  if (array?.length > 0) {
     return (array.filter((e) => e.length > length));
   }
 }
 
 function uniqueArray(arrayWithEntries) {
-  if (arrayWithEntries && arrayWithEntries.length) {
+  if (arrayWithEntries?.length) {
     return [...new Set(arrayWithEntries)];
   } else {
     return '';
@@ -80,21 +76,6 @@ function sortJsonByProperty(jsonObjectArray, property) {
   return sortedObject;
 }
 
-function getStoredDetails(details) {
-  if (httpTracker.browser.runtime.lastError) {
-    onError(httpTracker.browser.runtime.lastError);
-  } else {
-    let existingValues = [];
-    if (details.httpTrackerGlobalExcludePatterns) {
-      existingValues = details.httpTrackerGlobalExcludePatterns;
-    }
-    return existingValues;
-  }
-}
-
-function setRequestHeadersList(headersList) {
-  addModifyRequestHeadersList = headersList;
-}
 
 function getManifestDetails() {
   if (!customManifestDetails) {
@@ -107,10 +88,14 @@ function getManifestDetails() {
   return customManifestDetails;
 }
 
-const DNR_BLOCK_RULE_BASE = 1000;
-const DNR_HEADER_RULE_BASE = 2000;
-const DNR_MAX_BLOCK_RULES = 100;
-const DNR_MAX_HEADER_RULES = 100;
+const BLOCK_RULE_BASE = 1000;
+const HEADER_RULE_BASE = 2000;
+const MAX_BLOCK_RULES = 1000;
+const MAX_HEADER_RULES = 1000;
+
+function ruleIdRange(base, max) {
+  return Array.from({length: max}, (_, i) => base + i);
+}
 
 const ALL_RESOURCE_TYPES = [
   'main_frame', 'sub_frame', 'xmlhttprequest', 'other',
@@ -118,13 +103,11 @@ const ALL_RESOURCE_TYPES = [
 ];
 
 function updateBlockSessionRules(patterns) {
-  const removeRuleIds = Array.from({
-    length: DNR_MAX_BLOCK_RULES,
-  }, (_, i) => DNR_BLOCK_RULE_BASE + i);
+  const removeRuleIds = ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES);
   const addRules = (patterns || [])
       .filter((p) => p.trim().length > 0)
       .map((pattern, index) => ({
-        id: DNR_BLOCK_RULE_BASE + index,
+        id: BLOCK_RULE_BASE + index,
         priority: 1,
         action: {
           type: 'block',
@@ -135,19 +118,17 @@ function updateBlockSessionRules(patterns) {
       }));
   httpTracker.browser.declarativeNetRequest.updateSessionRules({
     removeRuleIds, addRules,
-  });
+  }).catch(onError);
 }
 
 function updateHeaderModifySessionRules(headerRows) {
-  const removeRuleIds = Array.from({
-    length: DNR_MAX_HEADER_RULES,
-  }, (_, i) => DNR_HEADER_RULE_BASE + i);
+  const removeRuleIds = ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES);
   const addRules = (headerRows || [])
-      .filter((row) => row.name && row.name.trim() && row.value !== undefined)
+      .filter((row) => row.name?.trim() && row.value !== undefined)
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
                        !FORBIDDEN_HEADERS_PATTERN.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
       .map((row, index) => ({
-        id: DNR_HEADER_RULE_BASE + index,
+        id: HEADER_RULE_BASE + index,
         priority: 1,
         action: {
           type: 'modifyHeaders',
@@ -156,44 +137,41 @@ function updateHeaderModifySessionRules(headerRows) {
           }],
         },
         condition: {
-          urlFilter: row.url && row.url.trim() ? `*${row.url.trim()}*` : '*',
+          urlFilter: row.url?.trim() ? `*${row.url.trim()}*` : '*',
           resourceTypes: ALL_RESOURCE_TYPES,
         },
       }));
   httpTracker.browser.declarativeNetRequest.updateSessionRules({
     removeRuleIds, addRules,
-  });
+  }).catch(onError);
 }
 
 function clearAllSessionRules() {
   const allIds = [
-    ...Array.from({
-      length: DNR_MAX_BLOCK_RULES,
-    }, (_, i) => DNR_BLOCK_RULE_BASE + i),
-    ...Array.from({
-      length: DNR_MAX_HEADER_RULES,
-    }, (_, i) => DNR_HEADER_RULE_BASE + i),
+    ...ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES),
+    ...ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES),
   ];
   httpTracker.browser.declarativeNetRequest.updateSessionRules({
     removeRuleIds: allIds, addRules: [],
-  });
+  }).catch(onError);
 }
 
 function getPropertyFromStorage(details, key) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
   } else {
-    // console.log(`value from storage for ${key} = ${details[key]}`);
     return details[key];
   }
 }
 
 function setPropertyToStorage(key, value) {
-  // console.log(`saving values into storage for ${key} = ${value}`);
-  httpTracker.browser.storage.sync.set({
-    [key]: value,
-  }, function() {
-    // nothing to do after successful storing
-    // console.log(`Successfully stored ${key} = ${value}`);
-  });
+  httpTracker.browser.storage.sync.set({[key]: value}).catch(onError);
+}
+
+function debounce(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
 }

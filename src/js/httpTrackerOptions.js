@@ -4,7 +4,7 @@ openAddonStyle.addEventListener('change', storeSettings);
 // Whenever the contents of the text area is changed and then loses focus, save the new values
 async function storeSettings(event) {
   const id = event.target.id;
-  let value = uniqueArray(stringToArray(event.target.value, /\n|\t|\ |\,/));
+  let value = uniqueArray(stringToArray(event.target.value, /[\n\t ,]/));
   let key;
   if (id === 'default_exclude_patterns') {
     key = httpTracker.STORAGE_KEY_EXCLUDE_PATTERN;
@@ -39,7 +39,7 @@ httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, h
 });
 
 function getProcessedValue(value) {
-  if (value && value.length) {
+  if (value?.length) {
     return value.join(', ');
   }
   return '';
