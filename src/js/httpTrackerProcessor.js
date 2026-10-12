@@ -29,8 +29,8 @@ const eventTracker = (function() {
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
   const COOKIE_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (sorted: symbols, 0-9, Aa-Zz)</td></tr>`;
-  const COOKIE_CONTENT_BANNER_OPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (optimized)</td></tr>';
-  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Cookies (unoptimized)</td></tr>';
+  const COOKIE_CONTENT_BANNER_OPTIMIZED = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (optimized)</td></tr>`;
+  const COOKIE_CONTENT_BANNER_UNOPTIMIZED = `<tr><td colspan=2 class='web_event_detail_cookie'>Cookies (unoptimized)</td></tr>`;
   const ignoreHeaders = new Set(['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId']);
   const REQUEST_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Request not available</td></tr>`;
   const RESPONSE_NOT_AVAILABLE = `<tr><td class='web_event_style_error' style='text-align: center;'>Response not available</td></tr>`;
@@ -386,12 +386,12 @@ const eventTracker = (function() {
     let formData = '';
     if (webEventIdRequestForm) {
       if (webEventIdRequestForm.formData) {
-        formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (form fields data)</td></tr>';
+        formData = `<tr><td colspan=2 class='web_event_detail_cookie'>Body (form fields data)</td></tr>`;
         Object.entries(webEventIdRequestForm.formData).forEach(([key, value]) => {
           formData += generateHeaderKeyValueContent(key, value);
         });
       } else if (webEventIdRequestForm.raw) {
-        formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (raw form data)</td></tr>';
+        formData = `<tr><td colspan=2 class='web_event_detail_cookie'>Body (raw form data)</td></tr>`;
         for (const eachByte of webEventIdRequestForm.raw) {
           if (!eachByte.bytes) {
             if (eachByte.file) {
