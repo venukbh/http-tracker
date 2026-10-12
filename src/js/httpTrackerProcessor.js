@@ -866,30 +866,35 @@ const eventTracker = (function() {
   }
 
   function updateSelectedEventToContainer(event) {
-    const selectedEvent = getSelectedEvent();
-    selectNextEligibleEvent(selectedEvent, event.key);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const selectedEvent = getSelectedEvent();
+      selectNextEligibleEvent(selectedEvent, event.key);
+    }
   }
 
-  function selectNextEligibleEvent(selectedEvent, key) { // NOSONAR javascript:S3776
+  function selectNextEligibleEvent(selectedEvent, key) {
     if (key === 'ArrowDown') {
-      let nextElement = selectedEvent ? selectedEvent.nextElementSibling : selectedEvent;
+      let nextElement = selectedEvent
+        ? selectedEvent.nextElementSibling
+        : getById('urls_list').firstElementChild;
       while (nextElement) {
-        if (nextElement.classList.contains('web_event_list_hide')) {
-          nextElement = nextElement.nextElementSibling;
-        } else {
+        if (nextElement.classList.contains('web_event_list_blank') && !nextElement.classList.contains('web_event_list_hide')) {
           markSelectedRequest(nextElement.id);
+          nextElement.scrollIntoView({block: 'nearest'});
           break;
         }
+        nextElement = nextElement.nextElementSibling;
       }
     } else if (key === 'ArrowUp') {
-      let previousElement = selectedEvent ? selectedEvent.previousElementSibling : selectedEvent;
+      let previousElement = selectedEvent?.previousElementSibling;
       while (previousElement) {
-        if (previousElement.classList.contains('web_event_list_hide')) {
-          previousElement = previousElement.previousElementSibling;
-        } else {
+        if (previousElement.classList.contains('web_event_list_blank') && !previousElement.classList.contains('web_event_list_hide')) {
           markSelectedRequest(previousElement.id);
+          previousElement.scrollIntoView({block: 'nearest'});
           break;
         }
+        previousElement = previousElement.previousElementSibling;
       }
     }
   }
@@ -905,8 +910,6 @@ const eventTracker = (function() {
   function setEventRowAsSelected(event) {
     if (event.target?.parentElement.classList.contains('web_event_list_blank')) {
       markSelectedRequest(event.target.parentElement.id);
-      getById('delete_selected_web_event').disabled = false;
-      getById('delete_selected_web_event').classList.remove('web_event_list_filtered');
     }
   }
 
@@ -1018,12 +1021,15 @@ const eventTracker = (function() {
   }
 
   function markSelectedRequest(requestId) {
+    const element = getById(requestId);
+    if (!element || !element.classList.contains('web_event_list_blank')) return;
     getById('web_event_detail_request_head').style.removeProperty('display');
     getById('web_event_detail_response_head').style.removeProperty('display');
     deselectEvent();
-    const element = getById(requestId);
     element.classList.add('web_event_list_selected');
     selectedWebEventRequestId = element.dataset.requestId;
+    getById('delete_selected_web_event').disabled = false;
+    getById('delete_selected_web_event').classList.remove('web_event_list_filtered');
     displayEventProperties();
   }
 
