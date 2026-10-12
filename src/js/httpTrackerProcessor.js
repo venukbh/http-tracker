@@ -156,7 +156,7 @@ const eventTracker = (function() {
 
   function addEventList(webEvent) {
     addedRequestId.add(webEvent.requestIdEnhanced);
-    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\' data-request-id=\'' + webEvent.requestIdEnhanced + '\'>' +
+    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\' data-request-id=\'' + webEvent.requestIdEnhanced + '\' data-raw-request-id=\'' + webEvent.requestId + '\'>' +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
       generateSTATUSContent(webEvent) +
@@ -596,6 +596,8 @@ const eventTracker = (function() {
 
   function removeEntry(node) {
     const requestIdToRemove = node.dataset.requestId;
+    const rawRequestId = node.dataset.rawRequestId || requestIdToRemove.replace(/_\d+$/, '');
+    requestIdRedirectCount.delete(rawRequestId);
     requestIdRedirectCount.delete(requestIdToRemove);
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
