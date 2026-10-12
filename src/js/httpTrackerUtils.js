@@ -117,7 +117,7 @@ function updateBlockSessionRules(patterns) {
           urlFilter: `*${pattern.trim()}*`, resourceTypes: ALL_RESOURCE_TYPES,
         },
       }));
-  httpTracker.browser.declarativeNetRequest.updateSessionRules({
+  return httpTracker.browser.declarativeNetRequest.updateSessionRules({
     removeRuleIds, addRules,
   }).catch(onError);
 }
@@ -143,18 +143,32 @@ function updateHeaderModifySessionRules(headerRows) {
           resourceTypes: ALL_RESOURCE_TYPES,
         },
       }));
-  httpTracker.browser.declarativeNetRequest.updateSessionRules({
+  return httpTracker.browser.declarativeNetRequest.updateSessionRules({
     removeRuleIds, addRules,
   }).catch(onError);
 }
 
 function clearAllSessionRules() {
+  if (httpTracker.browser?.declarativeNetRequest?.getSessionRules) {
+    return httpTracker.browser.declarativeNetRequest.getSessionRules()
+        .then((existingRules) => {
+          const removeRuleIds = existingRules.map((rule) => rule.id);
+          if (removeRuleIds.length > 0) {
+            return httpTracker.browser.declarativeNetRequest.updateSessionRules({
+              removeRuleIds,
+              addRules: [],
+            });
+          }
+        })
+        .catch(onError);
+  }
   const allIds = [
     ...ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES),
     ...ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES),
   ];
-  httpTracker.browser.declarativeNetRequest.updateSessionRules({
-    removeRuleIds: allIds, addRules: [],
+  return httpTracker.browser.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: allIds,
+    addRules: [],
   }).catch(onError);
 }
 
