@@ -266,7 +266,22 @@ const eventTracker = (function() {
   }
 
   function insertResponseHeaders(webEvent) {
-    allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
+    const existing = allResponseHeaders.get(webEvent.requestIdEnhanced);
+    if (existing) {
+      const merged = Object.assign({}, existing, webEvent);
+      if (!webEvent.responseHeaders && existing.responseHeaders) {
+        merged.responseHeaders = existing.responseHeaders;
+      }
+      if (webEvent.statusCode === undefined && existing.statusCode !== undefined) {
+        merged.statusCode = existing.statusCode;
+      }
+      if (webEvent.statusLine === undefined && existing.statusLine !== undefined) {
+        merged.statusLine = existing.statusLine;
+      }
+      allResponseHeaders.set(webEvent.requestIdEnhanced, merged);
+    } else {
+      allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
+    }
   }
 
   function displaySelectedEventDetails(webEvent) {
