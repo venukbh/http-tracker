@@ -62,7 +62,7 @@
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only vaild headers will be added for requests matching the url property value and invalid headers will mark the name filed in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
+        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only valid headers will be added for requests matching the url property value and invalid headers will mark the name field in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
           <div id="add_modify_headers_banner" style="width: 20%; float: left;">
             Add/Modify request headers :
           </div>
@@ -83,7 +83,7 @@
               <div style="width: 12%;float: left;text-align: right;">
                 <div style="display: flex;">
                   <div style="margin-right: 5px;float: left;flex-grow: 1;">
-                    <button id="header_button_remove_0" type="button">-</button>
+                    <button id="header_button_remove_0" type="button" data-header-index="0">-</button>
                   </div>
                   <div>
                     <button id="header_button_add_0" type="button">+</button>
@@ -107,7 +107,7 @@
         <div style="height: 30px;" title="Global preferences to persist across browser sessions.">
           <button id="preferences" type="button" class="web_event_button_preferences">Preferences</button>
         </div>
-        <div style="height: 30px;" title="Mask any attributes (headers, form data) containing one of the words from this list while dispalying. Will not mask if the data is raw data for a POST event. Leaving this filed blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
+        <div style="height: 30px;" title="Mask any attributes (headers, form data) containing one of the words from this list while displaying. Will not mask if the data is raw data for a POST event. Leaving this field blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
           <label for="mask_patterns_list" style="width: 20%; float: left;">Mask fields:</label>
           <div style="float: left;width: 58%;">
             <input id="mask_patterns_list" type="text" placeholder="e.g. authorization, password, token (comma-separated)" style="width: 99%" value="" />
