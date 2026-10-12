@@ -106,38 +106,43 @@ const eventTracker = (function() {
     if (webEvent.requestIdEnhanced.includes('fakeRequest')) {
       return false;
     }
-    if (!includeURLsList && !globalIncludeURLsList) {
+    if (!includeURLsList?.length && !globalIncludeURLsList?.length) {
       return true;
     }
+    const url = (webEvent.url || '').toLowerCase();
     let found = false;
     if (includeURLsList?.length) {
-      found = includeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
+      found = includeURLsList.some((v) => url.includes(v.toLowerCase()));
     }
     if (!found && globalIncludeURLsList?.length) {
-      found = globalIncludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v));
+      found = globalIncludeURLsList.some((v) => url.includes(v.toLowerCase()));
     }
     return found;
   }
 
   function urlMatchExcludePattern(webEvent) {
+    const url = (webEvent.url || '').toLowerCase();
     let toExclude = false;
-    if (excludeURLsList) {
-      toExclude = excludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v.toLowerCase()));
-    } else if (!toExclude && globalExcludeURLsList) {
-      toExclude = globalExcludeURLsList.some((v) => webEvent.url.toLowerCase().includes(v.toLowerCase()));
+    if (excludeURLsList?.length) {
+      toExclude = excludeURLsList.some((v) => url.includes(v.toLowerCase()));
+    }
+    if (!toExclude && globalExcludeURLsList?.length) {
+      toExclude = globalExcludeURLsList.some((v) => url.includes(v.toLowerCase()));
     }
     return toExclude;
   }
 
   function maskFieldsPattern(value) {
+    if (!maskAttributesCheckboxValue || !value) {
+      return false;
+    }
+    const target = value.toString().toLowerCase();
     let masking = false;
-    if (maskAttributesCheckboxValue) {
-      if (maskedAttributesList) {
-        masking = maskedAttributesList.some((v) => value.toLowerCase().includes(v));
-      }
-      if (!masking && globalMaskPatternsList) {
-        masking = globalMaskPatternsList.some((v) => value.toLowerCase().includes(v));
-      }
+    if (maskedAttributesList?.length) {
+      masking = maskedAttributesList.some((v) => target.includes(v.toLowerCase()));
+    }
+    if (!masking && globalMaskPatternsList?.length) {
+      masking = globalMaskPatternsList.some((v) => target.includes(v.toLowerCase()));
     }
     return masking;
   }
