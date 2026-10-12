@@ -126,6 +126,7 @@ function updateHeaderModifySessionRules(headerRows) {
   const removeRuleIds = ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES);
   const addRules = (headerRows || [])
       .filter((row) => row.name?.trim() && row.value !== undefined)
+      .filter((row) => /^[!#$%&'*+\-.^_`|~0-9a-zA-Z]+$/.test(row.name.trim()))
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
                        !FORBIDDEN_HEADERS_PATTERN.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
       .map((row, index) => ({

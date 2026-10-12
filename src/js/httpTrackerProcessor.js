@@ -152,6 +152,9 @@ const eventTracker = (function() {
       updateEventList(webEvent);
     }
     filterEventList(webEvent);
+    if (multipleSearchPatterns.length > 0) {
+      updateButtonDeleteAllFilteredWebEvents();
+    }
   }
 
   function addEventList(webEvent) {
@@ -606,11 +609,14 @@ const eventTracker = (function() {
     node.remove();
     if (requestIdToRemove === selectedWebEventRequestId) {
       getById('delete_selected_web_event').disabled = true;
+      getById('web_event_detail_request_head').style.display = 'none';
+      getById('web_event_detail_response_head').style.display = 'none';
       getById('response_headers_details').innerHTML = '';
       getById('request_headers_details').innerHTML = '';
       getById('web_details_selected_container').style = 'visibility: hidden;';
       selectedWebEventRequestId = '';
     }
+    updateButtonDeleteAllFilteredWebEvents();
   }
 
   /**
@@ -654,7 +660,7 @@ const eventTracker = (function() {
     getById('toggle_track_web_events').onclick = updateToggleCaptureEvents;
     getById('header_button_remove_0').onclick = clearAndRemoveHeaderContents;
     getById('header_button_add_0').onclick = addNewHeaderContainer;
-    getById('add_modify_headers').oninput = generateHeadersToAddOrModify; // either on text change
+    getById('add_modify_headers').oninput = debouncedGenerateHeadersToAddOrModify; // either on text change
     getById('find_in_details_pattern').oninput = setFindPatterns;
     getById('delete_cookies_button').onclick = deleteCookiesForSelectedDomain;
     getById('delete_cookies').oninput = function() {
@@ -664,6 +670,8 @@ const eventTracker = (function() {
       openAddonOptions();
     });
   }
+
+  const debouncedGenerateHeadersToAddOrModify = debounce(generateHeadersToAddOrModify, inputBoxDelay);
 
   const setFindPatterns = debounce(function(event) {
     findPatterns = event.target.value.trim();
@@ -686,8 +694,10 @@ const eventTracker = (function() {
       const urlInput = headerContainer.querySelector('.header_input_url');
 
       const headerName = nameInput.value.trim();
+      const isValidHeaderName = /^[!#$%&'*+\-.^_`|~0-9a-zA-Z]+$/.test(headerName);
       if (headerName) {
-        if (!FORBIDDEN_HEADERS.some((v) => headerName.toLowerCase() === v.toLowerCase()) &&
+        if (isValidHeaderName &&
+          !FORBIDDEN_HEADERS.some((v) => headerName.toLowerCase() === v.toLowerCase()) &&
           !FORBIDDEN_HEADERS_PATTERN.some((v) => headerName.toLowerCase().startsWith(v.toLowerCase()))) {
           nameLabel.style.color = '';
           if (applyChk.checked) {
@@ -696,6 +706,8 @@ const eventTracker = (function() {
         } else {
           nameLabel.style.color = 'red';
         }
+      } else {
+        nameLabel.style.color = '';
       }
     });
     updateHeaderModifySessionRules(headersObject);
@@ -847,10 +859,13 @@ const eventTracker = (function() {
     selectedWebEventRequestId = '';
     getById('web_event_details_selected_request').style.border = 'none';
     getById('web_event_details_selected_response').style.border = 'none';
+    getById('web_event_detail_request_head').style.display = 'none';
+    getById('web_event_detail_response_head').style.display = 'none';
     getById('response_headers_details').innerHTML = '';
     getById('request_headers_details').innerHTML = '';
     Array.from(getByClassNames('web_event_list_blank')).forEach((el) => el.remove());
     getById('web_details_selected_container').style = 'visibility: hidden;';
+    updateAllButtons();
   }
 
   function deleteFilteredEvents() {
