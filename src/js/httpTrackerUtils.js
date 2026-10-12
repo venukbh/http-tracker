@@ -99,7 +99,7 @@ const ALL_RESOURCE_TYPES = [
 
 function updateBlockSessionRules(patterns) {
   const removeRuleIds = ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES);
-  const addRules = (patterns || [])
+  const addRules = (patterns ?? [])
       .filter((p) => p.trim().length > 0)
       .map((pattern, index) => ({
         id: BLOCK_RULE_BASE + index,
@@ -118,7 +118,7 @@ function updateBlockSessionRules(patterns) {
 
 function updateHeaderModifySessionRules(headerRows) {
   const removeRuleIds = ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES);
-  const addRules = (headerRows || [])
+  const addRules = (headerRows ?? [])
       .filter((row) => row.name?.trim() && row.value !== undefined)
       .filter((row) => RFC_HEADER_NAME_REGEX.test(row.name.trim()))
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
@@ -252,7 +252,7 @@ function getCookieNameValue(cookie) {
     // https://tools.ietf.org/html/rfc6265#page-10
     // https://tools.ietf.org/html/rfc6265#section-4.1.1
     if (cookieObj.cookieValue) {
-      (stringToArray(cookieObj.cookieValue, ';') || []).forEach((attribute) => {
+      (stringToArray(cookieObj.cookieValue, ';') ?? []).forEach((attribute) => {
         if (attribute) {
           const attributeKeyValue = attribute.trim().split('=');
           // toLowerCase : chrome sends as domain, FF sends as Domain
