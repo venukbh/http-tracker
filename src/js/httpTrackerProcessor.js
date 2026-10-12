@@ -5,7 +5,7 @@ const eventTracker = (function() {
   let captureFormDataCheckboxValue = false;
   const decoder = new TextDecoder('UTF-8');
   const inputBoxDelay = 500;
-  let filterWithKey = '';
+  let filterWithKey = '0';
   let filterWithValue = '';
   let globalExcludeURLsList;
   let globalIncludeURLsList;
@@ -179,46 +179,39 @@ const eventTracker = (function() {
     getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache !== undefined ? webEvent.fromCache : 'N/A';
   }
 
-  function filterEventList(webEvent) { // NOSONAR javascript:S3776
-    if (multipleSearchPatterns.length) {
-      const type = getById('web_event_filter_key').selectedOptions[0].innerText;
-      let value = '';
-      if (type === 'CACHE') {
-        value = webEvent.fromCache !== undefined ? String(webEvent.fromCache) : 'N/A';
+  function matchesFilter(text) {
+    if (multipleSearchPatterns.length === 0) {
+      return true;
+    }
+    const str = (text || '').toString().toLowerCase();
+    if (!isANDFilter) {
+      return multipleSearchPatterns.some((v) => str.includes(v));
+    }
+    let index = 0;
+    for (const pattern of multipleSearchPatterns) {
+      index = str.indexOf(pattern, index);
+      if (index === -1) {
+        return false;
       }
-      if (type === 'METHOD') {
-        value = webEvent.method;
-      }
-      if (type === 'STATUS') {
-        value = `${webEvent.statusCode || (webEvent.error ? STRING_ERROR : 'N/A')}`;
-      }
-      if (type === 'URL') {
-        value = webEvent.url;
-      }
-      if (type === 'DATE') {
-        value = `${(webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A')}`;
-      }
-      const string = value.toString().toLowerCase();
-      let hide;
-      if (!isANDFilter) {
-        hide = !multipleSearchPatterns.some((v) => string.includes(v));
-      } else {
-        let index = 0;
-        multipleSearchPatterns.forEach((e) => {
-          if (index !== -1) {
-            index = string.indexOf(e, index);
-            if (index !== -1) {
-              index += e.length;
-            }
-          }
-        });
-        hide = index === -1;
-      }
-      if (hide) {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.add('web_event_list_hide');
-      } else {
-        getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_list_hide');
-      }
+      index += pattern.length;
+    }
+    return true;
+  }
+
+  function applyFilterToElement(element) {
+    const text = element.childNodes[filterWithKey]?.textContent || '';
+    if (matchesFilter(text)) {
+      element.classList.remove('web_event_list_hide');
+    } else {
+      element.classList.add('web_event_list_hide');
+    }
+  }
+
+  function filterEventList(webEvent) {
+    if (multipleSearchPatterns.length === 0) return;
+    const element = getById(`web_events_list_${webEvent.requestIdEnhanced}`);
+    if (element) {
+      applyFilterToElement(element);
     }
   }
 
@@ -590,35 +583,13 @@ const eventTracker = (function() {
    *  b. For each key entry in the filter box
    *  c. on clear filter button click
    */
-  function hideOrShowURLList() { // NOSONAR javascript:S3776
-    if (multipleSearchPatterns.length == 0) {
+  function hideOrShowURLList() {
+    if (multipleSearchPatterns.length === 0) {
       displayHiddenURLList();
     } else {
       const allUrlsList = Array.prototype.slice.call(getAllUrlsList());
       for (const element of allUrlsList) {
-        const string = element.childNodes[filterWithKey].innerHTML.toLowerCase();
-        if (!isANDFilter) {
-          if (multipleSearchPatterns.some((v) => string.includes(v))) {
-            element.classList.remove('web_event_list_hide');
-          } else {
-            element.classList.add('web_event_list_hide');
-          }
-        } else {
-          let index = 0;
-          multipleSearchPatterns.forEach((e) => {
-            if (index !== -1) {
-              index = string.indexOf(e, index);
-              if (index !== -1) {
-                index += e.length;
-              }
-            }
-          });
-          if (index === -1) {
-            element.classList.add('web_event_list_hide');
-          } else {
-            element.classList.remove('web_event_list_hide');
-          }
-        }
+        applyFilterToElement(element);
       }
     }
   }
@@ -989,6 +960,7 @@ const eventTracker = (function() {
   }, inputBoxDelay);
 
   function setInitialStateOfPage() {
+    filterWithKey = getById('web_event_filter_key')?.value || '0';
     filterWithValue = getById('filter_web_events').value;
     captureFormDataCheckboxValue = getById('include_form_data').checked;
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
