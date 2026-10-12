@@ -1028,6 +1028,12 @@ const eventTracker = (function() {
     updateAllButtons();
     hideOrShowURLList();
     hideOrShowInfoIcons();
+    Promise.resolve(clearAllSessionRules()).then(() => {
+      if (blockURLSList?.length) {
+        updateBlockSessionRules(blockURLSList);
+      }
+      generateHeadersToAddOrModify();
+    });
   }
 
   function updateInfoIcon(elementId, list) {
@@ -1136,6 +1142,19 @@ const eventTracker = (function() {
 
   httpTracker.browser.storage.onChanged.addListener(getChangesFromStorage);
   httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN], getGlobalOptions);
+
+  let trackerSessionPort = null;
+  function connectSessionPort() {
+    try {
+      trackerSessionPort = httpTracker.browser.runtime.connect({ name: 'http-tracker-session' });
+      trackerSessionPort.onDisconnect.addListener(() => {
+        trackerSessionPort = null;
+      });
+    } catch (e) {
+      onError(e);
+    }
+  }
+  connectSessionPort();
 
   window.addEventListener('beforeunload', clearAllSessionRules);
 
