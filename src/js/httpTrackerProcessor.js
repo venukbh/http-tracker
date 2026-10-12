@@ -319,8 +319,11 @@ const eventTracker = (function() {
   }
 
   function deleteCookiesForSelectedDomain() {
+    let domain = getById('delete_cookies').value.trim();
+    if (!domain) return;
+    domain = domain.replace(/^https?:\/\//i, '').split('/')[0];
     httpTracker.browser.cookies.getAll({
-      domain: getById('delete_cookies').value,
+      domain,
     }).then(removeCookies).catch(onError);
   }
 
@@ -558,15 +561,29 @@ const eventTracker = (function() {
   }
 
   function removeCookies(cookies) {
+    if (!cookies?.length) {
+      return;
+    }
     const removedCookies = [];
     for (const cookie of cookies) {
+      const cleanDomain = cookie.domain.replace(/^\./, '');
+      const path = cookie.path?.startsWith('/') ? cookie.path : `/${cookie.path || ''}`;
       const protocol = cookie.secure ? 'https:' : 'http:';
-      const cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
-      const removed = httpTracker.browser.cookies.remove({
+      const cookieUrl = `${protocol}//${cleanDomain}${path}`;
+      const removeDetails = {
         url: cookieUrl,
         name: cookie.name,
-        storeId: cookie.storeId,
-      });
+      };
+      if (cookie.storeId) {
+        removeDetails.storeId = cookie.storeId;
+      }
+      if (cookie.partitionKey) {
+        removeDetails.partitionKey = cookie.partitionKey;
+      }
+      if (cookie.firstPartyDomain) {
+        removeDetails.firstPartyDomain = cookie.firstPartyDomain;
+      }
+      const removed = httpTracker.browser.cookies.remove(removeDetails);
       removedCookies.push(removed);
     }
     Promise.all(removedCookies).catch(onError);
