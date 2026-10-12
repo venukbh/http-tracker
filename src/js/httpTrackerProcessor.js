@@ -19,7 +19,7 @@ const eventTracker = (function() {
   let toggleCaptureEvents = true;
   let findPatterns = '';
   let compiledFindPattern = null;
-  let multipleSearchPatterns = '';
+  let multipleSearchPatterns = [];
   let isANDFilter = false;
   let excludeURLsList;
   let includeURLsList;
@@ -868,7 +868,7 @@ const eventTracker = (function() {
 
   function clearFilterBox() {
     filterWithValue = getById('filter_web_events').value = '';
-    multipleSearchPatterns = '';
+    multipleSearchPatterns = [];
   }
 
   function updateSelectedEventToContainer(event) {
@@ -929,17 +929,16 @@ const eventTracker = (function() {
     filterWithKey = getById('web_event_filter_key').selectedOptions[0].value; // get the selected key(index) from drop down
     filterWithValue = getById('filter_web_events').value.toLowerCase().trim(); // get the value from filter text box
     isANDFilter = false;
-    multipleSearchPatterns = '';
+    multipleSearchPatterns = [];
     if (filterWithValue) {
       if (filterWithValue.length < 3 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
         // invalid search filter text, do nothing
       } else {
         if (filterWithValue.includes(DELIMITER_AND)) {
-          multipleSearchPatterns = stringToArray(filterWithValue, DELIMITER_AND);
-          multipleSearchPatterns = filterWithLength(multipleSearchPatterns, 2);
+          multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_AND), 2);
+          isANDFilter = true;
         } else {
-          multipleSearchPatterns = stringToArray(filterWithValue, DELIMITER_OR);
-          multipleSearchPatterns = filterWithLength(multipleSearchPatterns, 2);
+          multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_OR), 2);
           isANDFilter = false;
         }
       }
@@ -1007,7 +1006,7 @@ const eventTracker = (function() {
   }
 
   function updateButtonDeleteAllFilteredWebEvents() {
-    if (filterWithValue?.length > 2) {
+    if (multipleSearchPatterns.length > 0) {
       const visibleUrlList = getVisibleUrlsList();
       if (visibleUrlList?.length > 0) {
         getById('delete_all_filtered_web_events').disabled = false;
