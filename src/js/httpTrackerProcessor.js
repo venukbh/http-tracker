@@ -104,18 +104,22 @@ const eventTracker = (function() {
     if (webEvent.requestIdEnhanced.includes('fakeRequest')) {
       return false;
     }
-    if (!includeURLsList?.length && !globalIncludeURLsList?.length) {
+    const includeList = normalizePatterns(includeURLsList);
+    const globalIncludeList = normalizePatterns(globalIncludeURLsList);
+    if (!includeList.length && !globalIncludeList.length) {
       return true;
     }
     const url = (webEvent.url || '').toLowerCase();
-    return Boolean(includeURLsList?.some((v) => url.includes(v.toLowerCase())) ||
-      globalIncludeURLsList?.some((v) => url.includes(v.toLowerCase())));
+    return Boolean(includeList.some((v) => url.includes(v.toLowerCase())) ||
+      globalIncludeList.some((v) => url.includes(v.toLowerCase())));
   }
 
   function urlMatchExcludePattern(webEvent) {
     const url = (webEvent.url || '').toLowerCase();
-    return Boolean(excludeURLsList?.some((v) => url.includes(v.toLowerCase())) ||
-      globalExcludeURLsList?.some((v) => url.includes(v.toLowerCase())));
+    const excludeList = normalizePatterns(excludeURLsList);
+    const globalExcludeList = normalizePatterns(globalExcludeURLsList);
+    return Boolean(excludeList.some((v) => url.includes(v.toLowerCase())) ||
+      globalExcludeList.some((v) => url.includes(v.toLowerCase())));
   }
 
   function maskFieldsPattern(value) {
@@ -123,8 +127,10 @@ const eventTracker = (function() {
       return false;
     }
     const target = value.toString().toLowerCase();
-    return Boolean(maskedAttributesList?.some((v) => target.includes(v.toLowerCase())) ||
-      globalMaskPatternsList?.some((v) => target.includes(v.toLowerCase())));
+    const maskList = normalizePatterns(maskedAttributesList);
+    const globalMaskList = normalizePatterns(globalMaskPatternsList);
+    return Boolean(maskList.some((v) => target.includes(v.toLowerCase())) ||
+      globalMaskList.some((v) => target.includes(v.toLowerCase())));
   }
 
   /**
@@ -897,9 +903,10 @@ const eventTracker = (function() {
 
   function updateInfoIcon(elementId, list) {
     const element = getById(elementId);
-    if (list?.length) {
+    const normalized = normalizePatterns(list);
+    if (normalized.length) {
       element.innerHTML = '&#9432;';
-      element.title = `Patterns extended from preferences: ${list}`;
+      element.title = `Patterns extended from preferences: ${arrayToString(normalized)}`;
       element.style.color = 'red';
     } else {
       element.innerHTML = '';
@@ -969,21 +976,21 @@ const eventTracker = (function() {
   });
 
   function getGlobalOptions(details) {
-    globalExcludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
-    globalMaskPatternsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN);
-    globalIncludeURLsList = getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
+    globalExcludeURLsList = normalizePatterns(getPropertyFromStorage(details, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN));
+    globalMaskPatternsList = normalizePatterns(getPropertyFromStorage(details, httpTracker.STORAGE_KEY_MASK_PATTERN));
+    globalIncludeURLsList = normalizePatterns(getPropertyFromStorage(details, httpTracker.STORAGE_KEY_INCLUDE_PATTERN));
     hideOrShowInfoIcons();
   }
 
   function getChangesFromStorage(changes) {
     if (changes?.[httpTracker.STORAGE_KEY_EXCLUDE_PATTERN]) {
-      globalExcludeURLsList = changes[httpTracker.STORAGE_KEY_EXCLUDE_PATTERN].newValue;
+      globalExcludeURLsList = normalizePatterns(changes[httpTracker.STORAGE_KEY_EXCLUDE_PATTERN].newValue);
     }
     if (changes?.[httpTracker.STORAGE_KEY_INCLUDE_PATTERN]) {
-      globalIncludeURLsList = changes[httpTracker.STORAGE_KEY_INCLUDE_PATTERN].newValue;
+      globalIncludeURLsList = normalizePatterns(changes[httpTracker.STORAGE_KEY_INCLUDE_PATTERN].newValue);
     }
     if (changes?.[httpTracker.STORAGE_KEY_MASK_PATTERN]) {
-      globalMaskPatternsList = changes[httpTracker.STORAGE_KEY_MASK_PATTERN].newValue;
+      globalMaskPatternsList = normalizePatterns(changes[httpTracker.STORAGE_KEY_MASK_PATTERN].newValue);
     }
     hideOrShowInfoIcons();
     displayEventProperties();
