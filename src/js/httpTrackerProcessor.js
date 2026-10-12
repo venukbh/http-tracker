@@ -144,7 +144,7 @@ const eventTracker = (function() {
 
   function addEventList(webEvent) {
     addedRequestId.add(webEvent.requestIdEnhanced);
-    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\' data-request-id=\'' + webEvent.requestIdEnhanced + '\' data-raw-request-id=\'' + webEvent.requestId + '\'>' +
+    const containerContent = `<div title='Click to view details' class='${CLASS_LIST_TO_ADD}' id='web_events_list_${webEvent.requestIdEnhanced}' data-request-id='${webEvent.requestIdEnhanced}' data-raw-request-id='${webEvent.requestId}'>` +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
       generateSTATUSContent(webEvent) +
@@ -515,8 +515,7 @@ const eventTracker = (function() {
     if (multipleSearchPatterns.length === 0) {
       displayHiddenURLList();
     } else {
-      const allUrlsList = Array.prototype.slice.call(getAllUrlsList());
-      for (const element of allUrlsList) {
+      for (const element of getAllUrlsList()) {
         applyFilterToElement(element);
       }
     }
@@ -552,11 +551,7 @@ const eventTracker = (function() {
   }
 
   function getVisibleUrlsList() {
-    const allUrls = getAllUrlsList(); // this gives live list
-    const visibleUrls = Array.prototype.filter.call(allUrls, function(eachUrl) {
-      return !eachUrl.classList.contains('web_event_list_hide');
-    });
-    return visibleUrls;
+    return Array.from(getAllUrlsList()).filter((eachUrl) => !eachUrl.classList.contains('web_event_list_hide'));
   }
 
   /**
@@ -611,7 +606,7 @@ const eventTracker = (function() {
   function generateHeadersToAddOrModify() {
     const headersObject = [];
     const containers = getByClassNames('single_header_container');
-    Array.prototype.forEach.call(containers, function(headerContainer) {
+    for (const headerContainer of containers) {
       const nameInput = headerContainer.querySelector('.header_input_name');
       const nameLabel = headerContainer.querySelector('.add_header_name');
       const applyChk = headerContainer.querySelector('.header_input_apply');
@@ -634,13 +629,10 @@ const eventTracker = (function() {
       } else {
         nameLabel.style.color = '';
       }
-    });
-    updateHeaderModifySessionRules(headersObject);
-    if (headersObject.length || containers.length) {
-      getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers: ${headersObject.length}`;
-    } else {
-      getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers:`;
     }
+    updateHeaderModifySessionRules(headersObject);
+    const count = (headersObject.length || containers.length) ? ` ${headersObject.length}` : '';
+    getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers:${count}`;
   }
 
   function clearAndRemoveHeaderContents(event) {
@@ -667,54 +659,54 @@ const eventTracker = (function() {
     const nextIndex = headerRowCounter++;
 
     const headerDiv = document.createElement('div');
-    headerDiv.id = 'header_details_' + nextIndex;
-    headerDiv.classList = 'single_header_container';
+    headerDiv.id = `header_details_${nextIndex}`;
+    headerDiv.className = 'single_header_container';
 
     const urlDiv = document.createElement('div');
-    urlDiv.classList = 'add_header_url';
+    urlDiv.className = 'add_header_url';
     const urlLabel = document.createElement('label');
-    urlLabel.htmlFor = 'header_url_' + nextIndex;
+    urlLabel.htmlFor = `header_url_${nextIndex}`;
     urlLabel.textContent = 'URL';
     const urlInput = document.createElement('input');
-    urlInput.setAttribute('type', 'text');
-    urlInput.id = 'header_url_' + nextIndex;
-    urlInput.classList = 'header_input_url';
+    urlInput.type = 'text';
+    urlInput.id = `header_url_${nextIndex}`;
+    urlInput.className = 'header_input_url';
     urlInput.placeholder = 'e.g. api.example.com (blank = all URLs)';
     urlDiv.append(urlLabel, ' ', urlInput);
 
     const valueDiv = document.createElement('div');
-    valueDiv.classList = 'add_header_value';
+    valueDiv.className = 'add_header_value';
     const valueLabel = document.createElement('label');
-    valueLabel.htmlFor = 'header_value_' + nextIndex;
+    valueLabel.htmlFor = `header_value_${nextIndex}`;
     valueLabel.textContent = 'Value';
     const valueInput = document.createElement('input');
-    valueInput.setAttribute('type', 'text');
-    valueInput.id = 'header_value_' + nextIndex;
-    valueInput.classList = 'header_input_value';
+    valueInput.type = 'text';
+    valueInput.id = `header_value_${nextIndex}`;
+    valueInput.className = 'header_input_value';
     valueInput.placeholder = 'e.g. my-value';
     valueDiv.append(valueLabel, ' ', valueInput);
 
     const nameDiv = document.createElement('div');
-    nameDiv.classList = 'add_header_name';
+    nameDiv.className = 'add_header_name';
     const nameLabel = document.createElement('label');
-    nameLabel.htmlFor = 'header_name_' + nextIndex;
+    nameLabel.htmlFor = `header_name_${nextIndex}`;
     nameLabel.textContent = 'Name';
     const nameInput = document.createElement('input');
-    nameInput.setAttribute('type', 'text');
-    nameInput.id = 'header_name_' + nextIndex;
-    nameInput.classList = 'header_input_name';
+    nameInput.type = 'text';
+    nameInput.id = `header_name_${nextIndex}`;
+    nameInput.className = 'header_input_name';
     nameInput.placeholder = 'e.g. X-Custom-Header';
     nameDiv.append(nameLabel, ' ', nameInput);
 
     const applyDiv = document.createElement('div');
-    applyDiv.classList = 'add_header_apply';
+    applyDiv.className = 'add_header_apply';
     const applyInput = document.createElement('input');
-    applyInput.setAttribute('type', 'checkbox');
-    applyInput.id = 'header_apply_' + nextIndex;
-    applyInput.classList = 'header_input_apply';
+    applyInput.type = 'checkbox';
+    applyInput.id = `header_apply_${nextIndex}`;
+    applyInput.className = 'header_input_apply';
     const applyLabel = document.createElement('label');
-    applyLabel.htmlFor = 'header_apply_' + nextIndex;
-    applyLabel.innerHTML = 'Apply';
+    applyLabel.htmlFor = `header_apply_${nextIndex}`;
+    applyLabel.textContent = 'Apply';
     applyDiv.append(applyInput, applyLabel);
 
     const headerButtonsDiv = document.createElement('div');
@@ -726,7 +718,7 @@ const eventTracker = (function() {
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
     removeButton.textContent = '-';
-    removeButton.id = 'header_button_remove_' + nextIndex;
+    removeButton.id = `header_button_remove_${nextIndex}`;
     removeButton.dataset.headerIndex = nextIndex;
     removeButton.onclick = clearAndRemoveHeaderContents;
 
@@ -791,11 +783,8 @@ const eventTracker = (function() {
   }
 
   function deleteFilteredEvents() {
-    const visibleUrlList = getVisibleUrlsList();
-    if (visibleUrlList) {
-      for (const node of visibleUrlList) {
-        removeEntry(node);
-      }
+    for (const node of getVisibleUrlsList()) {
+      removeEntry(node);
     }
     clearFilterBoxDisplayAllURLsAndUpdateButtons();
   }
@@ -878,7 +867,7 @@ const eventTracker = (function() {
 
   const setPatternsToBlock = debounce(function(event) {
     blockURLSList = stringToArray(event.target.value);
-    updateBlockSessionRules(blockURLSList || []);
+    updateBlockSessionRules(blockURLSList ?? []);
   }, inputBoxDelay);
 
   const setPatternsToInclude = debounce(function(event) {
@@ -886,7 +875,7 @@ const eventTracker = (function() {
   }, inputBoxDelay);
 
   function setInitialStateOfPage() {
-    filterWithKey = getById('web_event_filter_key')?.value || '0';
+    filterWithKey = getById('web_event_filter_key')?.value ?? '0';
     filterWithValue = getById('filter_web_events').value;
     captureFormDataCheckboxValue = getById('include_form_data').checked;
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
