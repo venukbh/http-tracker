@@ -26,13 +26,13 @@ function storeSettings(event) {
 
 httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN, httpTracker.STORAGE_KEY_MASK_PATTERN, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB], function(cbResponseParams) {
   let value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_INCLUDE_PATTERN);
-  getById('default_include_patterns').value = getProcessedValue(value);
+  getById('default_include_patterns').value = arrayToString(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_EXCLUDE_PATTERN);
-  getById('default_exclude_patterns').value = getProcessedValue(value);
+  getById('default_exclude_patterns').value = arrayToString(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_MASK_PATTERN);
-  getById('default_mask_patterns').value = getProcessedValue(value);
+  getById('default_mask_patterns').value = arrayToString(value);
 
   value = getPropertyFromStorage(cbResponseParams, httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB);
   if (value === undefined) {
@@ -42,7 +42,3 @@ httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, h
     getById('popup').checked = !value;
   }
 });
-
-function getProcessedValue(value) {
-  return value?.join(', ') ?? '';
-}

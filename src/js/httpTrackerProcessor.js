@@ -226,16 +226,6 @@ const eventTracker = (function() {
     return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>${webEvent.fromCache ?? 'N/A'}</div>`;
   }
 
-  function getReadableDate(timestamp) {
-    const d = new Date(timestamp);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const ss = String(d.getSeconds()).padStart(2, '0');
-    return `${mm}/${dd} ${hh}:${min}:${ss}`;
-  }
-
   function insertRequestBody(webEvent) {
     if (webEvent.requestBody && captureFormDataCheckboxValue) {
       requestFormData.set(webEvent.requestIdEnhanced, webEvent.requestBody);
@@ -356,15 +346,6 @@ const eventTracker = (function() {
     return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
   }
 
-  function escapeHtml(text) {
-    return String(text)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
   function addMarkTag(text) {
     if (text === null || text === undefined) {
       return '';
@@ -393,43 +374,6 @@ const eventTracker = (function() {
     }
     result += escapeHtml(str.slice(lastIndex));
     return result;
-  }
-
-  function isBinaryData(str) {
-    const sampleSize = Math.min(str.length, 500);
-    let nonPrintable = 0;
-    for (let i = 0; i < sampleSize; i++) {
-      const code = str.codePointAt(i);
-      if (code === 0xFFFD || (code < 32 && code !== 9 && code !== 10 && code !== 13)) {
-        nonPrintable++;
-      }
-    }
-    return nonPrintable / sampleSize > 0.15;
-  }
-
-  function detectCompressionType(dataView) {
-    if (dataView.byteLength < 2) {
-      return 'binary';
-    }
-    const b0 = dataView.getUint8(0);
-    const b1 = dataView.getUint8(1);
-    if (b0 === 0x1f && b1 === 0x8b) {
-      return 'gzip';
-    }
-    if (b0 === 0x78 && (b1 === 0x9c || b1 === 0xda || b1 === 0x01 || b1 === 0x5e)) {
-      return 'deflate';
-    }
-    if (dataView.byteLength >= 4) {
-      const b2 = dataView.getUint8(2);
-      const b3 = dataView.getUint8(3);
-      if (b0 === 0xfd && b1 === 0x2f && b2 === 0xb5 && b3 === 0x2f) {
-        return 'zstd';
-      }
-      if (b0 === 0x04 && b1 === 0x22 && b2 === 0x4d && b3 === 0x18) {
-        return 'lz4';
-      }
-    }
-    return 'compressed or binary';
   }
 
   function buildRequestFormContainer(webEventIdRequestForm) {
@@ -552,58 +496,6 @@ const eventTracker = (function() {
         optimizedCookiesMap.set(key, cookieDetails);
       }
     });
-  }
-
-  function removeCookies(cookies) {
-    if (!cookies?.length) {
-      return;
-    }
-    const removedCookies = [];
-    for (const cookie of cookies) {
-      const cleanDomain = cookie.domain?.replace(/^\./, '') ?? '';
-      const path = cookie.path?.startsWith('/') ? cookie.path : `/${cookie.path || ''}`;
-      const protocol = cookie.secure ? 'https:' : 'http:';
-      const cookieUrl = `${protocol}//${cleanDomain}${path}`;
-      const removeDetails = {
-        url: cookieUrl,
-        name: cookie.name,
-      };
-      if (cookie.storeId) {
-        removeDetails.storeId = cookie.storeId;
-      }
-      if (cookie.partitionKey) {
-        removeDetails.partitionKey = cookie.partitionKey;
-      }
-      if (cookie.firstPartyDomain) {
-        removeDetails.firstPartyDomain = cookie.firstPartyDomain;
-      }
-      const removed = httpTracker.browser.cookies.remove(removeDetails);
-      removedCookies.push(removed);
-    }
-    Promise.all(removedCookies).catch(onError);
-  }
-
-  function getCookieNameValue(cookie) {
-    const firstOccurrence = cookie.indexOf('=');
-    const cookieObj = {};
-    if (firstOccurrence > -1) {
-      cookieObj.cookieName = cookie.substring(0, firstOccurrence);
-      cookieObj.cookieValue = cookie.substring(firstOccurrence + 1);
-      // https://tools.ietf.org/html/rfc6265#page-10
-      // https://tools.ietf.org/html/rfc6265#section-4.1.1
-      if (cookieObj.cookieValue) {
-        (stringToArray(cookieObj.cookieValue, ';') || []).forEach((attribute) => {
-          if (attribute) {
-            const attributeKeyValue = attribute.trim().split('=');
-            // toLowerCase : chrome sends as domain, FF sends as Domain
-            if (attributeKeyValue[0].toLowerCase() === 'domain' || attributeKeyValue[0].toLowerCase() === 'path') {
-              cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
-            }
-          }
-        });
-      }
-    }
-    return cookieObj;
   }
 
   function displayHiddenURLList() {
