@@ -42,7 +42,23 @@ function stringToArray(stringWithDelimiter, delimiter = ',') {
 }
 
 function arrayToString(array, delimiter = ', ') {
-  return array?.join(delimiter) ?? '';
+  if (Array.isArray(array)) {
+    return array.join(delimiter);
+  }
+  if (typeof array === 'string') {
+    return array;
+  }
+  return '';
+}
+
+function normalizePatterns(val) {
+  if (Array.isArray(val)) {
+    return val;
+  }
+  if (typeof val === 'string' && val.trim().length > 0) {
+    return stringToArray(val) ?? [];
+  }
+  return [];
 }
 
 function filterWithLength(array, length = 0) {
@@ -99,7 +115,7 @@ const ALL_RESOURCE_TYPES = [
 
 function updateBlockSessionRules(patterns) {
   const removeRuleIds = ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES);
-  const addRules = (patterns ?? [])
+  const addRules = normalizePatterns(patterns)
       .filter((p) => p.trim().length > 0)
       .map((pattern, index) => ({
         id: BLOCK_RULE_BASE + index,
