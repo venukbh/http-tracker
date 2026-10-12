@@ -1,5 +1,5 @@
 const httpTracker = {
-  browser: (globalThis.browser !== undefined ? globalThis.browser : globalThis.chrome),
+  browser: (globalThis.browser ?? globalThis.chrome),
   isFF: navigator.userAgent.includes('Firefox'),
   PAGE_PATH: '/src/html/http-tracker.html',
   STORAGE_KEY_EXCLUDE_PATTERN: 'httpTrackerGlobalExcludePatterns',

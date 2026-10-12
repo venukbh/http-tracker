@@ -5,6 +5,7 @@ importScripts(
 );
 
 const connectedTrackerPorts = new Set();
+const clearRules = () => clearAllSessionRules().catch(onError);
 
 httpTracker.browser.runtime.onConnect.addListener((port) => {
   if (port.name === 'http-tracker-session') {
@@ -12,17 +13,12 @@ httpTracker.browser.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => {
       connectedTrackerPorts.delete(port);
       if (connectedTrackerPorts.size === 0) {
-        clearAllSessionRules().catch(onError);
+        clearRules();
       }
     });
   }
 });
 
-httpTracker.browser.runtime.onInstalled.addListener(() => {
-  clearAllSessionRules().catch(onError);
-});
-
-httpTracker.browser.runtime.onStartup.addListener(() => {
-  clearAllSessionRules().catch(onError);
-});
+httpTracker.browser.runtime.onInstalled.addListener(clearRules);
+httpTracker.browser.runtime.onStartup.addListener(clearRules);
 

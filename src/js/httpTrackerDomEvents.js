@@ -19,21 +19,19 @@ const LISTENER_CONFIG = [
   {event: 'onCompleted', headers: resHeaders},
 ];
 
+function forwardEvent(eventName) {
+  return function(details) {
+    details.callerName = eventName;
+    details.requestIdEnhanced = details.requestId;
+    eventTracker.logRequestDetails(details);
+  };
+}
+
 LISTENER_CONFIG.forEach(({event, headers}) => {
-  r[event].addListener(
-      function(details) {
-        details.callerName = event;
-        details.requestIdEnhanced = details.requestId;
-        eventTracker.logRequestDetails(details);
-      }, trackUrls, headers,
-  );
+  r[event].addListener(forwardEvent(event), trackUrls, headers);
 });
 
 // Firefox does not support extraHeaders on onErrorOccurred
 r.onErrorOccurred.addListener(
-    function(details) {
-      details.callerName = 'onErrorOccurred';
-      details.requestIdEnhanced = details.requestId;
-      eventTracker.logRequestDetails(details);
-    }, trackUrls, httpTracker.isFF ? undefined : errorHeaders,
+    forwardEvent('onErrorOccurred'), trackUrls, httpTracker.isFF ? undefined : errorHeaders,
 );

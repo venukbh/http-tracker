@@ -1,21 +1,25 @@
 const openAddonStyle = getById('persist_options');
 openAddonStyle.addEventListener('change', storeSettings);
 
+const STORAGE_KEY_BY_ID = {
+  default_exclude_patterns: httpTracker.STORAGE_KEY_EXCLUDE_PATTERN,
+  default_include_patterns: httpTracker.STORAGE_KEY_INCLUDE_PATTERN,
+  default_mask_patterns: httpTracker.STORAGE_KEY_MASK_PATTERN,
+  tab: httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB,
+  popup: httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB,
+};
+
 // Whenever the contents of the text area is changed and then loses focus, save the new values
 // Synchronous by design: async is unnecessary without await and would turn runtime errors into unhandled rejections
 function storeSettings(event) {
-  const id = event.target.id;
-  let value = uniqueArray(stringToArray(event.target.value, /[\n\t ,]/));
-  let key;
-  if (id === 'default_exclude_patterns') {
-    key = httpTracker.STORAGE_KEY_EXCLUDE_PATTERN;
-  } else if (id === 'default_include_patterns') {
-    key = httpTracker.STORAGE_KEY_INCLUDE_PATTERN;
-  } else if (id === 'tab' || id === 'popup') {
-    key = httpTracker.STORAGE_KEY_OPEN_ADDON_IN_TAB;
+  const id = event.target?.id;
+  const key = STORAGE_KEY_BY_ID[id];
+  if (!key) {
+    return;
+  }
+  let value = uniqueArray(stringToArray(event.target?.value, /[\n\t ,]/));
+  if (id === 'tab' || id === 'popup') {
     value = (value[0] === 'true');
-  } else if (id === 'default_mask_patterns') {
-    key = httpTracker.STORAGE_KEY_MASK_PATTERN;
   }
   setPropertyToStorage(key, value);
 }
@@ -40,8 +44,5 @@ httpTracker.browser.storage.sync.get([httpTracker.STORAGE_KEY_INCLUDE_PATTERN, h
 });
 
 function getProcessedValue(value) {
-  if (value?.length) {
-    return value.join(', ');
-  }
-  return '';
+  return value?.join(', ') ?? '';
 }
