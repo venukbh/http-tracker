@@ -97,9 +97,7 @@ const eventTracker = (function() {
    * excludeURLsList always takes precedence
    */
   function isEventToCapture(webEvent) {
-    const captureEventInclude = urlMatchIncludePattern(webEvent);
-    const captureEventExclude = captureEventInclude ? urlMatchExcludePattern(webEvent) : true;
-    return (captureEventInclude && !captureEventExclude);
+    return urlMatchIncludePattern(webEvent) && !urlMatchExcludePattern(webEvent);
   }
 
   function urlMatchIncludePattern(webEvent) {
@@ -110,26 +108,14 @@ const eventTracker = (function() {
       return true;
     }
     const url = (webEvent.url || '').toLowerCase();
-    let found = false;
-    if (includeURLsList?.length) {
-      found = includeURLsList.some((v) => url.includes(v.toLowerCase()));
-    }
-    if (!found && globalIncludeURLsList?.length) {
-      found = globalIncludeURLsList.some((v) => url.includes(v.toLowerCase()));
-    }
-    return found;
+    return Boolean(includeURLsList?.some((v) => url.includes(v.toLowerCase())) ||
+      globalIncludeURLsList?.some((v) => url.includes(v.toLowerCase())));
   }
 
   function urlMatchExcludePattern(webEvent) {
     const url = (webEvent.url || '').toLowerCase();
-    let toExclude = false;
-    if (excludeURLsList?.length) {
-      toExclude = excludeURLsList.some((v) => url.includes(v.toLowerCase()));
-    }
-    if (!toExclude && globalExcludeURLsList?.length) {
-      toExclude = globalExcludeURLsList.some((v) => url.includes(v.toLowerCase()));
-    }
-    return toExclude;
+    return Boolean(excludeURLsList?.some((v) => url.includes(v.toLowerCase())) ||
+      globalExcludeURLsList?.some((v) => url.includes(v.toLowerCase())));
   }
 
   function maskFieldsPattern(value) {
@@ -137,14 +123,8 @@ const eventTracker = (function() {
       return false;
     }
     const target = value.toString().toLowerCase();
-    let masking = false;
-    if (maskedAttributesList?.length) {
-      masking = maskedAttributesList.some((v) => target.includes(v.toLowerCase()));
-    }
-    if (!masking && globalMaskPatternsList?.length) {
-      masking = globalMaskPatternsList.some((v) => target.includes(v.toLowerCase()));
-    }
-    return masking;
+    return Boolean(maskedAttributesList?.some((v) => target.includes(v.toLowerCase())) ||
+      globalMaskPatternsList?.some((v) => target.includes(v.toLowerCase())));
   }
 
   /**
@@ -184,7 +164,7 @@ const eventTracker = (function() {
       getById(`web_events_list_${webEvent.requestIdEnhanced}`).classList.remove('web_event_style_error');
       getById(`web_event_status_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.statusCode;
     }
-    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache !== undefined ? webEvent.fromCache : 'N/A';
+    getById(`web_event_cache_${webEvent.requestIdEnhanced}`).innerHTML = webEvent.fromCache ?? 'N/A';
   }
 
   function matchesFilter(text) {
@@ -243,7 +223,7 @@ const eventTracker = (function() {
   }
 
   function generateCACHEContent(webEvent) {
-    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>${webEvent.fromCache !== undefined ? webEvent.fromCache : 'N/A'}</div>`;
+    return `<div class='web_event_list_cache' id='web_event_cache_${webEvent.requestIdEnhanced}'>${webEvent.fromCache ?? 'N/A'}</div>`;
   }
 
   function getReadableDate(timestamp) {
@@ -340,14 +320,10 @@ const eventTracker = (function() {
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
         if (key !== 'responseHeaders' && key !== 'requestHeaders') { // headers added by browser
           if (!ignoreHeaders.has(key) && value !== undefined && value !== null) {
-            if (typeof value !== 'object') {
-              tableContent += generateHeaderKeyValueContent(key, value);
-            } else {
-              const content = Object.entries(value)
-                  .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
-                  .join(', ');
-              tableContent += generateHeaderKeyValueContent(key, content);
-            }
+            const content = typeof value !== 'object' ?
+              value :
+              Object.entries(value).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(', ');
+            tableContent += generateHeaderKeyValueContent(key, content);
           }
         } else { // application headers
           const headers = sortJsonByProperty(value, 'name');
@@ -432,16 +408,26 @@ const eventTracker = (function() {
   }
 
   function detectCompressionType(dataView) {
-    if (dataView.byteLength < 2) return 'binary';
+    if (dataView.byteLength < 2) {
+      return 'binary';
+    }
     const b0 = dataView.getUint8(0);
     const b1 = dataView.getUint8(1);
-    if (b0 === 0x1f && b1 === 0x8b) return 'gzip';
-    if (b0 === 0x78 && (b1 === 0x9c || b1 === 0xda || b1 === 0x01 || b1 === 0x5e)) return 'deflate';
+    if (b0 === 0x1f && b1 === 0x8b) {
+      return 'gzip';
+    }
+    if (b0 === 0x78 && (b1 === 0x9c || b1 === 0xda || b1 === 0x01 || b1 === 0x5e)) {
+      return 'deflate';
+    }
     if (dataView.byteLength >= 4) {
       const b2 = dataView.getUint8(2);
       const b3 = dataView.getUint8(3);
-      if (b0 === 0xfd && b1 === 0x2f && b2 === 0xb5 && b3 === 0x2f) return 'zstd';
-      if (b0 === 0x04 && b1 === 0x22 && b2 === 0x4d && b3 === 0x18) return 'lz4';
+      if (b0 === 0xfd && b1 === 0x2f && b2 === 0xb5 && b3 === 0x2f) {
+        return 'zstd';
+      }
+      if (b0 === 0x04 && b1 === 0x22 && b2 === 0x4d && b3 === 0x18) {
+        return 'lz4';
+      }
     }
     return 'compressed or binary';
   }
@@ -871,13 +857,8 @@ const eventTracker = (function() {
   }
 
   function updateToggleCaptureEvents() {
-    if (toggleCaptureEvents) {
-      toggleCaptureEvents = false;
-      getById('toggle_track_web_events').innerHTML = 'Resume tracker';
-    } else {
-      toggleCaptureEvents = true;
-      getById('toggle_track_web_events').innerHTML = 'Pause tracker';
-    }
+    toggleCaptureEvents = !toggleCaptureEvents;
+    getById('toggle_track_web_events').innerHTML = toggleCaptureEvents ? 'Pause tracker' : 'Resume tracker';
   }
 
   function captureFormDataCheckbox() {
@@ -1059,11 +1040,7 @@ const eventTracker = (function() {
   }
 
   function updateButtonClearFilterWebEvents() {
-    if (!filterWithValue) {
-      getById('clear_filter_web_events').disabled = true;
-    } else {
-      getById('clear_filter_web_events').disabled = false;
-    }
+    getById('clear_filter_web_events').disabled = !filterWithValue;
   }
 
   function updateButtonDeleteAllFilteredWebEvents() {
@@ -1118,14 +1095,14 @@ const eventTracker = (function() {
   }
 
   function getChangesFromStorage(changes) {
-    for (const key in changes) {
-      if (key === httpTracker.STORAGE_KEY_EXCLUDE_PATTERN) {
-        globalExcludeURLsList = changes[key].newValue;
-      } else if (key === httpTracker.STORAGE_KEY_INCLUDE_PATTERN) {
-        globalIncludeURLsList = changes[key].newValue;
-      } else if (key === httpTracker.STORAGE_KEY_MASK_PATTERN) {
-        globalMaskPatternsList = changes[key].newValue;
-      }
+    if (changes?.[httpTracker.STORAGE_KEY_EXCLUDE_PATTERN]) {
+      globalExcludeURLsList = changes[httpTracker.STORAGE_KEY_EXCLUDE_PATTERN].newValue;
+    }
+    if (changes?.[httpTracker.STORAGE_KEY_INCLUDE_PATTERN]) {
+      globalIncludeURLsList = changes[httpTracker.STORAGE_KEY_INCLUDE_PATTERN].newValue;
+    }
+    if (changes?.[httpTracker.STORAGE_KEY_MASK_PATTERN]) {
+      globalMaskPatternsList = changes[httpTracker.STORAGE_KEY_MASK_PATTERN].newValue;
     }
     hideOrShowInfoIcons();
     displayEventProperties();

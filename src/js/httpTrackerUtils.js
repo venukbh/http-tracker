@@ -42,17 +42,11 @@ function stringToArray(stringWithDelimiter, delimiter = ',') {
 }
 
 function filterWithLength(array, length = 0) {
-  if (array?.length > 0) {
-    return (array.filter((e) => e.length > length));
-  }
-  return [];
+  return array?.filter((e) => e.length > length) ?? [];
 }
 
 function uniqueArray(arrayWithEntries) {
-  if (arrayWithEntries?.length) {
-    return [...new Set(arrayWithEntries)];
-  }
-  return [];
+  return arrayWithEntries?.length ? [...new Set(arrayWithEntries)] : [];
 }
 
 function sortMapByKey(unsortedMap) {
@@ -69,19 +63,17 @@ function sortMapByKey(unsortedMap) {
    *
 */
 function sortJsonByProperty(jsonObjectArray, property) {
-  const sortedObject = jsonObjectArray.sort(function(a, b) {
-    return a[property].localeCompare(b[property]);
-  });
-  return sortedObject;
+  return jsonObjectArray.sort((a, b) => a[property]?.localeCompare(b[property]));
 }
 
 
 function getManifestDetails() {
   if (!customManifestDetails) {
     const manifest = httpTracker.browser.runtime.getManifest();
-    if (manifest) {
-      customManifestDetails = {};
-      customManifestDetails.title = `${manifest.action.default_title} (version : ${manifest.version})`;
+    if (manifest?.action) {
+      customManifestDetails = {
+        title: `${manifest.action.default_title} (version : ${manifest.version})`,
+      };
     }
   }
   return customManifestDetails;
@@ -174,9 +166,9 @@ function clearAllSessionRules() {
 function getPropertyFromStorage(details, key) {
   if (httpTracker.browser.runtime.lastError) {
     onError(httpTracker.browser.runtime.lastError);
-  } else {
-    return details[key];
+    return undefined;
   }
+  return details?.[key];
 }
 
 function setPropertyToStorage(key, value) {

@@ -15,32 +15,24 @@ function openAddonOptions() {
   }, getAddonOptions);
 }
 
+function activateExistingTab(windowId, targetUrl) {
+  httpTracker.browser.tabs.query({
+    'windowId': windowId,
+    'url': targetUrl,
+  }, function(tabs) {
+    if (tabs?.length === 1) {
+      httpTracker.browser.windows.update(windowId, bringToFront);
+      httpTracker.browser.tabs.update(tabs[0].id, {
+        active: true,
+      });
+    }
+  });
+}
+
 function getAddonOptions(details) {
-  let existingWindow;
-  if (details.length > 0) {
-    details.some((eachWindow) => {
-      if (eachWindow.tabs?.some((tab) => tab.url?.includes('/src/html/options.html'))) {
-        existingWindow = eachWindow;
-        return true;
-      }
-    });
-  }
+  const existingWindow = details?.find((win) => win.tabs?.some((tab) => tab.url?.includes('/src/html/options.html')));
   if (existingWindow) {
-    httpTracker.browser.tabs.query({
-      'windowId': existingWindow.id,
-      'url': httpTracker.browser.runtime.getURL('/src/html/options.html'),
-    }, function(tabs) {
-      if (tabs?.length === 1) {
-        httpTracker.browser.windows.update(
-            existingWindow.id, {
-              focused: true,
-            },
-        );
-        httpTracker.browser.tabs.update(tabs[0].id, {
-          active: true,
-        });
-      }
-    });
+    activateExistingTab(existingWindow.id, httpTracker.browser.runtime.getURL('/src/html/options.html'));
   } else {
     httpTracker.browser.runtime.openOptionsPage();
   }
@@ -70,21 +62,7 @@ function getAddonWindow(details) {
 function openInTab(details) {
   const existingWindow = getExistingAddonWindow(details);
   if (existingWindow) {
-    httpTracker.browser.tabs.query({
-      'windowId': existingWindow.id,
-      'url': httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
-    }, function(tabs) {
-      if (tabs?.length === 1) {
-        httpTracker.browser.windows.update(
-            existingWindow.id, {
-              focused: true,
-            },
-        );
-        httpTracker.browser.tabs.update(tabs[0].id, {
-          active: true,
-        });
-      }
-    });
+    activateExistingTab(existingWindow.id, httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH));
   } else {
     httpTracker.browser.tabs.create({
       'url': httpTracker.browser.runtime.getURL(httpTracker.PAGE_PATH),
@@ -93,16 +71,7 @@ function openInTab(details) {
 }
 
 function getExistingAddonWindow(details) {
-  let existingWindow;
-  if (details.length > 0) {
-    details.some((eachWindow) => {
-      if (eachWindow.tabs?.some((tab) => tab.url?.includes(httpTracker.PAGE_PATH))) {
-        existingWindow = eachWindow;
-        return true;
-      }
-    });
-  }
-  return existingWindow;
+  return details?.find((win) => win.tabs?.some((tab) => tab.url?.includes(httpTracker.PAGE_PATH)));
 }
 
 function openInPopWindow(details) {
