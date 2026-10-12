@@ -354,14 +354,21 @@ const eventTracker = (function() {
     return tableContent + headersContent;
   }
 
-  function generateHeaderKeyValueContent(key, value) {
+  function maskValue(key, value) {
     if (maskFieldsPattern(key)) {
-      value = value.toString().trim();
-      if (value.length) {
-        value = value.charAt(0) + '*****' + value.charAt(value.length - 1);
+      const str = (value !== undefined && value !== null) ? value.toString().trim() : '';
+      if (str.length > 2) {
+        return str.charAt(0) + '*****' + str.charAt(str.length - 1);
+      } else if (str.length > 0) {
+        return '*****';
       }
     }
-    return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}</td></tr>`;
+    return value;
+  }
+
+  function generateHeaderKeyValueContent(key, value) {
+    const displayVal = maskValue(key, value);
+    return `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
   }
 
   function escapeHtml(text) {
@@ -484,7 +491,9 @@ const eventTracker = (function() {
     });
     if (optimizeResponseCookies) {
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
-        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key.split(':', 1)[0])}${HEADER_CONTENT_VALUE}${addMarkTag(value.cookieValue)}</td></tr>`;
+        const cookieName = key.split(':', 1)[0];
+        const displayVal = maskValue(cookieName, value.cookieValue);
+        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
       });
     }
     if (cookieContent) {
@@ -511,7 +520,8 @@ const eventTracker = (function() {
       }
     });
     cookieMap.forEach((value, key) => {
-      cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(value)}</td></tr>`;
+      const displayVal = maskValue(key, value);
+      cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
     });
     return cookieContent;
   }
@@ -522,7 +532,8 @@ const eventTracker = (function() {
     cookieList.forEach((cookie) => {
       if (cookie) {
         const cookieDetails = getCookieNameValue(cookie);
-        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieDetails.cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(cookieDetails.cookieValue)}</td></tr>`;
+        const displayVal = maskValue(cookieDetails.cookieName, cookieDetails.cookieValue);
+        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieDetails.cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
       }
     });
     return cookieContent;
