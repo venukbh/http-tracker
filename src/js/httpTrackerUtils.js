@@ -52,7 +52,7 @@ function uniqueArray(arrayWithEntries) {
   if (arrayWithEntries?.length) {
     return [...new Set(arrayWithEntries)];
   } else {
-    return '';
+    return [];
   }
 }
 

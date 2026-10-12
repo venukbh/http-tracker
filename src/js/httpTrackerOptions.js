@@ -2,7 +2,8 @@ const openAddonStyle = getById('persist_options');
 openAddonStyle.addEventListener('change', storeSettings);
 
 // Whenever the contents of the text area is changed and then loses focus, save the new values
-async function storeSettings(event) {
+// Synchronous by design: async is unnecessary without await and would turn runtime errors into unhandled rejections
+function storeSettings(event) {
   const id = event.target.id;
   let value = uniqueArray(stringToArray(event.target.value, /[\n\t ,]/));
   let key;

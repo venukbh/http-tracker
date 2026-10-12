@@ -36,7 +36,8 @@ const eventTracker = (function() {
   const HEADER_CONTENT_KEY = `<tr><td class='web_event_detail_header_key'>`;
   const HEADER_CONTENT_VALUE = `</td><td class='web_event_detail_header_value'>`;
 
-  async function logRequestDetails(webEvent) {
+  // Synchronous by design: async is unnecessary without await and would turn runtime errors into unhandled rejections
+  function logRequestDetails(webEvent) {
     const inserted = insertEventUrls(webEvent);
     if (inserted) {
       addOrUpdateUrlListToPage(webEvent);
@@ -154,7 +155,7 @@ const eventTracker = (function() {
 
   function addEventList(webEvent) {
     addedRequestId.add(webEvent.requestIdEnhanced);
-    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\'>' +
+    const containerContent = '<div title=\'Click to view details\' class=\'' + CLASS_LIST_TO_ADD + '\' id=\'web_events_list_' + webEvent.requestIdEnhanced + '\' data-request-id=\'' + webEvent.requestIdEnhanced + '\'>' +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
       generateSTATUSContent(webEvent) +
@@ -463,9 +464,9 @@ const eventTracker = (function() {
     const cookieMap = new Map();
     cookieList.forEach((cookie) => {
       if (cookie) {
-        const firstOccurance = cookie.indexOf('=');
-        if (firstOccurance > -1) {
-          cookieMap.set(cookie.substring(0, firstOccurance), cookie.substring(firstOccurance + 1));
+        const firstOccurrence = cookie.indexOf('=');
+        if (firstOccurrence > -1) {
+          cookieMap.set(cookie.substring(0, firstOccurrence), cookie.substring(firstOccurrence + 1));
         } else {
           cookieMap.set(cookie, '');
         }
@@ -523,11 +524,11 @@ const eventTracker = (function() {
   }
 
   function getCookieNameValue(cookie) {
-    const firstOccurance = cookie.indexOf('=');
+    const firstOccurrence = cookie.indexOf('=');
     const cookieObj = {};
-    if (firstOccurance > -1) {
-      cookieObj.cookieName = cookie.substring(0, firstOccurance);
-      cookieObj.cookieValue = cookie.substring(firstOccurance + 1);
+    if (firstOccurrence > -1) {
+      cookieObj.cookieName = cookie.substring(0, firstOccurrence);
+      cookieObj.cookieValue = cookie.substring(firstOccurrence + 1);
       // https://tools.ietf.org/html/rfc6265#page-10
       // https://tools.ietf.org/html/rfc6265#section-4.1.1
       if (cookieObj.cookieValue) {
@@ -592,7 +593,7 @@ const eventTracker = (function() {
   }
 
   function removeEntry(node) {
-    const requestIdToRemove = node.id.substring(16, node.id.length);
+    const requestIdToRemove = node.dataset.requestId;
     requestIdRedirectCount.delete(requestIdToRemove);
     allRequestHeaders.delete(requestIdToRemove);
     allResponseHeaders.delete(requestIdToRemove);
@@ -672,8 +673,8 @@ const eventTracker = (function() {
 
   function generateHeadersToAddOrModify() {
     const headersObject = [];
-    const conatiners = getByClassNames('single_header_container');
-    Array.prototype.forEach.call(conatiners, function(headerContainer) {
+    const containers = getByClassNames('single_header_container');
+    Array.prototype.forEach.call(containers, function(headerContainer) {
       const nameInput = headerContainer.querySelector('.header_input_name');
       const nameLabel = headerContainer.querySelector('.add_header_name');
       const applyChk = headerContainer.querySelector('.header_input_apply');
@@ -694,7 +695,7 @@ const eventTracker = (function() {
       }
     });
     updateHeaderModifySessionRules(headersObject);
-    if (headersObject.length || conatiners.length) {
+    if (headersObject.length || containers.length) {
       getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers: ${headersObject.length}`;
     } else {
       getById('add_modify_headers_banner').innerHTML = `Add/Modify request headers:`;
@@ -702,12 +703,13 @@ const eventTracker = (function() {
   }
 
   function clearAndRemoveHeaderContents(event) {
-    if (event.target.id.substring(21) === '0') {
+    const index = event.target.dataset.headerIndex;
+    if (index === '0') {
       getById('header_name_0').value = '';
       getById('header_value_0').value = '';
       getById('header_url_0').value = '';
     } else {
-      getById('header_details_' + event.target.id.substring(21)).remove();
+      getById('header_details_' + index).remove();
     }
     generateHeadersToAddOrModify();
   }
@@ -777,6 +779,7 @@ const eventTracker = (function() {
     removeButton.type = 'button';
     removeButton.textContent = '-';
     removeButton.id = 'header_button_remove_' + nextIndex;
+    removeButton.dataset.headerIndex = nextIndex;
     removeButton.onclick = clearAndRemoveHeaderContents;
 
     const removeDiv = document.createElement('div');
@@ -892,11 +895,10 @@ const eventTracker = (function() {
   }
 
   function removeSelectedEvent() {
-    let selectedEvent = getSelectedEvent();
+    const selectedEvent = getSelectedEvent();
     if (selectedEvent) {
       removeEntry(selectedEvent);
       getById('delete_selected_web_event').disabled = true;
-      selectedEvent = null;
     }
   }
 
@@ -982,12 +984,12 @@ const eventTracker = (function() {
   }
 
   function updateAllButtons() {
-    updateButonClearFilterWebEvents();
-    updateButonDeleteSelectedWebEvent();
-    updateButonDeleteAllFilteredWebEvents();
+    updateButtonClearFilterWebEvents();
+    updateButtonDeleteSelectedWebEvent();
+    updateButtonDeleteAllFilteredWebEvents();
   }
 
-  function updateButonClearFilterWebEvents() {
+  function updateButtonClearFilterWebEvents() {
     if (!filterWithValue) {
       getById('clear_filter_web_events').disabled = true;
     } else {
@@ -995,7 +997,7 @@ const eventTracker = (function() {
     }
   }
 
-  function updateButonDeleteAllFilteredWebEvents() {
+  function updateButtonDeleteAllFilteredWebEvents() {
     if (filterWithValue?.length > 2) {
       const visibleUrlList = getVisibleUrlsList();
       if (visibleUrlList?.length > 0) {
@@ -1008,7 +1010,7 @@ const eventTracker = (function() {
     }
   }
 
-  function updateButonDeleteSelectedWebEvent() {
+  function updateButtonDeleteSelectedWebEvent() {
     const selectedEvent = getSelectedEvent();
     if (!selectedEvent) {
       getById('delete_selected_web_event').disabled = true;
@@ -1021,7 +1023,7 @@ const eventTracker = (function() {
     deselectEvent();
     const element = getById(requestId);
     element.classList.add('web_event_list_selected');
-    selectedWebEventRequestId = requestId.substring(16);
+    selectedWebEventRequestId = element.dataset.requestId;
     displayEventProperties();
   }
 

@@ -18,4 +18,3 @@ const DELIMITER_REQUEST_COOKIE_KEY_NAME = 'Cookie';
 const DELIMITER_RESPONSE_COOKIE = '\n';
 const DELIMITER_RESPONSE_COOKIE_KEY_NAME = 'set-cookie';
 const STRING_ERROR = 'ERR';
-const STRING_SPACE = '&nbsp;';
