@@ -430,6 +430,12 @@ const eventTracker = (function() {
       } else if (webEventIdRequestForm.raw) {
         formData = '<tr><td colspan=2 class=\'web_event_detail_cookie\'>Body (raw form data)</td></tr>';
         for (const eachByte of webEventIdRequestForm.raw) {
+          if (!eachByte.bytes) {
+            if (eachByte.file) {
+              formData += `<tr style='white-space: pre-wrap; word-break: break-all;'><td colspan=2><span style='color:#888;font-style:italic;'>[File upload: ${escapeHtml(eachByte.file)}]</span></td></tr>`;
+            }
+            continue;
+          }
           const dataView = new DataView(eachByte.bytes);
           const decodedString = decoder.decode(dataView);
           let displayContent;
