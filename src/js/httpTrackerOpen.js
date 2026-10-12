@@ -124,8 +124,15 @@ function focusExistingWindow(addOnWindowDetails) {
   }
 }
 
-httpTracker.browser.action.setTitle({
-  'title': getManifestDetails().title,
-});
+// Only register the browser action listener in the background context,
+// not when loaded in extension UI pages (e.g. http-tracker.html).
+const isUiPage = typeof window !== 'undefined' && window.location?.pathname?.includes('/src/html/');
+if (!isUiPage) {
+  httpTracker.browser.action.setTitle({
+    'title': getManifestDetails().title,
+  });
 
-httpTracker.browser.action.onClicked.addListener(openAddon);
+  if (!httpTracker.browser.action.onClicked.hasListener(openAddon)) {
+    httpTracker.browser.action.onClicked.addListener(openAddon);
+  }
+}
