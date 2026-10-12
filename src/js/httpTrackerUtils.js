@@ -46,6 +46,7 @@ function filterWithLength(array, length = 0) {
   if (array?.length > 0) {
     return (array.filter((e) => e.length > length));
   }
+  return [];
 }
 
 function uniqueArray(arrayWithEntries) {
