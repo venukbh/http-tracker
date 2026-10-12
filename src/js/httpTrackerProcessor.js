@@ -373,12 +373,27 @@ const eventTracker = (function() {
   }
 
   function addMarkTag(text) {
-    const escaped = escapeHtml(text);
-    if (compiledFindPattern) {
-      compiledFindPattern.lastIndex = 0;
-      return escaped.replace(compiledFindPattern, (match) => `<mark>${match}</mark>`);
+    if (text === null || text === undefined) return '';
+    const str = String(text);
+    if (!compiledFindPattern) {
+      return escapeHtml(str);
     }
-    return escaped;
+    compiledFindPattern.lastIndex = 0;
+    let result = '';
+    let lastIndex = 0;
+    let match;
+    while ((match = compiledFindPattern.exec(str)) !== null) {
+      if (match[0].length === 0) {
+        compiledFindPattern.lastIndex++;
+        if (match.index >= str.length) break;
+        continue;
+      }
+      result += escapeHtml(str.slice(lastIndex, match.index));
+      result += `<mark>${escapeHtml(match[0])}</mark>`;
+      lastIndex = match.index + match[0].length;
+    }
+    result += escapeHtml(str.slice(lastIndex));
+    return result;
   }
 
   function isBinaryData(str) {
