@@ -24,6 +24,7 @@ const eventTracker = (function() {
   let excludeURLsList;
   let includeURLsList;
   let blockURLSList;
+  let headerRowCounter = 1;
 
   const CLASS_LIST_TO_ADD = `web_event_list_blank web_event_list_style`;
   const HEADER_CONTENT_BANNER = `<tr><td colspan=2 class='web_event_detail_cookie'>Headers</td></tr>`;
@@ -708,15 +709,20 @@ const eventTracker = (function() {
       getById('header_name_0').value = '';
       getById('header_value_0').value = '';
       getById('header_url_0').value = '';
+      getById('header_apply_0').checked = false;
+      const nameLabel = getById('header_details_0')?.querySelector('.add_header_name');
+      if (nameLabel) nameLabel.style.color = '';
     } else {
-      getById('header_details_' + index).remove();
+      const container = event.target.closest('.single_header_container');
+      if (container) {
+        container.remove();
+      }
     }
     generateHeadersToAddOrModify();
   }
 
   function addNewHeaderContainer() {
-    const currentContainers = getByClassNames('single_header_container');
-    const nextIndex = currentContainers.length;
+    const nextIndex = headerRowCounter++;
 
     const headerDiv = document.createElement('div');
     headerDiv.id = 'header_details_' + nextIndex;
@@ -797,7 +803,7 @@ const eventTracker = (function() {
     simpleDiv.append(removeDiv, addDiv);
     headerButtonsDiv.append(simpleDiv);
     headerDiv.append(nameDiv, valueDiv, urlDiv, applyDiv, headerButtonsDiv);
-    currentContainers[nextIndex - 1].after(headerDiv);
+    getById('add_modify_headers').appendChild(headerDiv);
   }
 
   function updateToggleCaptureEvents() {
