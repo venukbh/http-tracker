@@ -42,9 +42,7 @@
           <div class="empty_div">&nbsp;</div>
         </div>
         <div style="height: 30px;" title="Filter captured events based on available filter options. To add more filtration, use &amp;, |&#013;&#013;Examples:&#013;&#013;&nbsp;1. type: url, filter value: google&amp;gmail, outcome : filter all urls containing 'google' AND followed by 'gmail' i.e. url should contain matching words in the same order of filter.&#013;&nbsp;2. type: method, filter value: get|post, outcome : filter all urls whose method is get OR post, ignoring order of entries">
-          <div style="float: left; width: 20%">
-            Filter list by :
-          </div>
+          <label for="web_event_filter_key" style="float: left; width: 20%">Filter list by :</label>
           <div style="float: left; width: 15%;">
             <select id="web_event_filter_key" aria-label="Filter events by">
               <option value="0" selected="selected">URL</option>
@@ -55,6 +53,7 @@
             </select>
           </div>
           <div style="float:left; width: 45%;">
+            <label for="filter_web_events" class="web_event_list_hide">Filter pattern</label>
             <input id="filter_web_events" type="text" aria-label="Filter list" placeholder="Filter string case insensitive (min 3 chars). Read tooltip" style="width: 100%;" />
           </div>
           <div style="width: 15%; float: left; text-align: right;">
@@ -132,6 +131,7 @@
             <button id="delete_cookies_button" type="button" class="web_event_button_delete_all" title="Delete all cookies for this domain" disabled>Delete cookies</button>
           </div>
           <div style="float: left;width: 75%;">
+            <label for="delete_cookies" class="web_event_list_hide">Domain to delete cookies from</label>
             <input id="delete_cookies" type="text" placeholder="Enter domain name" aria-label="Domain to delete cookies from" style="width: 100%" value="" />
           </div>
           <div class="empty_div">&nbsp;</div>
@@ -153,7 +153,7 @@
       </div>
     </div>
     <div style="clear: both; height: 15px;"></div>
-    <div id="urls_list" class="web_event_list_container" tabindex="0" role="listbox" aria-label="Captured HTTP requests">
+    <div id="urls_list" class="web_event_list_container" tabindex="0" role="region" aria-label="Captured HTTP requests">
       <div id="urls_list_heading" class="urls_list_heading">
         <div class="web_event_list_url">URL [click a tracked url (if any) to view details]</div>
         <div class="web_event_list_method">Method</div>
@@ -175,10 +175,28 @@
           <tbody>
             <tr>
               <td id="web_event_details_selected_request" class="web_event_detail_td">
-                <table id="request_headers_details" class="web_event_request_header_details"><caption class="web_event_list_hide">Request header details</caption></table>
+                <table id="request_headers_details" class="web_event_request_header_details">
+                  <caption class="web_event_list_hide">Request header details</caption>
+                  <thead>
+                    <tr class="web_event_list_hide">
+                      <th scope="col">Header Name</th>
+                      <th scope="col">Header Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="request_headers_details_body"></tbody>
+                </table>
               </td>
               <td id="web_event_details_selected_response" class="web_event_detail_td">
-                <table id="response_headers_details" class="web_event_response_header_details"><caption class="web_event_list_hide">Response header details</caption></table>
+                <table id="response_headers_details" class="web_event_response_header_details">
+                  <caption class="web_event_list_hide">Response header details</caption>
+                  <thead>
+                    <tr class="web_event_list_hide">
+                      <th scope="col">Header Name</th>
+                      <th scope="col">Header Value</th>
+                    </tr>
+                  </thead>
+                  <tbody id="response_headers_details_body"></tbody>
+                </table>
               </td>
             </tr>
           </tbody>
@@ -190,16 +208,16 @@
   <template id="template_header_row">
     <div class="single_header_container">
       <div class="add_header_name">
-        <label>Name</label> <input type="text" class="header_input_name" placeholder="e.g. X-Custom-Header" />
+        <label for="tmpl_header_name">Name</label> <input id="tmpl_header_name" type="text" class="header_input_name" placeholder="e.g. X-Custom-Header" />
       </div>
       <div class="add_header_value">
-        <label>Value</label> <input type="text" class="header_input_value" placeholder="e.g. my-value" />
+        <label for="tmpl_header_value">Value</label> <input id="tmpl_header_value" type="text" class="header_input_value" placeholder="e.g. my-value" />
       </div>
       <div class="add_header_url">
-        <label>URL</label> <input type="text" class="header_input_url" placeholder="e.g. api.example.com (blank = all URLs)" />
+        <label for="tmpl_header_url">URL</label> <input id="tmpl_header_url" type="text" class="header_input_url" placeholder="e.g. api.example.com (blank = all URLs)" />
       </div>
       <div class="add_header_apply">
-        <input type="checkbox" class="header_input_apply" /><label title="Check this to apply this header">Apply</label>
+        <input id="tmpl_header_apply" type="checkbox" class="header_input_apply" /><label for="tmpl_header_apply" title="Check this to apply this header">Apply</label>
       </div>
       <div style="width: 12%;float: left;text-align: right;">
         <div style="display: flex;">
