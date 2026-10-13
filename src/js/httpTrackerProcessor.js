@@ -319,8 +319,8 @@ const eventTracker = (function() {
     const resEl = getById('web_event_details_selected_response');
     reqEl.style.border = '1px solid';
     resEl.style.border = '1px solid';
-    getById('request_headers_details').innerHTML = requestContainer + requestFormContainer;
-    getById('response_headers_details').innerHTML = responseContainer;
+    (getById('request_headers_details_body') || getById('request_headers_details')).innerHTML = requestContainer + requestFormContainer;
+    (getById('response_headers_details_body') || getById('response_headers_details')).innerHTML = responseContainer;
     getById('web_details_selected_container').style = 'visibility: visible;';
   }
 
@@ -568,8 +568,8 @@ const eventTracker = (function() {
       getById('delete_selected_web_event').disabled = true;
       getById('web_event_detail_request_head').style.display = 'none';
       getById('web_event_detail_response_head').style.display = 'none';
-      getById('response_headers_details').innerHTML = '';
-      getById('request_headers_details').innerHTML = '';
+      (getById('response_headers_details_body') || getById('response_headers_details')).innerHTML = '';
+      (getById('request_headers_details_body') || getById('request_headers_details')).innerHTML = '';
       getById('web_details_selected_container').style = 'visibility: hidden;';
       selectedWebEventRequestId = '';
     }
@@ -756,8 +756,8 @@ const eventTracker = (function() {
     getById('web_event_details_selected_response').style.border = 'none';
     getById('web_event_detail_request_head').style.display = 'none';
     getById('web_event_detail_response_head').style.display = 'none';
-    getById('response_headers_details').innerHTML = '';
-    getById('request_headers_details').innerHTML = '';
+    (getById('response_headers_details_body') || getById('response_headers_details')).innerHTML = '';
+    (getById('request_headers_details_body') || getById('request_headers_details')).innerHTML = '';
     Array.from(getByClassNames('web_event_list_blank')).forEach((el) => el.remove());
     getById('web_details_selected_container').style = 'visibility: hidden;';
     updateAllButtons();
