@@ -13,7 +13,8 @@
 </head>
 
 <body>
-  <div id="web_events_tracking" class="web_event_tracker">
+  <main id="web_events_tracking" class="web_event_tracker">
+    <h1 class="web_event_list_hide">HTTP-TRACKER</h1>
     <div>
       <div class="left_pane">
         <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will be tracked by the addon. If the url does not contain any of the words, it will not be tracked. If same word is in skip list also, the matching url will not be tracked as skip list takes precedence. Leaving this input field blank tracks all the urls.">
@@ -57,7 +58,7 @@
             <input id="filter_web_events" type="text" aria-label="Filter list" placeholder="Filter string case insensitive (min 3 chars). Read tooltip" style="width: 100%;" />
           </div>
           <div style="width: 15%; float: left; text-align: right;">
-            <input id="clear_filter_web_events" type="button" class="web_event_button_clear_filter" title="Clear the filter textbox and display all events" value="Clear filter"></input>
+            <input id="clear_filter_web_events" type="button" class="web_event_button_clear_filter" title="Clear the filter textbox and display all events" value="Clear filter" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
@@ -82,10 +83,10 @@
               <div style="width: 12%;float: left;text-align: right;">
                 <div style="display: flex;">
                   <div style="margin-right: 5px;float: left;flex-grow: 1;">
-                    <button id="header_button_remove_0" type="button" data-header-index="0">-</button>
+                    <button id="header_button_remove_0" type="button" data-header-index="0" aria-label="Remove header rule">-</button>
                   </div>
                   <div>
-                    <button id="header_button_add_0" type="button">+</button>
+                    <button id="header_button_add_0" type="button" aria-label="Add header rule">+</button>
                   </div>
                 </div>
               </div>
@@ -100,7 +101,7 @@
           <label for="include_form_data">Capture form data</label>
         </div>
         <div style="float: left; margin-right: 20px; height: 30px;">
-          <input id="optimize_response_cookies" type="checkbox" checked>
+          <input id="optimize_response_cookies" type="checkbox" checked />
           <label for="optimize_response_cookies" title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize response cookies</label>
         </div>
         <div style="height: 30px;" title="Global preferences to persist across browser sessions.">
@@ -166,6 +167,7 @@
     <div id="web_details_selected_container">
       <div class="web_event_details_scroll_panel">
         <table class="web_event_details">
+          <caption class="web_event_list_hide">Selected event details</caption>
           <thead>
             <tr>
               <th id="web_event_detail_request_head" scope="col" class="web_event_detail_request_heading" style="display: none;">Request Details</th>
@@ -203,7 +205,7 @@
         </table>
       </div>
     </div>
-  </div>
+  </main>
 
   <template id="template_header_row">
     <div class="single_header_container">
@@ -222,10 +224,10 @@
       <div style="width: 12%;float: left;text-align: right;">
         <div style="display: flex;">
           <div style="margin-right: 5px;float: left;flex-grow: 1;">
-            <button type="button" class="header_button_remove">-</button>
+            <button type="button" class="header_button_remove" aria-label="Remove header rule">-</button>
           </div>
           <div>
-            <button type="button" style="visibility: hidden;">+</button>
+            <button type="button" style="visibility: hidden;" aria-label="Add header rule">+</button>
           </div>
         </div>
       </div>
