@@ -150,6 +150,33 @@ const eventTracker = (function() {
 
   function addEventList(webEvent) {
     addedRequestId.add(webEvent.requestIdEnhanced);
+    const tmpl = getById('template_url_row');
+    if (tmpl?.content) {
+      const fragment = tmpl.content.cloneNode(true);
+      const row = fragment.firstElementChild;
+      row.id = `web_events_list_${webEvent.requestIdEnhanced}`;
+      row.dataset.requestId = webEvent.requestIdEnhanced;
+      row.dataset.rawRequestId = webEvent.requestId;
+
+      const [urlDiv, methodDiv, statusDiv, timeDiv, cacheDiv] = row.children;
+      urlDiv.id = `web_event_url_${webEvent.requestIdEnhanced}`;
+      urlDiv.textContent = webEvent.url;
+
+      methodDiv.id = `web_event_method_${webEvent.requestIdEnhanced}`;
+      methodDiv.textContent = webEvent.method;
+
+      statusDiv.id = `web_event_status_${webEvent.requestIdEnhanced}`;
+      statusDiv.textContent = webEvent.statusCode || (webEvent.error ? STRING_ERROR : 'N/A');
+
+      timeDiv.id = `web_event_time_${webEvent.requestIdEnhanced}`;
+      timeDiv.textContent = webEvent.timeStamp ? getReadableDate(webEvent.timeStamp) : 'N/A';
+
+      cacheDiv.id = `web_event_cache_${webEvent.requestIdEnhanced}`;
+      cacheDiv.textContent = webEvent.fromCache ?? 'N/A';
+
+      getById('urls_list').appendChild(fragment);
+      return;
+    }
     const containerContent = `<div title='Click to view details' class='${CLASS_LIST_TO_ADD}' id='web_events_list_${webEvent.requestIdEnhanced}' data-request-id='${webEvent.requestIdEnhanced}' data-raw-request-id='${webEvent.requestId}'>` +
       generateURLContent(webEvent) +
       generateMETHODContent(webEvent) +
@@ -193,7 +220,7 @@ const eventTracker = (function() {
   }
 
   function applyFilterToElement(element) {
-    const text = element.childNodes[filterWithKey]?.textContent || '';
+    const text = element.children[filterWithKey]?.textContent || '';
     if (matchesFilter(text)) {
       element.classList.remove('web_event_list_hide');
     } else {
@@ -663,87 +690,35 @@ const eventTracker = (function() {
 
   function addNewHeaderContainer() {
     const nextIndex = headerRowCounter++;
+    const tmpl = getById('template_header_row');
+    if (tmpl?.content) {
+      const fragment = tmpl.content.cloneNode(true);
+      const headerDiv = fragment.firstElementChild;
+      headerDiv.id = `header_details_${nextIndex}`;
 
-    const headerDiv = document.createElement('div');
-    headerDiv.id = `header_details_${nextIndex}`;
-    headerDiv.className = 'single_header_container';
+      const nameInput = headerDiv.querySelector('.header_input_name');
+      nameInput.id = `header_name_${nextIndex}`;
+      headerDiv.querySelector('.add_header_name label').htmlFor = nameInput.id;
 
-    const urlDiv = document.createElement('div');
-    urlDiv.className = 'add_header_url';
-    const urlLabel = document.createElement('label');
-    urlLabel.htmlFor = `header_url_${nextIndex}`;
-    urlLabel.textContent = 'URL';
-    const urlInput = document.createElement('input');
-    urlInput.type = 'text';
-    urlInput.id = `header_url_${nextIndex}`;
-    urlInput.className = 'header_input_url';
-    urlInput.placeholder = 'e.g. api.example.com (blank = all URLs)';
-    urlDiv.append(urlLabel, ' ', urlInput);
+      const valueInput = headerDiv.querySelector('.header_input_value');
+      valueInput.id = `header_value_${nextIndex}`;
+      headerDiv.querySelector('.add_header_value label').htmlFor = valueInput.id;
 
-    const valueDiv = document.createElement('div');
-    valueDiv.className = 'add_header_value';
-    const valueLabel = document.createElement('label');
-    valueLabel.htmlFor = `header_value_${nextIndex}`;
-    valueLabel.textContent = 'Value';
-    const valueInput = document.createElement('input');
-    valueInput.type = 'text';
-    valueInput.id = `header_value_${nextIndex}`;
-    valueInput.className = 'header_input_value';
-    valueInput.placeholder = 'e.g. my-value';
-    valueDiv.append(valueLabel, ' ', valueInput);
+      const urlInput = headerDiv.querySelector('.header_input_url');
+      urlInput.id = `header_url_${nextIndex}`;
+      headerDiv.querySelector('.add_header_url label').htmlFor = urlInput.id;
 
-    const nameDiv = document.createElement('div');
-    nameDiv.className = 'add_header_name';
-    const nameLabel = document.createElement('label');
-    nameLabel.htmlFor = `header_name_${nextIndex}`;
-    nameLabel.textContent = 'Name';
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.id = `header_name_${nextIndex}`;
-    nameInput.className = 'header_input_name';
-    nameInput.placeholder = 'e.g. X-Custom-Header';
-    nameDiv.append(nameLabel, ' ', nameInput);
+      const applyInput = headerDiv.querySelector('.header_input_apply');
+      applyInput.id = `header_apply_${nextIndex}`;
+      headerDiv.querySelector('.add_header_apply label').htmlFor = applyInput.id;
 
-    const applyDiv = document.createElement('div');
-    applyDiv.className = 'add_header_apply';
-    const applyInput = document.createElement('input');
-    applyInput.type = 'checkbox';
-    applyInput.id = `header_apply_${nextIndex}`;
-    applyInput.className = 'header_input_apply';
-    const applyLabel = document.createElement('label');
-    applyLabel.htmlFor = `header_apply_${nextIndex}`;
-    applyLabel.textContent = 'Apply';
-    applyDiv.append(applyInput, applyLabel);
+      const removeButton = headerDiv.querySelector('.header_button_remove');
+      removeButton.id = `header_button_remove_${nextIndex}`;
+      removeButton.dataset.headerIndex = nextIndex;
+      removeButton.onclick = clearAndRemoveHeaderContents;
 
-    const headerButtonsDiv = document.createElement('div');
-    headerButtonsDiv.style = 'width: 12%;float: left;text-align: right;';
-
-    const simpleDiv = document.createElement('div');
-    simpleDiv.style = 'display: flex;';
-
-    const removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.textContent = '-';
-    removeButton.id = `header_button_remove_${nextIndex}`;
-    removeButton.dataset.headerIndex = nextIndex;
-    removeButton.onclick = clearAndRemoveHeaderContents;
-
-    const removeDiv = document.createElement('div');
-    removeDiv.style = 'margin-right: 5px;float: left;flex-grow: 1;';
-    removeDiv.append(removeButton);
-
-    const addButton = document.createElement('button');
-    addButton.type = 'button';
-    addButton.textContent = '+';
-    addButton.style.visibility = 'hidden';
-
-    const addDiv = document.createElement('div');
-    addDiv.append(addButton);
-
-    simpleDiv.append(removeDiv, addDiv);
-    headerButtonsDiv.append(simpleDiv);
-    headerDiv.append(nameDiv, valueDiv, urlDiv, applyDiv, headerButtonsDiv);
-    getById('add_modify_headers').appendChild(headerDiv);
+      getById('add_modify_headers').appendChild(fragment);
+    }
   }
 
   function updateToggleCaptureEvents() {

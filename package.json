@@ -1,7 +1,7 @@
 {
     "name": "http-tracker",
     "description": "",
-    "version": "3.0.2",
+    "version": "3.1.0",
     "repository": {
         "type": "git",
         "url": ""
@@ -17,6 +17,7 @@
         "eslint-config-google": "^0.14.0"
     },
     "scripts": {
+        "test": "node --test 'test/*.test.mjs'",
         "lint-fix": "eslint . --fix",
         "lint": "eslint .",
         "build": "npm run lint",
