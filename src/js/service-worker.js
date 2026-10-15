@@ -1,7 +1,7 @@
 importScripts(
-    '/src/js/httpTrackerConstants.js',
-    '/src/js/httpTrackerUtils.js',
-    '/src/js/httpTrackerOpen.js',
+    '/src/js/constants.js',
+    '/src/js/utils.js',
+    '/src/js/open.js',
 );
 
 const connectedTrackerPorts = new Set();

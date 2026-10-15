@@ -4,7 +4,7 @@
 
 **A powerful browser extension that brings your network traffic into one central place — across all tabs, all windows, even incognito.**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue?style=for-the-badge)](https://github.com/your-repo/http-tracker/releases)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue?style=for-the-badge)](https://github.com/venukbh/http-tracker/releases)
 [![Manifest](https://img.shields.io/badge/Manifest-V3-green?style=for-the-badge)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![License](https://img.shields.io/badge/license-MIT-orange?style=for-the-badge)](LICENSE)
 [![Chrome](https://img.shields.io/badge/Chrome-Extension-yellow?style=for-the-badge&logo=google-chrome)](https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi)
@@ -101,6 +101,62 @@ Unlike the built-in DevTools, HTTP-TRACKER aggregates requests from **all open t
 
 [![Install from Firefox Add-ons](https://img.shields.io/badge/Install-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/http-tracker/)
 [![Rate on Firefox Add-ons](https://img.shields.io/badge/⭐_Rate-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/http-tracker/)
+
+---
+
+## 🛠️ Development & Release Process
+
+HTTP-TRACKER uses a zero-build vanilla architecture. The browser directly runs the modular ES6 files from `src/` without transpilers or bundlers.
+
+### 🧪 Running Tests & Quality Checks
+
+```bash
+# Run the automated unit and integration test suite (99 tests)
+npm test
+
+# Run ESLint code checks
+npm run lint
+```
+
+### 🏷️ Setting Version in Lockstep
+
+To keep `package.json` and `manifest.json` in 100% parallel sync without unwanted auto-increments during development, set the version explicitly whenever you are ready to ship:
+
+```bash
+# Sets the exact version in both package.json and manifest.json
+npm run set-version 3.1.0
+```
+
+> **Safety Guard**: Both `npm test` and `npm run package` will prevent building or packaging if `manifest.json` and `package.json` versions ever drift.
+
+### 📦 Packaging for Web Stores (Chrome & Firefox)
+
+```bash
+# Preview files to be bundled (excluding .DS_Store and development files)
+npm run package:dry-run
+
+# Create a clean release zip (e.g. archives/http-tracker-3.1.0.zip)
+npm run package
+
+# Verify zip archive contents
+npm run package:verify
+```
+
+### 🚀 Releasing via GitHub Actions
+
+Whenever a version tag is pushed, GitHub Actions automatically verifies all 99 tests, packages the extension, and publishes a GitHub Release with the downloadable `.zip` attached:
+
+```bash
+# 1. Update version across both files
+npm run set-version 3.1.0
+
+# 2. Commit and tag
+git commit -am "chore: release v3.1.0"
+git tag v3.1.0
+
+# 3. Push commit and tag to trigger GitHub Actions release
+git push origin <branch> --tags
+```
 
 ---
 

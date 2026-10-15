@@ -1,8 +1,7 @@
 {
   "author": "Venu Madhav",
-  "background":
-  {
-    "service_worker": "/src/js/httpTrackerSW.js"
+  "background": {
+    "service_worker": "/src/js/service-worker.js"
   },
   "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
   "manifest_version": 3,
@@ -15,41 +14,34 @@
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "version": "3.1.0",
-  "action":
-  {
-    "default_icon":
-    {
+  "action": {
+    "default_icon": {
       "16": "/src/assets/icon_320px.png",
       "32": "/src/assets/icon_320px.png"
     },
     "default_title": "HTTP-TRACKER : Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests"
   },
-  "commands":
-  {
-    "_execute_action":
-    {
-      "suggested_key":
-      {
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
         "default": "Ctrl+Shift+1"
       },
       "description": "Open HTTP-TRACKER if not opened, or bring to front if already opened"
     }
   },
-  "options_ui":
-  {
+  "options_ui": {
     "page": "/src/html/options.html",
     "open_in_tab": true
   },
-  "icons":
-  {
+  "icons": {
     "320": "/src/assets/icon_320px.png"
   },
-  "browser_specific_settings":
-  {
-    "gecko":
-    {
+  "browser_specific_settings": {
+    "gecko": {
       "id": "http-tracker@extension",
       "strict_min_version": "113.0"
     }

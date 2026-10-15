@@ -1,5 +1,5 @@
 const openAddonStyle = getById('persist_options');
-openAddonStyle.addEventListener('change', storeSettings);
+openAddonStyle.addEventListener('change', saveSettings);
 
 const STORAGE_KEY_BY_ID = {
   default_exclude_patterns: httpTracker.STORAGE_KEY_EXCLUDE_PATTERN,
@@ -11,7 +11,7 @@ const STORAGE_KEY_BY_ID = {
 
 // Whenever the contents of the text area is changed and then loses focus, save the new values
 // Synchronous by design: async is unnecessary without await and would turn runtime errors into unhandled rejections
-function storeSettings(event) {
+function saveSettings(event) {
   const id = event.target?.id;
   const key = STORAGE_KEY_BY_ID[id];
   if (!key) {

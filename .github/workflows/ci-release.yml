@@ -1,0 +1,61 @@
+name: CI & Release
+
+on:
+  push:
+    branches:
+      - master
+      - enhancements
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+      - enhancements
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Tests
+        run: npm test
+
+  release:
+    name: Build & Publish Release
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Package Extension
+        run: npm run package
+
+      - name: Verify Package
+        run: npm run package:verify
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -e "process.stdout.write(require('./manifest.json').version)")
+          gh release create "${{ github.ref_name }}" "archives/http-tracker-${VERSION}.zip" \
+            --title "v${VERSION}" \
+            --generate-notes

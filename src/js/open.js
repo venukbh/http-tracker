@@ -54,7 +54,7 @@ function getAddonWindow(details) {
     if (value) {
       openInTab(details);
     } else {
-      openInPopWindow(details);
+      openInPopupWindow(details);
     }
   });
 }
@@ -74,7 +74,7 @@ function getExistingAddonWindow(details) {
   return details?.find((win) => win.tabs?.some((tab) => tab.url?.includes(httpTracker.PAGE_PATH)));
 }
 
-function openInPopWindow(details) {
+function openInPopupWindow(details) {
   const existingWindow = getExistingAddonWindow(details);
   if (existingWindow) {
     httpTracker.browser.windows.get(existingWindow.id, focusExistingWindow);

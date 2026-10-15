@@ -21,9 +21,11 @@
         "lint-fix": "eslint . --fix",
         "lint": "eslint .",
         "build": "npm run lint",
-        "prepackage": "node -e \"const {execSync}=require('child_process'); const v=require('./manifest.json').version; const tags=execSync('git tag').toString().trim().split('\\n'); if(tags.includes('v'+v)){console.error('\\x1b[31mERROR: v'+v+' is already tagged. Bump the version in manifest.json before packaging.\\x1b[0m'); process.exit(1);} else {console.log('\\x1b[32mVersion check passed: v'+v+' is ready to package.\\x1b[0m');}\"",
-        "package": "zip -r http-tracker-$(node -e \"process.stdout.write(require('./manifest.json').version)\").zip manifest.json src/",
-        "postpackage": "node -e \"const v=require('./manifest.json').version; console.log('\\x1b[32mPackage ready: http-tracker-'+v+'.zip\\x1b[0m');\"",
-        "package:dry-run": "find manifest.json src/ -type f | sort"
+        "set-version": "node scripts/set-version.mjs",
+        "prepackage": "node -e \"const {execSync}=require('child_process'); const mv=require('./manifest.json').version; const pv=require('./package.json').version; if(mv!==pv){console.error('\\x1b[31mERROR: Version mismatch! manifest.json ('+mv+') !== package.json ('+pv+'). Run: npm run set-version <ver>\\x1b[0m'); process.exit(1);} const tags=execSync('git tag').toString().trim().split('\\n'); if(tags.includes('v'+mv)){console.error('\\x1b[31mERROR: v'+mv+' is already tagged. Bump the version before packaging.\\x1b[0m'); process.exit(1);} else {console.log('\\x1b[32mVersion check passed: v'+mv+' is in sync and ready to package.\\x1b[0m');}\"",
+        "package": "mkdir -p archives && rm -f archives/http-tracker-$(node -e \"process.stdout.write(require('./manifest.json').version)\").zip && zip -r archives/http-tracker-$(node -e \"process.stdout.write(require('./manifest.json').version)\").zip manifest.json src/ -x \"*.DS_Store\" -x \"*__MACOSX*\"",
+        "postpackage": "node -e \"const v=require('./manifest.json').version; console.log('\\x1b[32mPackage ready: archives/http-tracker-'+v+'.zip\\x1b[0m');\"",
+        "package:dry-run": "find manifest.json src/ -type f ! -name '.DS_Store' | sort",
+        "package:verify": "unzip -l archives/http-tracker-$(node -e \"process.stdout.write(require('./manifest.json').version)\").zip"
     }
 }
