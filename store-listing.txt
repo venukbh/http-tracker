@@ -1,51 +1,49 @@
-Monitors browser network for all tabs and pages in a single extension window. Track network traffic including request headers, cookies sent from each tab, and corresponding response headers and cookies. Filter and capture only required requests, exclude unwanted ones, or block specific requests entirely. A powerful network monitor and HTTP inspector for developers - inspect headers, edit cookies, intercept requests, and modify outgoing headers without leaving the browser.
-
-Now upgraded to Manifest V3 (MV3) - the latest Chrome and Firefox extension standard, ensuring long-term support and enhanced security. Built entirely with vanilla JavaScript - no external frameworks or dependencies.
+🌐 Monitors browser network for all tabs and pages in a single extension window. Track network traffic including request headers, cookies sent from each tab, and corresponding response headers and cookies. Filter and capture only required requests, exclude unwanted ones, or block specific requests entirely. A powerful network monitor and HTTP inspector for developers — inspect headers, edit cookies, intercept requests, and modify outgoing headers without leaving the browser.
 
 From the captured data, you can filter requests to view based on various attributes, clear all captured data, compare with previous/different requests, single page to see all the traffic in a centralized place instead of each tab.
 
-Add/modify the request headers before sending the request for all requests or for a domain or for a single url.
-Delete all cookies for the selected domain, or for a domain of your wish.
+✏️ Add/modify the request headers before sending the request — for all requests, a domain, or a single URL.
+🍪 Delete all cookies for the selected domain, or for a domain of your choice.
 
-Features:
-        - Single instance extension - Always loads a single instance popup/tab which gets activated on further clicks
-        - Non blocking (async) monitoring of the browser traffic, with no additional delay to the actual requests
-        - request-response pairing
-        - Capture only required url's containing particular pattern(s)
-        - Exclude all unwanted url's containing particular patterns(s)
-        - Block request url's containing particular patterns(s) to simulate a 404 behavior
-        - Mask data in form fields containing particular patterns(s)
-        - Filter url's to display and analyze
-        - Delete complete captured data
-        - Delete single url which was captured
-        - Delete all the filtered data
-        - Compare request and responses between sessions and incognito (need access to incognito)
-        - Capture form data only if needed
-        - Use preferences page to store settings in the browser storage to avoid repeated entry of patterns
-        - High security
-        - High performance
-        - Tool tips on the page to give an understanding of the page elements
-        - Pause and resume the tracker
-        - Add or modify request headers before sending requests
-        - Delete all cookies for a domain (either selected event or manually)
-        - Tool tip on each UI component to easily give users the info of what the component does
-        - Find text in details with highlighting text
+✨ Features:
+        🪟 Single instance extension — Always loads a single instance popup/tab which gets activated on further clicks
+        🚀 Non-blocking (async) monitoring of browser traffic, with no additional delay to actual requests
+        🔗 Request-response pairing
+        ✅ Capture only required URLs containing particular pattern(s)
+        🚫 Exclude all unwanted URLs containing particular pattern(s)
+        🛑 Block request URLs containing particular pattern(s) to simulate a 404 behavior
+        🎭 Mask data in form fields containing particular pattern(s)
+        🔍 Filter URLs to display and analyze
+        🗑️ Delete complete captured data
+        ❌ Delete single URL which was captured
+        🧹 Delete all the filtered data
+        🔄 Compare request and responses between sessions and incognito (requires incognito access)
+        📋 Capture form data only if needed
+        💾 Use preferences page to store settings in the browser storage to avoid repeated entry of patterns
+        🌗 Dark mode support — Light / Dark / System default theme selector
+        🔒 High security
+        ⚡ High performance
+        💡 Tooltips on the page to give an understanding of each UI element
+        ⏸️ Pause and resume the tracker
+        ✏️ Add or modify request headers before sending requests
+        🍪 Delete all cookies for a domain (either selected event or manually)
+        🔎 Find text in details with text highlighting
 
-Security:
-        - Mask form fields data like usernames, passwords, etc providing high security
-        - Information about your browsing is never transmitted or disclosed to either the extension developers or any other party
+🔒 Security:
+        🎭 Mask form field data like usernames, passwords, etc., providing high security
+        🕵️ Information about your browsing is never transmitted or disclosed to the extension developers or any other party
 
-Performance:
-        - Works async - Near to zero delay to the actual http request
-        - Filter results in < 100 ms when the captured results are more than 10K
+⚡ Performance:
+        ⏱️ Works async — near-zero delay to the actual HTTP request
+        🏎️ Filter results in < 100 ms even when captured results exceed 10K
 
-Accessibility:
-        - Easy access to the extension : use command/Control + Shift + 1 any time to open the extension window
-        - Single instance window
+♿ Accessibility:
+        ⌨️ Easy access: press Ctrl/Cmd + Shift + 1 anytime to open the extension window
+        🪟 Single instance window
 
-Links
-        - Link to Chrome extension : <https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi>
-        - Link to Firefox add-on : <https://addons.mozilla.org/en-US/firefox/addon/http-tracker/>
+🔗 Links
+        🌐 Chrome extension: <https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi>
+        🦊 Firefox add-on: <https://addons.mozilla.org/en-US/firefox/addon/http-tracker/>
 
-Reviews / Ratings:
-        - Please like and rate the extension - A lot of effort has been put in developing this extension
+⭐ Reviews / Ratings:
+        ❤️ Please like and rate the extension — a lot of effort has been put into developing it!
