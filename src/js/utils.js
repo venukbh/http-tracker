@@ -108,10 +108,36 @@ function ruleIdRange(base, max) {
   return Array.from({length: max}, (_, i) => base + i);
 }
 
-const ALL_RESOURCE_TYPES = [
+const CHROME_RESOURCE_TYPES = [
   'main_frame', 'sub_frame', 'xmlhttprequest', 'other',
-  'script', 'stylesheet', 'image', 'font', 'object', 'media', 'websocket', 'ping',
+  'script', 'stylesheet', 'image', 'font', 'object', 'media',
+  'websocket', 'ping', 'csp_report',
 ];
+
+const FIREFOX_RESOURCE_TYPES = [
+  'main_frame', 'sub_frame', 'xmlhttprequest', 'other',
+  'script', 'stylesheet', 'image', 'font', 'object', 'media',
+  'websocket', 'ping', 'csp_report',
+  'beacon', 'imageset', 'json', 'object_subrequest', 'speculative',
+  'web_manifest',
+];
+
+const FALLBACK_RESOURCE_TYPES = CHROME_RESOURCE_TYPES;
+
+function getAllResourceTypes() {
+  const isFirefox = (typeof httpTracker !== 'undefined' && (httpTracker.isFF || httpTracker.isFirefox));
+  if (isFirefox) {
+    return FIREFOX_RESOURCE_TYPES;
+  }
+  const dnrResourceType = (typeof httpTracker !== 'undefined' &&
+    httpTracker.browser?.declarativeNetRequest?.ResourceType);
+  if (dnrResourceType && typeof dnrResourceType === 'object') {
+    return Object.values(dnrResourceType);
+  }
+  return CHROME_RESOURCE_TYPES;
+}
+
+const ALL_RESOURCE_TYPES = getAllResourceTypes();
 
 function updateBlockSessionRules(patterns) {
   const removeRuleIds = ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES);
@@ -124,7 +150,7 @@ function updateBlockSessionRules(patterns) {
           type: 'block',
         },
         condition: {
-          urlFilter: `*${pattern.trim()}*`, resourceTypes: ALL_RESOURCE_TYPES,
+          urlFilter: `*${pattern.trim()}*`, resourceTypes: getAllResourceTypes(),
         },
       }));
   return httpTracker.browser.declarativeNetRequest.updateSessionRules({
@@ -138,7 +164,7 @@ function updateHeaderModifySessionRules(headerRows) {
       .filter((row) => row.name?.trim() && row.value !== undefined)
       .filter((row) => RFC_HEADER_NAME_REGEX.test(row.name.trim()))
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
-                       !FORBIDDEN_HEADERS_PATTERN.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
+                       !FORBIDDEN_HEADER_PREFIXES.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
       .map((row, index) => ({
         id: HEADER_RULE_BASE + index,
         priority: 1,
@@ -150,7 +176,7 @@ function updateHeaderModifySessionRules(headerRows) {
         },
         condition: {
           urlFilter: row.url?.trim() ? `*${row.url.trim()}*` : '*',
-          resourceTypes: ALL_RESOURCE_TYPES,
+          resourceTypes: getAllResourceTypes(),
         },
       }));
   return httpTracker.browser.declarativeNetRequest.updateSessionRules({
@@ -263,7 +289,7 @@ function getCookieNameValue(cookie) {
   const firstOccurrence = cookie.indexOf('=');
   const cookieObj = {};
   if (firstOccurrence > -1) {
-    cookieObj.cookieName = cookie.substring(0, firstOccurrence);
+    cookieObj.cookieName = cookie.substring(0, firstOccurrence).trim();
     cookieObj.cookieValue = cookie.substring(firstOccurrence + 1);
     // https://tools.ietf.org/html/rfc6265#page-10
     // https://tools.ietf.org/html/rfc6265#section-4.1.1
@@ -273,7 +299,7 @@ function getCookieNameValue(cookie) {
           const attributeKeyValue = attribute.trim().split('=');
           // toLowerCase : chrome sends as domain, FF sends as Domain
           if (attributeKeyValue[0].toLowerCase() === 'domain' || attributeKeyValue[0].toLowerCase() === 'path') {
-            cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1];
+            cookieObj[attributeKeyValue[0].toLowerCase()] = attributeKeyValue[1]?.trim();
           }
         }
       });
@@ -309,4 +335,116 @@ function removeCookies(cookies) {
     removedCookies.push(removed);
   }
   Promise.all(removedCookies).catch(onError);
+}
+
+function matchesFilter(text, patterns, isAND) {
+  if (!patterns || patterns.length === 0) {
+    return true;
+  }
+  const str = (text || '').toString().toLowerCase();
+  if (!isAND) {
+    return patterns.some((v) => str.includes(v.toLowerCase()));
+  }
+  let index = 0;
+  for (const pattern of patterns) {
+    index = str.indexOf(pattern.toLowerCase(), index);
+    if (index === -1) {
+      return false;
+    }
+    index += pattern.length;
+  }
+  return true;
+}
+
+function maskValue(key, value, maskPatterns, isEnabled) {
+  if (!isEnabled || !key) {
+    return value;
+  }
+  const target = key.toString().toLowerCase();
+  const normalized = normalizePatterns(maskPatterns);
+  const isMatched = normalized.some((p) => target.includes(p.toLowerCase()));
+  if (isMatched) {
+    const str = value?.toString().trim() ?? '';
+    if (str.length > 2) {
+      return str.charAt(0) + '*****' + str.charAt(str.length - 1);
+    }
+    if (str.length > 0) {
+      return '*****';
+    }
+  }
+  return value;
+}
+
+function matchesIncludePattern(url, localList, globalList) {
+  const hasLocal = localList?.length > 0;
+  const hasGlobal = globalList?.length > 0;
+  if (!hasLocal && !hasGlobal) {
+    return true;
+  }
+  const target = (url || '').toLowerCase();
+  if (hasLocal) {
+    const local = Array.isArray(localList) ? localList : normalizePatterns(localList);
+    if (local.some((v) => target.includes(v.toLowerCase()))) {
+      return true;
+    }
+  }
+  if (hasGlobal) {
+    const global = Array.isArray(globalList) ? globalList : normalizePatterns(globalList);
+    if (global.some((v) => target.includes(v.toLowerCase()))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function matchesExcludePattern(url, localList, globalList) {
+  const hasLocal = localList?.length > 0;
+  const hasGlobal = globalList?.length > 0;
+  if (!hasLocal && !hasGlobal) {
+    return false;
+  }
+  const target = (url || '').toLowerCase();
+  if (hasLocal) {
+    const local = Array.isArray(localList) ? localList : normalizePatterns(localList);
+    if (local.some((v) => target.includes(v.toLowerCase()))) {
+      return true;
+    }
+  }
+  if (hasGlobal) {
+    const global = Array.isArray(globalList) ? globalList : normalizePatterns(globalList);
+    if (global.some((v) => target.includes(v.toLowerCase()))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function addMarkTag(text, compiledFindPattern) {
+  if (text === null || text === undefined) {
+    return '';
+  }
+  const str = String(text);
+  if (!compiledFindPattern) {
+    return escapeHtml(str);
+  }
+  compiledFindPattern.lastIndex = 0;
+  let result = '';
+  let lastIndex = 0;
+  let match = compiledFindPattern.exec(str);
+  while (match !== null) {
+    if (match[0].length === 0) {
+      compiledFindPattern.lastIndex++;
+      if (match.index >= str.length) {
+        break;
+      }
+      match = compiledFindPattern.exec(str);
+      continue;
+    }
+    result += escapeHtml(str.slice(lastIndex, match.index));
+    result += `<mark>${escapeHtml(match[0])}</mark>`;
+    lastIndex = match.index + match[0].length;
+    match = compiledFindPattern.exec(str);
+  }
+  result += escapeHtml(str.slice(lastIndex));
+  return result;
 }

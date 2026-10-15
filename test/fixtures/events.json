@@ -1,0 +1,3681 @@
+[
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39512",
+    "tabId": 89871313,
+    "timeStamp": 1791955773578.187,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39512",
+    "tabId": 89871313,
+    "timeStamp": 1791955773580.848,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39512",
+    "tabId": 89871313,
+    "timeStamp": 1791955773581.025,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39512",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:33 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1034"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955773889.43,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39512",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:33 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1034"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955773891.083,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39512",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:33 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1034"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955773897.486,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get?query=test",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39512"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://httpbin.org",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39514",
+    "tabId": 89871313,
+    "timeStamp": 1791955774163.765,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://httpbin.org",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "Accept",
+        "value": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "same-origin"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "no-cors"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "image"
+      },
+      {
+        "name": "Referer",
+        "value": "https://httpbin.org/get?query=test"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39514",
+    "tabId": 89871313,
+    "timeStamp": 1791955774164.47,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://httpbin.org",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "Accept",
+        "value": "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "same-origin"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "no-cors"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "image"
+      },
+      {
+        "name": "Referer",
+        "value": "https://httpbin.org/get?query=test"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39514",
+    "tabId": 89871313,
+    "timeStamp": 1791955774164.557,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://httpbin.org",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39514",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:34 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "233"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955774573.297,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "initiator": "https://httpbin.org",
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39514",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:34 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "233"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955774576.682,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentId": "C5BB85FAD8D45939143E651B267ACC72",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "initiator": "https://httpbin.org",
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39514",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:34 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "233"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955774577.335,
+    "type": "image",
+    "url": "https://httpbin.org/favicon.ico",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39514"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39517",
+    "tabId": 89871313,
+    "timeStamp": 1791955781404.365,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39517",
+    "tabId": 89871313,
+    "timeStamp": 1791955781407.325,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39517",
+    "tabId": 89871313,
+    "timeStamp": 1791955781407.524,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39517",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:41 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "178"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "allow",
+        "value": "OPTIONS, POST"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 405,
+    "statusLine": "HTTP/1.1 405",
+    "tabId": 89871313,
+    "timeStamp": 1791955781501.073,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39517",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:41 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "178"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "allow",
+        "value": "OPTIONS, POST"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 405,
+    "statusLine": "HTTP/1.1 405",
+    "tabId": 89871313,
+    "timeStamp": 1791955781502.018,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39517",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:41 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "178"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "allow",
+        "value": "OPTIONS, POST"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 405,
+    "statusLine": "HTTP/1.1 405",
+    "tabId": 89871313,
+    "timeStamp": 1791955781503.127,
+    "type": "main_frame",
+    "url": "https://httpbin.org/post",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39517"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788525.673,
+    "type": "main_frame",
+    "url": "https://httpbin.org/redirect/2",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788528.874,
+    "type": "main_frame",
+    "url": "https://httpbin.org/redirect/2",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788529.081,
+    "type": "main_frame",
+    "url": "https://httpbin.org/redirect/2",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "247"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/relative-redirect/1"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955788617.534,
+    "type": "main_frame",
+    "url": "https://httpbin.org/redirect/2",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "redirectUrl": "https://httpbin.org/relative-redirect/1",
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "247"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/relative-redirect/1"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955788618.451,
+    "type": "main_frame",
+    "url": "https://httpbin.org/redirect/2",
+    "callerName": "onBeforeRedirect",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788620,
+    "type": "main_frame",
+    "url": "https://httpbin.org/relative-redirect/1",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788620.759,
+    "type": "main_frame",
+    "url": "https://httpbin.org/relative-redirect/1",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788620.909,
+    "type": "main_frame",
+    "url": "https://httpbin.org/relative-redirect/1",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/get"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955788698.706,
+    "type": "main_frame",
+    "url": "https://httpbin.org/relative-redirect/1",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "redirectUrl": "https://httpbin.org/get",
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/get"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955788699.407,
+    "type": "main_frame",
+    "url": "https://httpbin.org/relative-redirect/1",
+    "callerName": "onBeforeRedirect",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788700.49,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788700.852,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39521",
+    "tabId": 89871313,
+    "timeStamp": 1791955788700.968,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1000"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955788789.723,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1000"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955788790.578,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39521",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:48 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "1000"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955788792.962,
+    "type": "main_frame",
+    "url": "https://httpbin.org/get",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39521"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796172.171,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies/set?tracker=testcookie",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796175.354,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies/set?tracker=testcookie",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796175.547,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies/set?tracker=testcookie",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:56 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "223"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/cookies"
+      },
+      {
+        "name": "set-cookie",
+        "value": "tracker=testcookie; Path=/"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955796262.264,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies/set?tracker=testcookie",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "redirectUrl": "https://httpbin.org/cookies",
+    "requestId": "39525",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:56 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "223"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "location",
+        "value": "/cookies"
+      },
+      {
+        "name": "set-cookie",
+        "value": "tracker=testcookie; Path=/"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 302,
+    "statusLine": "HTTP/1.1 302",
+    "tabId": 89871313,
+    "timeStamp": 1791955796263.554,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies/set?tracker=testcookie",
+    "callerName": "onBeforeRedirect",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796264.986,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796265.483,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39525",
+    "tabId": 89871313,
+    "timeStamp": 1791955796265.616,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:56 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "51"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955796529.924,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:56 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "51"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955796533.085,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39525",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:29:56 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "application/json"
+      },
+      {
+        "name": "content-length",
+        "value": "51"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955796536.673,
+    "type": "main_frame",
+    "url": "https://httpbin.org/cookies",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39525"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39529",
+    "tabId": 89871313,
+    "timeStamp": 1791955802658.227,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39529",
+    "tabId": 89871313,
+    "timeStamp": 1791955802661.337,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39529",
+    "tabId": 89871313,
+    "timeStamp": 1791955802661.516,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39529",
+    "responseHeaders": [
+      {
+        "name": "server",
+        "value": "awselb/2.0"
+      },
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:02 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "524"
+      }
+    ],
+    "statusCode": 502,
+    "statusLine": "HTTP/1.1 502",
+    "tabId": 89871313,
+    "timeStamp": 1791955802779.206,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39529",
+    "responseHeaders": [
+      {
+        "name": "server",
+        "value": "awselb/2.0"
+      },
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:02 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "524"
+      }
+    ],
+    "statusCode": 502,
+    "statusLine": "HTTP/1.1 502",
+    "tabId": 89871313,
+    "timeStamp": 1791955802780.274,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39529",
+    "responseHeaders": [
+      {
+        "name": "server",
+        "value": "awselb/2.0"
+      },
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:02 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html"
+      },
+      {
+        "name": "content-length",
+        "value": "524"
+      }
+    ],
+    "statusCode": 502,
+    "statusLine": "HTTP/1.1 502",
+    "tabId": 89871313,
+    "timeStamp": 1791955802781.456,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39529"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39531",
+    "tabId": 89871313,
+    "timeStamp": 1791955805956.901,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39531",
+    "tabId": 89871313,
+    "timeStamp": 1791955805957.928,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39531",
+    "tabId": 89871313,
+    "timeStamp": 1791955805958.078,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39531",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:06 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955806043.599,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39531",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:06 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955806044.252,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39531",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:06 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955806044.983,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39531"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39532",
+    "tabId": 89871313,
+    "timeStamp": 1791955807920.457,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39532",
+    "tabId": 89871313,
+    "timeStamp": 1791955807921.727,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      },
+      {
+        "name": "Cookie",
+        "value": "tracker=testcookie"
+      }
+    ],
+    "requestId": "39532",
+    "tabId": 89871313,
+    "timeStamp": 1791955807921.903,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39532",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:07 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955808000.079,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39532",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:07 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955808000.517,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": false,
+    "ip": "18.233.182.23",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39532",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:07 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-length",
+        "value": "0"
+      },
+      {
+        "name": "server",
+        "value": "gunicorn/19.9.0"
+      },
+      {
+        "name": "access-control-allow-origin",
+        "value": "*"
+      },
+      {
+        "name": "access-control-allow-credentials",
+        "value": "true"
+      }
+    ],
+    "statusCode": 404,
+    "statusLine": "HTTP/1.1 404",
+    "tabId": 89871313,
+    "timeStamp": 1791955808000.999,
+    "type": "main_frame",
+    "url": "https://httpbin.org/status/404",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39532"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39537",
+    "tabId": 89871313,
+    "timeStamp": 1791955817910.325,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      }
+    ],
+    "requestId": "39537",
+    "tabId": 89871313,
+    "timeStamp": 1791955817912.753,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "Upgrade-Insecure-Requests",
+        "value": "1"
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "Accept",
+        "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "none"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "navigate"
+      },
+      {
+        "name": "Sec-Fetch-User",
+        "value": "?1"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "document"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      }
+    ],
+    "requestId": "39537",
+    "tabId": 89871313,
+    "timeStamp": 1791955817912.881,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39537",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:18 GMT"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "age",
+        "value": "4663"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "priority",
+        "value": "u=0,i"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a430f6ff553403-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818083.863,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": true,
+    "ip": "2606:4700:10::6814:179a",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39537",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:18 GMT"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "age",
+        "value": "4663"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "priority",
+        "value": "u=0,i"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a430f6ff553403-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818084.763,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": true,
+    "ip": "2606:4700:10::6814:179a",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39537",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:30:18 GMT"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "age",
+        "value": "4663"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "priority",
+        "value": "u=0,i"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a430f6ff553403-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      },
+      {
+        "name": "content-type",
+        "value": "text/html; charset=utf-8"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818091.348,
+    "type": "main_frame",
+    "url": "https://example.com/",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39537"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://example.com",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39538",
+    "tabId": 89871313,
+    "timeStamp": 1791955818108.365,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onBeforeRequest",
+    "requestIdEnhanced": "39538"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://example.com",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "Accept",
+        "value": "*/*"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "same-origin"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "no-cors"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "script"
+      },
+      {
+        "name": "Referer",
+        "value": "https://example.com/"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      }
+    ],
+    "requestId": "39538",
+    "tabId": 89871313,
+    "timeStamp": 1791955818110.676,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onBeforeSendHeaders",
+    "requestIdEnhanced": "39538"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://example.com",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestHeaders": [
+      {
+        "name": "sec-ch-ua-platform",
+        "value": "\"macOS\""
+      },
+      {
+        "name": "User-Agent",
+        "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      },
+      {
+        "name": "sec-ch-ua",
+        "value": "\"Google Chrome\";v=\"155\", \"Chromium\";v=\"155\", \"Not(A:Brand\";v=\"24\""
+      },
+      {
+        "name": "sec-ch-ua-mobile",
+        "value": "?0"
+      },
+      {
+        "name": "Accept",
+        "value": "*/*"
+      },
+      {
+        "name": "Sec-Fetch-Site",
+        "value": "same-origin"
+      },
+      {
+        "name": "Sec-Fetch-Mode",
+        "value": "no-cors"
+      },
+      {
+        "name": "Sec-Fetch-Dest",
+        "value": "script"
+      },
+      {
+        "name": "Referer",
+        "value": "https://example.com/"
+      },
+      {
+        "name": "Accept-Encoding",
+        "value": "gzip, deflate, br, zstd"
+      },
+      {
+        "name": "Accept-Language",
+        "value": "en-US,en;q=0.9"
+      }
+    ],
+    "requestId": "39538",
+    "tabId": 89871313,
+    "timeStamp": 1791955818110.791,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onSendHeaders",
+    "requestIdEnhanced": "39538"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "initiator": "https://example.com",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39538",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:26:54 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/javascript; charset=utf-8"
+      },
+      {
+        "name": "priority",
+        "value": "u=1,i=?0"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "etag",
+        "value": "W/\"6ace8fbc-7ab\""
+      },
+      {
+        "name": "age",
+        "value": "2322"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a42bfc9bd56e7e-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818117.738,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onHeadersReceived",
+    "requestIdEnhanced": "39538"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": true,
+    "initiator": "https://example.com",
+    "ip": "2606:4700:10::6814:179a",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39538",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:26:54 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/javascript; charset=utf-8"
+      },
+      {
+        "name": "priority",
+        "value": "u=1,i=?0"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "etag",
+        "value": "W/\"6ace8fbc-7ab\""
+      },
+      {
+        "name": "age",
+        "value": "2322"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a42bfc9bd56e7e-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818118.545,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onResponseStarted",
+    "requestIdEnhanced": "39538"
+  },
+  {
+    "documentId": "F8C60CD15F85FA5093B8EDB08AD569B9",
+    "documentLifecycle": "active",
+    "frameId": 0,
+    "frameType": "outermost_frame",
+    "fromCache": true,
+    "initiator": "https://example.com",
+    "ip": "2606:4700:10::6814:179a",
+    "method": "GET",
+    "parentFrameId": -1,
+    "requestId": "39538",
+    "responseHeaders": [
+      {
+        "name": "date",
+        "value": "Wed, 14 Oct 2026 05:26:54 GMT"
+      },
+      {
+        "name": "content-type",
+        "value": "text/javascript; charset=utf-8"
+      },
+      {
+        "name": "priority",
+        "value": "u=1,i=?0"
+      },
+      {
+        "name": "server",
+        "value": "cloudflare"
+      },
+      {
+        "name": "last-modified",
+        "value": "Tue, 13 Oct 2026 20:08:28 GMT"
+      },
+      {
+        "name": "content-encoding",
+        "value": "br"
+      },
+      {
+        "name": "allow",
+        "value": "GET, HEAD"
+      },
+      {
+        "name": "etag",
+        "value": "W/\"6ace8fbc-7ab\""
+      },
+      {
+        "name": "age",
+        "value": "2322"
+      },
+      {
+        "name": "cf-cache-status",
+        "value": "HIT"
+      },
+      {
+        "name": "cf-ray",
+        "value": "a4a42bfc9bd56e7e-SMF"
+      },
+      {
+        "name": "alt-svc",
+        "value": "h3=\":443\"; ma=86400"
+      },
+      {
+        "name": "server-timing",
+        "value": "cfExtPri"
+      }
+    ],
+    "statusCode": 200,
+    "statusLine": "HTTP/1.1 200",
+    "tabId": 89871313,
+    "timeStamp": 1791955818119.017,
+    "type": "script",
+    "url": "https://example.com/s.js",
+    "callerName": "onCompleted",
+    "requestIdEnhanced": "39538"
+  }
+]

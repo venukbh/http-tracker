@@ -5,11 +5,14 @@
   <meta charset="utf-8" />
   <title>HTTP-TRACKER</title>
   <link rel="stylesheet" type="text/css" href="/src/css/styles.css" />
-  <script type="text/javascript" src="/src/js/httpTrackerConstants.js" defer></script>
-  <script type="text/javascript" src="/src/js/httpTrackerUtils.js" defer></script>
-  <script type="text/javascript" src="/src/js/httpTrackerProcessor.js" defer></script>
-  <script type="text/javascript" src="/src/js/httpTrackerDomEvents.js" defer></script>
-  <script type="text/javascript" src="/src/js/httpTrackerOpen.js" defer></script>
+  <script type="text/javascript" src="/src/js/constants.js" defer></script>
+  <script type="text/javascript" src="/src/js/utils.js" defer></script>
+  <script type="text/javascript" src="/src/js/event-cache.js" defer></script>
+  <script type="text/javascript" src="/src/js/details-view.js" defer></script>
+  <script type="text/javascript" src="/src/js/header-rules.js" defer></script>
+  <script type="text/javascript" src="/src/js/processor.js" defer></script>
+  <script type="text/javascript" src="/src/js/dom-events.js" defer></script>
+  <script type="text/javascript" src="/src/js/open.js" defer></script>
 </head>
 
 <body>
@@ -17,32 +20,39 @@
     <h1 class="web_event_list_hide">HTTP-TRACKER</h1>
     <div>
       <div class="left_pane">
-        <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will be tracked by the addon. If the url does not contain any of the words, it will not be tracked. If same word is in skip list also, the matching url will not be tracked as skip list takes precedence. Leaving this input field blank tracks all the urls.">
+        <div style="height: 30px;"
+          title="Provide a list of comma-separated words so that any url containing one of the words will be tracked by the addon. If the url does not contain any of the words, it will not be tracked. If same word is in skip list also, the matching url will not be tracked as skip list takes precedence. Leaving this input field blank tracks all the urls.">
           <label for="track_urls_pattern" style="float: left; width: 20%">Track URLs having:</label>
           <div style="float: left; width: 73%;">
-            <input id="track_urls_pattern" type="text" placeholder="e.g. google, api, checkout (comma-separated)" style="width: 99%" />
+            <input id="track_urls_pattern" type="text" placeholder="e.g. google, api, checkout (comma-separated)"
+              style="width: 99%" />
           </div>
           <div id="info_include" style="float: left;width: 2%;">
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will not be tracked by the addon. If the url does not contain any of the words, it will be tracked. Leaving this input field blank tracks all the urls. Permanent excludes can also be set in the preferences.">
+        <div style="height: 30px;"
+          title="Provide a list of comma-separated words so that any url containing one of the words will not be tracked by the addon. If the url does not contain any of the words, it will be tracked. Leaving this input field blank tracks all the urls. Permanent excludes can also be set in the preferences.">
           <label for="exclude_urls_pattern" style="width: 20%; float: left;">Skip URLs having:</label>
           <div style="float: left; width: 73%;">
-            <input id="exclude_urls_pattern" type="text" placeholder="e.g. analytics, cdn, static (comma-separated)" style="width: 99%" value="" />
+            <input id="exclude_urls_pattern" type="text" placeholder="e.g. analytics, cdn, static (comma-separated)"
+              style="width: 99%" value="" />
           </div>
           <div id="info_exclude" style="float: left;width: 2%;">
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;" title="Provide a list of comma-separated words so that any url containing one of the words will be blocked by the addon and the request will never leave the browser. This acts like a blocker.">
+        <div style="height: 30px;"
+          title="Provide a list of comma-separated words so that any url containing one of the words will be blocked by the addon and the request will never leave the browser. This acts like a blocker.">
           <label for="block_urls_pattern" style="width: 20%; float: left;">Block URLs having:</label>
           <div style="float: left;width: 73%;">
-            <input id="block_urls_pattern" type="text" placeholder="e.g. ads, tracking, pixel (comma-separated)" style="width: 99%" value="" />
+            <input id="block_urls_pattern" type="text" placeholder="e.g. ads, tracking, pixel (comma-separated)"
+              style="width: 99%" value="" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px;" title="Filter captured events based on available filter options. To add more filtration, use &amp;, |&#013;&#013;Examples:&#013;&#013;&nbsp;1. type: url, filter value: google&amp;gmail, outcome : filter all urls containing 'google' AND followed by 'gmail' i.e. url should contain matching words in the same order of filter.&#013;&nbsp;2. type: method, filter value: get|post, outcome : filter all urls whose method is get OR post, ignoring order of entries">
+        <div style="height: 30px;"
+          title="Filter captured events based on available filter options. To add more filtration, use &amp;, |&#013;&#013;Examples:&#013;&#013;&nbsp;1. type: url, filter value: google&amp;gmail, outcome : filter all urls containing 'google' AND followed by 'gmail' i.e. url should contain matching words in the same order of filter.&#013;&nbsp;2. type: method, filter value: get|post, outcome : filter all urls whose method is get OR post, ignoring order of entries">
           <label for="web_event_filter_key" style="float: left; width: 20%">Filter list by :</label>
           <div style="float: left; width: 15%;">
             <select id="web_event_filter_key" aria-label="Filter events by">
@@ -55,35 +65,43 @@
           </div>
           <div style="float:left; width: 45%;">
             <label for="filter_web_events" class="web_event_list_hide">Filter pattern</label>
-            <input id="filter_web_events" type="text" aria-label="Filter list" placeholder="Filter string case insensitive (min 3 chars). Read tooltip" style="width: 100%;" />
+            <input id="filter_web_events" type="text" aria-label="Filter list"
+              placeholder="Filter string case insensitive (min 3 chars). Read tooltip" style="width: 100%;" />
           </div>
           <div style="width: 15%; float: left; text-align: right;">
-            <input id="clear_filter_web_events" type="button" class="web_event_button_clear_filter" title="Clear the filter textbox and display all events" value="Clear filter" />
+            <input id="clear_filter_web_events" type="button" class="web_event_button_clear_filter"
+              title="Clear the filter textbox and display all events" value="Clear filter" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
-        <div style="height: 30px; margin-bottom: 10px;" title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only valid headers will be added for requests matching the url property value and invalid headers will mark the name field in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
+        <div style="height: 30px; margin-bottom: 10px;"
+          title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only valid headers will be added for requests matching the url property value and invalid headers will mark the name field in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
           <div id="add_modify_headers_banner" style="width: 20%; float: left;">
             Add/Modify request headers :
           </div>
           <div id="add_modify_headers" class="all_headers_containers">
             <div id="header_details_0" class="single_header_container">
               <div class="add_header_name">
-                <label for="header_name_0">Name</label> <input id="header_name_0" type="text" class="header_input_name" placeholder="e.g. X-Custom-Header" />
+                <label for="header_name_0">Name</label> <input id="header_name_0" type="text" class="header_input_name"
+                  placeholder="e.g. X-Custom-Header" />
               </div>
               <div class="add_header_value">
-                <label for="header_value_0">Value</label> <input id="header_value_0" type="text" class="header_input_value" placeholder="e.g. my-value" />
+                <label for="header_value_0">Value</label> <input id="header_value_0" type="text"
+                  class="header_input_value" placeholder="e.g. my-value" />
               </div>
               <div class="add_header_url">
-                <label for="header_url_0">URL</label> <input id="header_url_0" type="text" class="header_input_url" placeholder="e.g. api.example.com (blank = all URLs)" />
+                <label for="header_url_0">URL</label> <input id="header_url_0" type="text" class="header_input_url"
+                  placeholder="e.g. api.example.com (blank = all URLs)" />
               </div>
               <div class="add_header_apply">
-                <input id="header_apply_0" type="checkbox" class="header_input_apply" /><label for="header_apply_0" title="Check this to apply this header">Apply</label>
+                <input id="header_apply_0" type="checkbox" class="header_input_apply" /><label for="header_apply_0"
+                  title="Check this to apply this header">Apply</label>
               </div>
               <div style="width: 12%;float: left;text-align: right;">
                 <div style="display: flex;">
                   <div style="margin-right: 5px;float: left;flex-grow: 1;">
-                    <button id="header_button_remove_0" type="button" data-header-index="0" aria-label="Remove header rule">-</button>
+                    <button id="header_button_remove_0" type="button" data-header-index="0"
+                      aria-label="Remove header rule">-</button>
                   </div>
                   <div>
                     <button id="header_button_add_0" type="button" aria-label="Add header rule">+</button>
@@ -96,21 +114,26 @@
         </div>
       </div>
       <div class="right_pane">
-        <div style="float: left; margin-right: 20px; height: 30px;" title="Check this to track form data along with headers and cookies">
+        <div style="float: left; margin-right: 20px; height: 30px;"
+          title="Check this to track form data along with headers and cookies">
           <input id="include_form_data" type="checkbox" checked />
           <label for="include_form_data">Capture form data</label>
         </div>
         <div style="float: left; margin-right: 20px; height: 30px;">
           <input id="optimize_response_cookies" type="checkbox" checked />
-          <label for="optimize_response_cookies" title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize response cookies</label>
+          <label for="optimize_response_cookies"
+            title="Check this to sort the response cookies, automatically identifies the final cookie applied to the domain/path when there is a same cookie with different values. Uncheck to display the cookies in the order they were received from the server">Optimize
+            response cookies</label>
         </div>
         <div style="height: 30px;" title="Global preferences to persist across browser sessions.">
           <button id="preferences" type="button" class="web_event_button_preferences">Preferences</button>
         </div>
-        <div style="height: 30px;" title="Mask any attributes (headers, form data) containing one of the words from this list while displaying. Will not mask if the data is raw data for a POST event. Leaving this field blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
+        <div style="height: 30px;"
+          title="Mask any attributes (headers, form data) containing one of the words from this list while displaying. Will not mask if the data is raw data for a POST event. Leaving this field blank will not mask any attributes.&#013;&#013;This feature is highly used while capturing screenshots containing sensitive attributes">
           <label for="mask_patterns_list" style="width: 20%; float: left;">Mask fields:</label>
           <div style="float: left;width: 58%;">
-            <input id="mask_patterns_list" type="text" placeholder="e.g. authorization, password, token (comma-separated)" style="width: 99%" value="" />
+            <input id="mask_patterns_list" type="text"
+              placeholder="e.g. authorization, password, token (comma-separated)" style="width: 99%" value="" />
           </div>
           <div id="info_mask" style="float: left;width: 2%;">
           </div>
@@ -123,38 +146,46 @@
         <div style="height: 30px;" title="Find content in the details pane of the selected url">
           <label for="find_in_details_pattern" style="width: 20%; float: left;">Find in details:</label>
           <div style="float: left;width: 75%;">
-            <input id="find_in_details_pattern" type="text" placeholder="Search headers, cookies, values... (supports regex)" style="width: 100%" value="" />
+            <input id="find_in_details_pattern" type="text"
+              placeholder="Search headers, cookies, values... (supports regex)" style="width: 100%" value="" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
         <div style="height: 30px;">
           <div style="width: 20%; float: left;">
-            <button id="delete_cookies_button" type="button" class="web_event_button_delete_all" title="Delete all cookies for this domain" disabled>Delete cookies</button>
+            <button id="delete_cookies_button" type="button" class="web_event_button_delete_all"
+              title="Delete all cookies for this domain" disabled>Delete cookies</button>
           </div>
           <div style="float: left;width: 75%;">
             <label for="delete_cookies" class="web_event_list_hide">Domain to delete cookies from</label>
-            <input id="delete_cookies" type="text" placeholder="Enter domain name" aria-label="Domain to delete cookies from" style="width: 100%" value="" />
+            <input id="delete_cookies" type="text" placeholder="Enter domain name"
+              aria-label="Domain to delete cookies from" style="width: 100%" value="" />
           </div>
           <div class="empty_div">&nbsp;</div>
         </div>
         <div style="height: 30px;">
           <div style="width: 20%; float: left; text-align: center;">
-            <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered" title="Delete all filtered list of events">Delete filtered</button>
+            <button id="delete_all_filtered_web_events" type="button" class="web_event_button_delete_all_filtered"
+              title="Delete all filtered list of events">Delete filtered</button>
           </div>
           <div style="width: 20%; float: left; text-align: center;">
-            <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected" title="Delete selected event">Delete selected</button>
+            <button id="delete_selected_web_event" type="button" class="web_event_button_delete_selected"
+              title="Delete selected event">Delete selected</button>
           </div>
           <div style="width: 20%; float:left; text-align: center;">
-            <button id="delete_all_web_events" type="button" class="web_event_button_delete_all" title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete all</button>
+            <button id="delete_all_web_events" type="button" class="web_event_button_delete_all"
+              title="Delete all events and clear the cache - same as closing / refreshing the tracker window">Delete
+              all</button>
           </div>
           <div style="width: 20%; float:left; text-align: center;">
-            <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track" title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
+            <button id="toggle_track_web_events" type="button" class="web_event_button_toggle_track"
+              title="Pause or resume the tracker. When paused, nothing will be tracked.">Pause tracker</button>
           </div>
         </div>
       </div>
     </div>
     <div style="clear: both; height: 15px;"></div>
-    <div id="urls_list" class="web_event_list_container" tabindex="0" role="region" aria-label="Captured HTTP requests">
+    <section id="urls_list" class="web_event_list_container" tabindex="0" aria-label="Captured HTTP requests"><!-- NOSONAR -->
       <div id="urls_list_heading" class="urls_list_heading">
         <div class="web_event_list_url">URL [click a tracked url (if any) to view details]</div>
         <div class="web_event_list_method">Method</div>
@@ -162,7 +193,7 @@
         <div class="web_event_list_date_time">Date time</div>
         <div class="web_event_list_cache">Cache</div>
       </div>
-    </div>
+    </section>
     <div style="height: 5px;">&nbsp;</div>
     <div id="web_details_selected_container">
       <div class="web_event_details_scroll_panel">
@@ -170,8 +201,10 @@
           <caption class="web_event_list_hide">Selected event details</caption>
           <thead>
             <tr>
-              <th id="web_event_detail_request_head" scope="col" class="web_event_detail_request_heading" style="display: none;">Request Details</th>
-              <th id="web_event_detail_response_head" scope="col" class="web_event_detail_response_heading" style="display: none;">Response Details</th>
+              <th id="web_event_detail_request_head" scope="col" class="web_event_detail_request_heading"
+                style="display: none;">Request Details</th>
+              <th id="web_event_detail_response_head" scope="col" class="web_event_detail_response_heading"
+                style="display: none;">Response Details</th>
             </tr>
           </thead>
           <tbody>
@@ -210,16 +243,20 @@
   <template id="template_header_row">
     <div class="single_header_container">
       <div class="add_header_name">
-        <label for="tmpl_header_name">Name</label> <input id="tmpl_header_name" type="text" class="header_input_name" placeholder="e.g. X-Custom-Header" />
+        <label for="tmpl_header_name">Name</label> <input id="tmpl_header_name" type="text" class="header_input_name"
+          placeholder="e.g. X-Custom-Header" />
       </div>
       <div class="add_header_value">
-        <label for="tmpl_header_value">Value</label> <input id="tmpl_header_value" type="text" class="header_input_value" placeholder="e.g. my-value" />
+        <label for="tmpl_header_value">Value</label> <input id="tmpl_header_value" type="text"
+          class="header_input_value" placeholder="e.g. my-value" />
       </div>
       <div class="add_header_url">
-        <label for="tmpl_header_url">URL</label> <input id="tmpl_header_url" type="text" class="header_input_url" placeholder="e.g. api.example.com (blank = all URLs)" />
+        <label for="tmpl_header_url">URL</label> <input id="tmpl_header_url" type="text" class="header_input_url"
+          placeholder="e.g. api.example.com (blank = all URLs)" />
       </div>
       <div class="add_header_apply">
-        <input id="tmpl_header_apply" type="checkbox" class="header_input_apply" /><label for="tmpl_header_apply" title="Check this to apply this header">Apply</label>
+        <input id="tmpl_header_apply" type="checkbox" class="header_input_apply" /><label for="tmpl_header_apply"
+          title="Check this to apply this header">Apply</label>
       </div>
       <div style="width: 12%;float: left;text-align: right;">
         <div style="display: flex;">
@@ -235,7 +272,13 @@
   </template>
 
   <template id="template_url_row">
-    <div title="Click to view details" class="web_event_list_blank web_event_list_style"><div class="web_event_list_url"></div><div class="web_event_list_method"></div><div class="web_event_list_status"></div><div class="web_event_list_date_time"></div><div class="web_event_list_cache"></div></div>
+    <div title="Click to view details" class="web_event_list_blank web_event_list_style">
+      <div class="web_event_list_url"></div>
+      <div class="web_event_list_method"></div>
+      <div class="web_event_list_status"></div>
+      <div class="web_event_list_date_time"></div>
+      <div class="web_event_list_cache"></div>
+    </div>
   </template>
 </body>
 
