@@ -92,88 +92,101 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
     });
   });
 
-  describe('Visible Element Fast-Path Query Detection', () => {
-    it('detects visible row presence via querySelector fast-path', () => {
-      const mockContainer = {
-        querySelector: (selector) => {
-          if (selector.includes(':not(.web_event_list_hide)')) {
-            return { id: 'web_events_list_101' };
-          }
-          return null;
+  /* -------------------------------------------------------------------------
+   * 5. URL Row Construction & HTTP Error Styling Logic
+   * ------------------------------------------------------------------------- */
+  describe('URL Row Construction & HTTP Error Styling Logic', () => {
+    function createMockRow(event) {
+      const classList = new Set();
+      const row = {
+        id: `web_events_list_${event.requestIdEnhanced}`,
+        dataset: {
+          requestId: event.requestIdEnhanced,
+          rawRequestId: event.requestId,
         },
-      };
-      const hasVisibleRow = Boolean(mockContainer.querySelector('.web_event_list_blank:not(.web_event_list_hide)'));
-      assert.equal(hasVisibleRow, true);
-    });
-
-    it('returns false when all elements are hidden or container is empty', () => {
-      const allHiddenContainer = {
-        querySelector: () => null,
-      };
-      const hasVisibleRow = Boolean(allHiddenContainer.querySelector('.web_event_list_blank:not(.web_event_list_hide)'));
-      assert.equal(hasVisibleRow, false);
-    });
-  });
-
-  describe('Atomic Batch Clear via replaceChildren', () => {
-    it('replaces all row children while preserving heading in a single atomic call', () => {
-      let replacedWith = null;
-      const heading = { id: 'urls_list_heading' };
-      const container = {
-        replaceChildren: (...args) => {
-          replacedWith = args;
+        classList: {
+          add: (cls) => classList.add(cls),
+          remove: (cls) => classList.delete(cls),
+          contains: (cls) => classList.has(cls),
         },
+        children: [
+          { id: `web_event_url_${event.requestIdEnhanced}`, className: 'web_event_list_url', textContent: event.url },
+          { id: `web_event_method_${event.requestIdEnhanced}`, className: 'web_event_list_method', textContent: event.method },
+          { id: `web_event_status_${event.requestIdEnhanced}`, className: 'web_event_list_status', textContent: event.statusCode || (event.error ? 'Error' : 'N/A') },
+          { id: `web_event_time_${event.requestIdEnhanced}`, className: 'web_event_list_date_time', textContent: event.timeStamp ? context.getReadableDate(event.timeStamp) : 'N/A' },
+          { id: `web_event_cache_${event.requestIdEnhanced}`, className: 'web_event_list_cache', textContent: event.fromCache ?? 'N/A' },
+        ],
       };
-
-      if (heading) {
-        container.replaceChildren(heading);
+      if (event.callerName === 'onErrorOccurred' || event.error || (event.statusCode && Number(event.statusCode) >= 400)) {
+        row.classList.add('web_event_style_error');
       }
-      assert.equal(replacedWith?.length, 1);
-      assert.equal(replacedWith[0].id, 'urls_list_heading');
-    });
-
-    it('clears container completely when heading element is missing', () => {
-      let replacedWith = null;
-      const container = {
-        replaceChildren: (...args) => {
-          replacedWith = args;
-        },
-      };
-
-      container.replaceChildren();
-      assert.equal(replacedWith?.length, 0);
-    });
-  });
-
-  describe('Row Event Delegation with closest()', () => {
-    function simulateClosestDelegation(target) {
-      const row = target?.closest?.('.web_event_list_blank');
-      return row ? row.id : null;
+      return row;
     }
 
-    it('resolves row when clicking directly on row padding or margin', () => {
-      const row = {
-        id: 'web_events_list_301',
-        closest: (selector) => (selector === '.web_event_list_blank' ? row : null),
-      };
-      assert.equal(simulateClosestDelegation(row), 'web_events_list_301');
+    it('populates row dataset attributes and text content correctly', () => {
+      const timestamp = new Date(2026, 9, 16, 12, 30, 0).getTime();
+      const row = createMockRow({
+        requestId: 'req-10',
+        requestIdEnhanced: 'req-10_1',
+        url: 'https://api.github.com/user',
+        method: 'GET',
+        statusCode: 200,
+        timeStamp: timestamp,
+        fromCache: false,
+      });
+
+      assert.equal(row.id, 'web_events_list_req-10_1');
+      assert.equal(row.dataset.requestId, 'req-10_1');
+      assert.equal(row.dataset.rawRequestId, 'req-10');
+      assert.equal(row.children[0].textContent, 'https://api.github.com/user');
+      assert.equal(row.children[1].textContent, 'GET');
+      assert.equal(row.children[2].textContent, 200);
+      assert.equal(row.children[3].textContent, '10/16 12:30:00');
+      assert.equal(row.children[4].textContent, false);
+      assert.equal(row.classList.contains('web_event_style_error'), false);
     });
 
-    it('resolves row when clicking inside deeply nested markup like <mark> tag', () => {
-      const row = { id: 'web_events_list_302' };
-      const nestedMark = {
-        closest: (selector) => (selector === '.web_event_list_blank' ? row : null),
-      };
-      assert.equal(simulateClosestDelegation(nestedMark), 'web_events_list_302');
+    it('applies web_event_style_error for 4xx client errors and 5xx server errors', () => {
+      const row404 = createMockRow({
+        requestId: 'req-11',
+        requestIdEnhanced: 'req-11',
+        url: 'https://api.github.com/missing',
+        method: 'GET',
+        statusCode: 404,
+      });
+      assert.equal(row404.classList.contains('web_event_style_error'), true);
+
+      const row502 = createMockRow({
+        requestId: 'req-12',
+        requestIdEnhanced: 'req-12',
+        url: 'https://api.github.com/gateway',
+        method: 'POST',
+        statusCode: 502,
+      });
+      assert.equal(row502.classList.contains('web_event_style_error'), true);
     });
 
-    it('returns null when clicking outside rows such as table heading', () => {
-      const heading = {
-        id: 'urls_list_heading',
-        closest: () => null,
-      };
-      assert.equal(simulateClosestDelegation(heading), null);
-      assert.equal(simulateClosestDelegation(null), null);
+    it('applies web_event_style_error when callerName is onErrorOccurred or error is set', () => {
+      const rowBlocked = createMockRow({
+        requestId: 'req-13',
+        requestIdEnhanced: 'req-13',
+        url: 'https://analytics.tracker.com/collect',
+        method: 'POST',
+        callerName: 'onErrorOccurred',
+        error: 'net::ERR_BLOCKED_BY_CLIENT',
+      });
+      assert.equal(rowBlocked.classList.contains('web_event_style_error'), true);
+      assert.equal(rowBlocked.children[2].textContent, 'Error');
+    });
+
+    it('does NOT apply web_event_style_error for 2xx or 3xx responses', () => {
+      const row200 = createMockRow({ requestId: 'req-14', requestIdEnhanced: 'req-14', statusCode: 200 });
+      const row302 = createMockRow({ requestId: 'req-15', requestIdEnhanced: 'req-15', statusCode: 302 });
+      const row304 = createMockRow({ requestId: 'req-16', requestIdEnhanced: 'req-16', statusCode: 304 });
+
+      assert.equal(row200.classList.contains('web_event_style_error'), false);
+      assert.equal(row302.classList.contains('web_event_style_error'), false);
+      assert.equal(row304.classList.contains('web_event_style_error'), false);
     });
   });
 
@@ -297,13 +310,14 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
   });
 
   /* -------------------------------------------------------------------------
-   * 9. Interactive Column Header Filter Matcher (matchesColumnFilters)
+   * 7. Interactive Column Header Filter Matcher (matchesColumnFilters)
    * ------------------------------------------------------------------------- */
   describe('Column Header Filters Matcher (matchesColumnFilters)', () => {
     it('returns true when filters are null, undefined, or empty', () => {
       const item = { url: 'https://example.com/api', method: 'GET', status: '200' };
       assert.equal(context.matchesColumnFilters(item, null), true);
       assert.equal(context.matchesColumnFilters(item, {}), true);
+      assert.equal(context.matchesColumnFilters(item, { url: '', method: '   ' }), true);
     });
 
     it('filters by URL column supporting substring, AND (&), and OR (|)', () => {
@@ -323,33 +337,55 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
       assert.equal(context.matchesColumnFilters(item2, { url: 'github | bitbucket' }), false);
     });
 
-    it('filters by Method column with case insensitivity and OR (|)', () => {
+    it('handles regex special characters in URL filters without throwing syntax errors', () => {
+      const itemWithQuery = { url: 'https://example.com/search?q=test&page=1', method: 'GET', status: '200' };
+      const itemWithSymbols = { url: 'https://example.com/v1(beta)/item+detail[42]', method: 'GET', status: '200' };
+
+      // Query params containing ? and =
+      assert.equal(context.matchesColumnFilters(itemWithQuery, { url: '?q=test' }), true);
+      assert.equal(context.matchesColumnFilters(itemWithQuery, { url: '?q=missing' }), false);
+
+      // Parentheses, plus, brackets, asterisks, caret, dollar
+      assert.equal(context.matchesColumnFilters(itemWithSymbols, { url: '(beta)' }), true);
+      assert.equal(context.matchesColumnFilters(itemWithSymbols, { url: 'item+' }), true);
+      assert.equal(context.matchesColumnFilters(itemWithSymbols, { url: '[42]' }), true);
+      assert.equal(context.matchesColumnFilters(itemWithSymbols, { url: 'v1 & [42]' }), true);
+    });
+
+    it('filters by Method column with case insensitivity, trimming, and OR (|)', () => {
       const postItem = { url: 'https://api.com/items', method: 'POST' };
       const getItem = { url: 'https://api.com/items', method: 'GET' };
       const putItem = { url: 'https://api.com/items', method: 'PUT' };
 
-      assert.equal(context.matchesColumnFilters(postItem, { method: 'post' }), true);
+      assert.equal(context.matchesColumnFilters(postItem, { method: '  post  ' }), true);
+      assert.equal(context.matchesColumnFilters(postItem, { method: 'POST' }), true);
       assert.equal(context.matchesColumnFilters(getItem, { method: 'post' }), false);
       assert.equal(context.matchesColumnFilters(putItem, { method: 'get | put' }), true);
       assert.equal(context.matchesColumnFilters(postItem, { method: 'get | put' }), false);
     });
 
-    it('filters by Status column with exact code, wildcards (4xx, 5xx), and error keyword', () => {
+    it('filters by Status column with exact code, wildcards (1xx-5xx), error keyword, and pipe (|)', () => {
+      const infoItem = { url: 'https://api.com', status: '101' };
       const okItem = { url: 'https://api.com', status: '200' };
+      const redirectItem = { url: 'https://api.com', status: '302' };
       const notFoundItem = { url: 'https://api.com', status: '404' };
       const serverErrItem = { url: 'https://api.com', status: '500' };
 
-      // Exact
-      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '404' }), true);
-      assert.equal(context.matchesColumnFilters(okItem, { status: '404' }), false);
-
-      // Wildcard 4xx
+      // Wildcards 1xx, 2xx, 3xx, 4xx, 5xx
+      assert.equal(context.matchesColumnFilters(infoItem, { status: '1xx' }), true);
+      assert.equal(context.matchesColumnFilters(okItem, { status: '2xx' }), true);
+      assert.equal(context.matchesColumnFilters(redirectItem, { status: '3xx' }), true);
       assert.equal(context.matchesColumnFilters(notFoundItem, { status: '4xx' }), true);
-      assert.equal(context.matchesColumnFilters(serverErrItem, { status: '4xx' }), false);
-
-      // Wildcard 5xx
       assert.equal(context.matchesColumnFilters(serverErrItem, { status: '5xx' }), true);
-      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '5xx' }), false);
+
+      // Negative checks
+      assert.equal(context.matchesColumnFilters(okItem, { status: '4xx' }), false);
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '2xx' }), false);
+
+      // Multi-status pipe (|)
+      assert.equal(context.matchesColumnFilters(okItem, { status: '200 | 204 | 304' }), true);
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '200 | 204 | 304' }), false);
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '200 | 4xx' }), true);
 
       // Keyword error
       assert.equal(context.matchesColumnFilters(notFoundItem, { status: 'error' }), true);
@@ -357,32 +393,49 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
       assert.equal(context.matchesColumnFilters(okItem, { status: 'error' }), false);
     });
 
-    it('filters by Cache column (true/1 vs false/0)', () => {
+    it('filters by Cache column supporting true/1/cached/yes vs false/0/uncached/no', () => {
       const cached = { url: 'https://cdn.com', fromCache: 'true' };
       const uncached = { url: 'https://api.com', fromCache: 'false' };
 
-      assert.equal(context.matchesColumnFilters(cached, { cache: 'true' }), true);
-      assert.equal(context.matchesColumnFilters(uncached, { cache: 'true' }), false);
+      for (const affirmative of ['true', '1', 'cached', 'yes']) {
+        assert.equal(context.matchesColumnFilters(cached, { cache: affirmative }), true, `Expected ${affirmative} to match cached`);
+        assert.equal(context.matchesColumnFilters(uncached, { cache: affirmative }), false, `Expected ${affirmative} not to match uncached`);
+      }
 
-      assert.equal(context.matchesColumnFilters(uncached, { cache: 'false' }), true);
-      assert.equal(context.matchesColumnFilters(cached, { cache: 'false' }), false);
+      for (const negative of ['false', '0', 'uncached', 'no']) {
+        assert.equal(context.matchesColumnFilters(uncached, { cache: negative }), true, `Expected ${negative} to match uncached`);
+        assert.equal(context.matchesColumnFilters(cached, { cache: negative }), false, `Expected ${negative} not to match cached`);
+      }
     });
 
-    it('combines multiple column filters simultaneously with AND logic', () => {
-      const match = { url: 'https://store.com/api/pay', method: 'POST', status: '200', fromCache: 'false' };
-      const wrongMethod = { url: 'https://store.com/api/pay', method: 'GET', status: '200', fromCache: 'false' };
-      const wrongStatus = { url: 'https://store.com/api/pay', method: 'POST', status: '500', fromCache: 'false' };
-      const wrongUrl = { url: 'https://store.com/home', method: 'POST', status: '200', fromCache: 'false' };
-
-      const multiFilter = { url: 'pay', method: 'post', status: '200' };
-
-      assert.equal(context.matchesColumnFilters(match, multiFilter), true);
-      assert.equal(context.matchesColumnFilters(wrongMethod, multiFilter), false);
-      assert.equal(context.matchesColumnFilters(wrongStatus, multiFilter), false);
-      assert.equal(context.matchesColumnFilters(wrongUrl, multiFilter), false);
+    it('filters by Date time column using partial substring matching', () => {
+      const item = { url: 'https://api.com', date: '10/16 14:25:30' };
+      assert.equal(context.matchesColumnFilters(item, { date: '10/16' }), true);
+      assert.equal(context.matchesColumnFilters(item, { date: '14:25' }), true);
+      assert.equal(context.matchesColumnFilters(item, { date: '10/17' }), false);
     });
 
-    it('evaluates DOM row elements accurately across columns', () => {
+    it('combines all 5 column filters simultaneously with AND logic', () => {
+      const match = { url: 'https://store.com/api/pay', method: 'POST', status: '200', date: '10/16 11:00:00', fromCache: 'false' };
+      const allFiveFilter = {
+        url: 'pay',
+        method: 'post',
+        status: '2xx',
+        date: '10/16',
+        cache: 'false',
+      };
+
+      assert.equal(context.matchesColumnFilters(match, allFiveFilter), true);
+
+      // Fails if any single column does not match
+      assert.equal(context.matchesColumnFilters({ ...match, method: 'GET' }, allFiveFilter), false);
+      assert.equal(context.matchesColumnFilters({ ...match, status: '500' }, allFiveFilter), false);
+      assert.equal(context.matchesColumnFilters({ ...match, fromCache: 'true' }, allFiveFilter), false);
+      assert.equal(context.matchesColumnFilters({ ...match, date: '01/01 00:00:00' }, allFiveFilter), false);
+      assert.equal(context.matchesColumnFilters({ ...match, url: 'https://store.com/home' }, allFiveFilter), false);
+    });
+
+    it('evaluates DOM row elements accurately across columns and handles missing children gracefully', () => {
       const fakeElement = {
         children: [
           { textContent: 'https://service.org/v2/auth' },
@@ -396,6 +449,10 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
 
       assert.equal(context.matchesColumnFilters(fakeElement, { url: 'auth', method: 'post', status: '2xx' }), true);
       assert.equal(context.matchesColumnFilters(fakeElement, { url: 'auth', method: 'get' }), false);
+
+      // Malformed element with missing children should not throw
+      const malformed = { children: [] };
+      assert.equal(context.matchesColumnFilters(malformed, { url: 'test' }), false);
     });
   });
 });

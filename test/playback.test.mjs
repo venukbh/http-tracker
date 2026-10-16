@@ -122,14 +122,12 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.equal(rules[1].condition.urlFilter, '*status/404*');
     });
 
-    it('evaluates simulated blocking decision against payload URLs', async () => {
+    it('evaluates blocking pattern matching against payload URLs via matchesExcludePattern', async () => {
       const blockPatterns = ['favicon.ico', 'status/404'];
       await context.updateBlockSessionRules(blockPatterns);
 
-      const isBlocked = (url, patterns) => patterns.some(p => url.includes(p));
-
-      const blockedUrls = payloadUrls.filter(url => isBlocked(url, blockPatterns));
-      const allowedUrls = payloadUrls.filter(url => !isBlocked(url, blockPatterns));
+      const blockedUrls = payloadUrls.filter((url) => context.matchesExcludePattern(url, blockPatterns, []));
+      const allowedUrls = payloadUrls.filter((url) => !context.matchesExcludePattern(url, blockPatterns, []));
 
       assert.ok(blockedUrls.includes('https://httpbin.org/favicon.ico'));
       assert.ok(blockedUrls.includes('https://httpbin.org/status/404'));
@@ -498,5 +496,147 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.equal(detailsContainer.style.visibility, 'hidden');
     });
   });
+
+  /* -------------------------------------------------------------------------
+   * 9. Request Body Multipart, File Upload, and Compressed Binary Rendering
+   * ------------------------------------------------------------------------- */
+  describe('Request Body Multipart, File Upload, and Compressed Binary Rendering', () => {
+    it('renders multipart form fields data with multiple values correctly', () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const formEvent = {
+        formData: {
+          username: ['alice'],
+          permissions: ['read', 'write', 'admin'],
+        },
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'POST', url: 'https://api.example.com/roles' },
+        responseEvent: null,
+        requestBody: formEvent,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      assert.ok(reqHtml.includes('Body (form fields data)'));
+      assert.ok(reqHtml.includes('username'));
+      assert.ok(reqHtml.includes('alice'));
+      assert.ok(reqHtml.includes('permissions'));
+      assert.ok(reqHtml.includes('read,write,admin'));
+    });
+
+    it('renders file upload attachment notices in request body', () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const fileEvent = {
+        raw: [
+          { file: 'financial_report_2026.pdf' },
+        ],
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'POST', url: 'https://upload.example.com/files' },
+        responseEvent: null,
+        requestBody: fileEvent,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      assert.ok(reqHtml.includes('[File upload: financial_report_2026.pdf]'));
+    });
+
+    it('detects gzip and deflate compressed binary payloads and renders diagnostic badge', () => {
+      const detailsView = context.httpTrackerDetailsView;
+      // Gzip magic header: 0x1f 0x8b
+      const gzipBuffer = new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00]).buffer;
+      const gzipEvent = {
+        raw: [{ bytes: gzipBuffer }],
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'POST', url: 'https://api.example.com/binary' },
+        responseEvent: null,
+        requestBody: gzipEvent,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      assert.ok(reqHtml.includes('[Binary data \u2014 6 bytes, likely gzip. Cannot display compressed content.]'));
+    });
+  });
+
+  /* -------------------------------------------------------------------------
+   * 10. Details View Search Highlighting with <mark> Tags
+   * ------------------------------------------------------------------------- */
+  describe('Details View Search Highlighting with <mark> Tags', () => {
+    it('wraps query matches inside header keys and values with <mark> tags', () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const reqWithHeaders = {
+        method: 'GET',
+        url: 'https://api.example.com/v1/auth',
+        requestHeaders: [
+          { name: 'Authorization', value: 'Bearer token-12345' },
+          { name: 'X-App-Env', value: 'production' },
+        ],
+      };
+
+      const compiledFindPattern = new RegExp('auth|bearer', 'gi');
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: reqWithHeaders,
+        responseEvent: null,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      assert.ok(reqHtml.includes('<mark>Auth</mark>orization'), 'Should wrap "Auth" substring in header name');
+      assert.ok(reqHtml.includes('<mark>Bearer</mark>'), 'Should wrap "Bearer" in header value');
+      assert.ok(!reqHtml.includes('<mark>production</mark>'), 'Should not wrap non-matching values');
+    });
+  });
+
+  /* -------------------------------------------------------------------------
+   * 11. Domain Cookie Deletion via deleteCookiesForSelectedDomain
+   * ------------------------------------------------------------------------- */
+  describe('Domain Cookie Deletion via deleteCookiesForSelectedDomain', () => {
+    it('extracts domain from URL input, deletes matching cookies, and toggles button feedback', async () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const inputEl = globalThis.document.getElementById('delete_cookies');
+      const btnEl = globalThis.document.getElementById('delete_cookies_button');
+      btnEl.textContent = 'Delete cookies';
+
+      // Seed cookies in browser
+      mockBrowser.cookies.stored = [
+        { name: 'session_id', domain: 'api.github.com', path: '/' },
+        { name: 'pref', domain: '.github.com', path: '/' },
+        { name: 'unrelated', domain: 'google.com', path: '/' },
+      ];
+      mockBrowser.cookies.removed = [];
+
+      inputEl.value = 'https://api.github.com/v1/user/repos';
+
+      detailsView.deleteCookiesForSelectedDomain();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      assert.equal(mockBrowser.cookies.removed.length, 2);
+      assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'session_id'), true);
+      assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'pref'), true);
+      assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'unrelated'), false);
+      assert.equal(btnEl.textContent, 'Deleted!');
+    });
+  });
 });
+
 

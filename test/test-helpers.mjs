@@ -60,7 +60,16 @@ export function createTestContext(customGlobals = {}) {
       },
     },
     cookies: {
+      stored: [],
       removed: [],
+      getAll: async (details = {}) => {
+        if (!details.domain) return [...mockBrowser.cookies.stored];
+        const targetDomain = details.domain.toLowerCase().replace(/^\./, '');
+        return mockBrowser.cookies.stored.filter((c) => {
+          const cookieDomain = (c.domain || '').toLowerCase().replace(/^\./, '');
+          return cookieDomain === targetDomain || cookieDomain.endsWith(`.${targetDomain}`) || targetDomain.endsWith(`.${cookieDomain}`);
+        });
+      },
       remove: async (details) => {
         mockBrowser.cookies.removed.push(details);
         return details;
@@ -71,18 +80,38 @@ export function createTestContext(customGlobals = {}) {
   const domElements = new Map();
   const getOrCreateElement = (id) => {
     if (!domElements.has(id)) {
-      domElements.set(id, {
+      const classSet = new Set();
+      const el = {
         id,
         innerHTML: '',
         textContent: '',
         value: '',
+        checked: false,
+        disabled: false,
         style: {},
         dataset: {},
-        classList: { add: () => {}, remove: () => {}, contains: () => false },
+        children: [],
+        parentElement: null,
+        classList: {
+          add: (cls) => classSet.add(cls),
+          remove: (cls) => classSet.delete(cls),
+          toggle: (cls, force) => {
+            if (force === undefined) {
+              if (classSet.has(cls)) { classSet.delete(cls); return false; }
+              classSet.add(cls); return true;
+            }
+            if (force) { classSet.add(cls); return true; }
+            classSet.delete(cls); return false;
+          },
+          contains: (cls) => classSet.has(cls),
+        },
         querySelector: () => null,
         querySelectorAll: () => [],
-        replaceChildren: () => {},
-      });
+        replaceChildren: (...args) => { el.children = args; },
+        appendChild: (child) => { el.children.push(child); return child; },
+        remove: () => {},
+      };
+      domElements.set(id, el);
     }
     return domElements.get(id);
   };
@@ -91,6 +120,32 @@ export function createTestContext(customGlobals = {}) {
     getElementById: (id) => getOrCreateElement(id),
     getElementsByClassName: (cls) => [],
     querySelectorAll: (sel) => [],
+    createElement: (tag) => {
+      const classSet = new Set();
+      return {
+        tagName: tag.toUpperCase(),
+        id: '',
+        textContent: '',
+        innerHTML: '',
+        style: {},
+        dataset: {},
+        children: [],
+        classList: {
+          add: (cls) => classSet.add(cls),
+          remove: (cls) => classSet.delete(cls),
+          toggle: (cls, force) => {
+            if (force === undefined) {
+              if (classSet.has(cls)) { classSet.delete(cls); return false; }
+              classSet.add(cls); return true;
+            }
+            if (force) { classSet.add(cls); return true; }
+            classSet.delete(cls); return false;
+          },
+          contains: (cls) => classSet.has(cls),
+        },
+        appendChild(child) { this.children.push(child); return child; },
+      };
+    },
     ...customGlobals.document,
   };
 
@@ -179,4 +234,37 @@ export function createTestContext(customGlobals = {}) {
     storageStore,
     domElements,
   };
+}
+
+export function runDomEventsInBrowser(isFirefox) {
+  const registeredListeners = {};
+  const mockWebRequest = {
+    onBeforeRequest: { addListener: (...args) => { registeredListeners.onBeforeRequest = args; } },
+    onBeforeSendHeaders: { addListener: (...args) => { registeredListeners.onBeforeSendHeaders = args; } },
+    onSendHeaders: { addListener: (...args) => { registeredListeners.onSendHeaders = args; } },
+    onHeadersReceived: { addListener: (...args) => { registeredListeners.onHeadersReceived = args; } },
+    onAuthRequired: { addListener: (...args) => { registeredListeners.onAuthRequired = args; } },
+    onBeforeRedirect: { addListener: (...args) => { registeredListeners.onBeforeRedirect = args; } },
+    onResponseStarted: { addListener: (...args) => { registeredListeners.onResponseStarted = args; } },
+    onCompleted: { addListener: (...args) => { registeredListeners.onCompleted = args; } },
+    onErrorOccurred: { addListener: (...args) => { registeredListeners.onErrorOccurred = args; } },
+  };
+
+  const fakeHttpTracker = {
+    isFF: isFirefox,
+    isFirefox: isFirefox,
+    browser: {
+      webRequest: mockWebRequest,
+    },
+  };
+
+  const fakeEventTracker = {
+    processWebEvent: () => {},
+  };
+
+  const domEventsCode = fs.readFileSync(path.join(rootDir, 'src/js/dom-events.js'), 'utf-8');
+  const runner = new Function('httpTracker', 'eventTracker', domEventsCode);
+  runner(fakeHttpTracker, fakeEventTracker);
+
+  return registeredListeners;
 }

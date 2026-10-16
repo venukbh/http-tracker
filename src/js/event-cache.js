@@ -95,6 +95,9 @@ const httpTrackerEventCache = (function() {
   };
 
   function recordEvent(webEvent, captureFormData) {
+    if (!webEvent?.requestId) {
+      return;
+    }
     setRedirectCount(webEvent);
     if (webEvent.callerName === 'onBeforeRedirect') {
       handleRedirect(webEvent);
@@ -124,6 +127,9 @@ const httpTrackerEventCache = (function() {
   }
 
   function removeEntry(requestIdToRemove, rawRequestId) {
+    if (!requestIdToRemove) {
+      return;
+    }
     const rawId = rawRequestId || requestIdToRemove.replace(/_\d+$/, '');
     requestIdRedirectCount.delete(rawId);
     requestIdRedirectCount.delete(requestIdToRemove);

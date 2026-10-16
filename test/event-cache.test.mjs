@@ -163,5 +163,60 @@ describe('httpTrackerEventCache Unit Tests', () => {
       assert.equal(eventCache.getRequest('req-6'), undefined);
       assert.equal(eventCache.getResponse('req-6'), undefined);
     });
+
+    it('tracks deep multi-hop redirect chains and preserves non-removed hops when deleting a single hop', () => {
+      const baseId = 'req-deep-redirect';
+      // Hop 0
+      const e0 = { requestId: baseId, requestIdEnhanced: baseId, ip: '1.1.1.1' };
+      eventCache.setRedirectCount(e0);
+      eventCache.insertInitialRequest({ requestIdEnhanced: baseId, url: 'https://site.com/0' });
+      eventCache.handleRedirect(e0);
+
+      // Hop 1
+      const e1 = { requestId: baseId, requestIdEnhanced: baseId, ip: '1.1.1.1' };
+      eventCache.setRedirectCount(e1);
+      assert.equal(e1.requestIdEnhanced, `${baseId}_1`);
+      eventCache.insertInitialRequest({ requestIdEnhanced: `${baseId}_1`, url: 'https://site.com/1' });
+      eventCache.handleRedirect(e1);
+
+      // Hop 2
+      const e2 = { requestId: baseId, requestIdEnhanced: baseId, ip: '1.1.1.1' };
+      eventCache.setRedirectCount(e2);
+      assert.equal(e2.requestIdEnhanced, `${baseId}_2`);
+      eventCache.insertInitialRequest({ requestIdEnhanced: `${baseId}_2`, url: 'https://site.com/2' });
+      eventCache.handleRedirect(e2);
+
+      // Hop 3 (final)
+      const e3 = { requestId: baseId, requestIdEnhanced: baseId };
+      eventCache.setRedirectCount(e3);
+      assert.equal(e3.requestIdEnhanced, `${baseId}_3`);
+      eventCache.insertInitialRequest({ requestIdEnhanced: `${baseId}_3`, url: 'https://site.com/3' });
+
+      // Verify all 4 hops exist
+      assert.equal(eventCache.getRequest(baseId)?.url, 'https://site.com/0');
+      assert.equal(eventCache.getRequest(`${baseId}_1`)?.url, 'https://site.com/1');
+      assert.equal(eventCache.getRequest(`${baseId}_2`)?.url, 'https://site.com/2');
+      assert.equal(eventCache.getRequest(`${baseId}_3`)?.url, 'https://site.com/3');
+
+      // Granular delete of Hop 2 should NOT delete Hop 1 or Hop 3
+      eventCache.removeEntry(`${baseId}_2`, baseId);
+      assert.equal(eventCache.getRequest(`${baseId}_2`), undefined);
+      assert.equal(eventCache.getRequest(baseId)?.url, 'https://site.com/0');
+      assert.equal(eventCache.getRequest(`${baseId}_1`)?.url, 'https://site.com/1');
+      assert.equal(eventCache.getRequest(`${baseId}_3`)?.url, 'https://site.com/3');
+    });
+
+    it('safely handles null, undefined, or malformed events without throwing exceptions', () => {
+      assert.doesNotThrow(() => {
+        eventCache.recordEvent(null, false);
+        eventCache.recordEvent(undefined, true);
+        eventCache.recordEvent({}, false);
+        eventCache.removeEntry(null, null);
+        eventCache.removeEntry(undefined, undefined);
+        eventCache.hasEvent(null);
+        eventCache.getRequest(null);
+        eventCache.getResponse(undefined);
+      });
+    });
   });
 });
