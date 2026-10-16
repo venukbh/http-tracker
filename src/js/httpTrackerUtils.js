@@ -36,10 +36,9 @@ function sortArray(a, b) {
 function stringToArray(stringWithDelimiter, delimiter = ',') {
   if (stringWithDelimiter?.trim().length > 0) {
     // split, trim empty spaces, then remove empty strings
-    return (stringWithDelimiter.split(delimiter).map((e) => e.trim()).filter((e) => e));
-  } else {
-    return undefined;
+    return stringWithDelimiter.split(delimiter).map((e) => e.trim()).filter(Boolean);
   }
+  return undefined;
 }
 
 function filterWithLength(array, length = 0) {
@@ -52,14 +51,13 @@ function filterWithLength(array, length = 0) {
 function uniqueArray(arrayWithEntries) {
   if (arrayWithEntries?.length) {
     return [...new Set(arrayWithEntries)];
-  } else {
-    return [];
   }
+  return [];
 }
 
 function sortMapByKey(unsortedMap) {
   //  javascript map do not have sort by default
-  return new Map([...unsortedMap.entries()].sort());
+  return new Map([...unsortedMap.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0]))));
 }
 
 /** This sorts the object which has name as a property e.g.:
@@ -126,7 +124,7 @@ function updateHeaderModifySessionRules(headerRows) {
   const removeRuleIds = ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES);
   const addRules = (headerRows || [])
       .filter((row) => row.name?.trim() && row.value !== undefined)
-      .filter((row) => /^[!#$%&'*+\-.^_`|~0-9a-zA-Z]+$/.test(row.name.trim()))
+      .filter((row) => RFC_HEADER_NAME_REGEX.test(row.name.trim()))
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
                        !FORBIDDEN_HEADERS_PATTERN.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
       .map((row, index) => ({
@@ -159,6 +157,7 @@ function clearAllSessionRules() {
               addRules: [],
             });
           }
+          return undefined;
         })
         .catch(onError);
   }

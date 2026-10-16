@@ -12,17 +12,17 @@ httpTracker.browser.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => {
       connectedTrackerPorts.delete(port);
       if (connectedTrackerPorts.size === 0) {
-        clearAllSessionRules();
+        clearAllSessionRules().catch(onError);
       }
     });
   }
 });
 
 httpTracker.browser.runtime.onInstalled.addListener(() => {
-  clearAllSessionRules();
+  clearAllSessionRules().catch(onError);
 });
 
 httpTracker.browser.runtime.onStartup.addListener(() => {
-  clearAllSessionRules();
+  clearAllSessionRules().catch(onError);
 });
 
