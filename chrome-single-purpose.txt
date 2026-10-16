@@ -1,0 +1,15 @@
+# Chrome Web Store: Single Purpose Description (< 1,000 characters)
+# Location in Dev Console: "Privacy practices" -> "Single purpose description"
+
+Monitor browser network traffic across all tabs and pages in a single dedicated window. Track HTTP requests, responses, and cookies. Filter traffic in real time, block unwanted requests, and dynamically add or modify outgoing headers globally or per domain/URL.
+
+Core Features:
+- Single-instance window: Always focuses a single tracker window across browser tabs.
+- Non-blocking (async) monitoring: In-memory capture with zero delay to actual web requests.
+- Smart URL filtering: Include, exclude, or block URLs by pattern, with real-time column search.
+- Header overrides: Add or modify outgoing HTTP request headers via declarativeNetRequest session rules.
+- Cookie management & masking: Inspect cookies, delete domain cookies, and mask sensitive credentials.
+- Full control: Delete single rows, clear filtered subsets, or wipe all captured data.
+
+Privacy:
+- 100% local: Captured data is kept strictly in-memory and never transmitted or shared.
