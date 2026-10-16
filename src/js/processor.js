@@ -566,6 +566,8 @@ const eventTracker = (function() {
     maskedAttributesList = stringToArray(getById('mask_patterns_list').value);
     isMaskingEnabled = getById('enable_mask_patterns').checked;
     blockURLsList = stringToArray(getById('block_urls_pattern').value);
+    selectedWebEventRequestId = '';
+    httpTrackerDetailsView.clearDetailsView();
     updateAllButtons();
     filterAllUrlRows();
     hideOrShowInfoIcons();
