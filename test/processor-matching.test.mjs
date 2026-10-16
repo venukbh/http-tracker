@@ -176,4 +176,227 @@ describe('Processor Matching & Filtering Logic Unit Tests', () => {
       assert.equal(simulateClosestDelegation(null), null);
     });
   });
+
+  /* -------------------------------------------------------------------------
+   * 8. DevTools Smart Filter (parseSmartFilter & matchesSmartFilter)
+   * ------------------------------------------------------------------------- */
+  describe('DevTools Smart Filter Parser & Row Matcher', () => {
+    it('returns null for empty, whitespace, or 1-character queries', () => {
+      assert.equal(context.parseSmartFilter(''), null);
+      assert.equal(context.parseSmartFilter('  '), null);
+      assert.equal(context.parseSmartFilter('a'), null);
+    });
+
+    it('parses legacy sequential AND (&) queries', () => {
+      const parsed = context.parseSmartFilter('google & api');
+      assert.equal(parsed.type, 'and');
+      assert.deepEqual(parsed.patterns, ['google', 'api']);
+    });
+
+    it('parses legacy OR (|) queries', () => {
+      const parsed = context.parseSmartFilter('get | post');
+      assert.equal(parsed.type, 'or');
+      assert.deepEqual(parsed.patterns, ['get', 'post']);
+    });
+
+    it('parses DevTools keyword prefixes (method, status, cache, is:cached)', () => {
+      const parsed = context.parseSmartFilter('api method:post status:404 is:cached');
+      assert.equal(parsed.type, 'smart');
+      assert.deepEqual(parsed.textPatterns, ['api']);
+      assert.deepEqual(parsed.conditions, [
+        { field: 'method', value: 'post' },
+        { field: 'status', value: '404' },
+        { field: 'cache', value: 'true' },
+      ]);
+    });
+
+    it('matches plain text URL across data objects and elements', () => {
+      const parsed = context.parseSmartFilter('checkout');
+      const matchItem = { url: 'https://store.com/checkout/pay', method: 'POST', status: '200' };
+      const nonMatchItem = { url: 'https://store.com/browse/items', method: 'GET', status: '200' };
+
+      assert.equal(context.matchesSmartFilter(matchItem, parsed), true);
+      assert.equal(context.matchesSmartFilter(nonMatchItem, parsed), false);
+    });
+
+    it('matches method condition accurately', () => {
+      const postFilter = context.parseSmartFilter('method:post');
+      const getFilter = context.parseSmartFilter('method:get');
+
+      const item = { url: 'https://api.com/v1', method: 'POST', status: '200' };
+      assert.equal(context.matchesSmartFilter(item, postFilter), true);
+      assert.equal(context.matchesSmartFilter(item, getFilter), false);
+    });
+
+    it('matches status codes including wildcards (4xx, 5xx) and error keyword', () => {
+      const status404Filter = context.parseSmartFilter('status:404');
+      const status4xxFilter = context.parseSmartFilter('status:4xx');
+      const status5xxFilter = context.parseSmartFilter('status:5xx');
+      const errorFilter = context.parseSmartFilter('is:error');
+
+      const notFoundItem = { url: 'https://api.com/item', method: 'GET', status: '404' };
+      const serverErrItem = { url: 'https://api.com/crash', method: 'POST', status: '500' };
+      const okItem = { url: 'https://api.com/ok', method: 'GET', status: '200' };
+
+      assert.equal(context.matchesSmartFilter(notFoundItem, status404Filter), true);
+      assert.equal(context.matchesSmartFilter(notFoundItem, status4xxFilter), true);
+      assert.equal(context.matchesSmartFilter(notFoundItem, status5xxFilter), false);
+
+      assert.equal(context.matchesSmartFilter(serverErrItem, status5xxFilter), true);
+      assert.equal(context.matchesSmartFilter(serverErrItem, status4xxFilter), false);
+
+      assert.equal(context.matchesSmartFilter(notFoundItem, errorFilter), true);
+      assert.equal(context.matchesSmartFilter(serverErrItem, errorFilter), true);
+      assert.equal(context.matchesSmartFilter(okItem, errorFilter), false);
+    });
+
+    it('matches compound criteria (e.g. method:post status:200 api)', () => {
+      const compound = context.parseSmartFilter('api method:post status:200');
+
+      const perfectMatch = { url: 'https://mysite.com/api/orders', method: 'POST', status: '200' };
+      const wrongMethod = { url: 'https://mysite.com/api/orders', method: 'GET', status: '200' };
+      const wrongStatus = { url: 'https://mysite.com/api/orders', method: 'POST', status: '400' };
+      const wrongUrl = { url: 'https://mysite.com/other/orders', method: 'POST', status: '200' };
+
+      assert.equal(context.matchesSmartFilter(perfectMatch, compound), true);
+      assert.equal(context.matchesSmartFilter(wrongMethod, compound), false);
+      assert.equal(context.matchesSmartFilter(wrongStatus, compound), false);
+      assert.equal(context.matchesSmartFilter(wrongUrl, compound), false);
+    });
+
+    it('matches cache condition (is:cached vs cache:false)', () => {
+      const cachedFilter = context.parseSmartFilter('is:cached');
+      const uncachedFilter = context.parseSmartFilter('cache:false');
+
+      const cachedItem = { url: 'https://cdn.com/app.js', fromCache: 'true' };
+      const networkItem = { url: 'https://cdn.com/app.js', fromCache: 'false' };
+
+      assert.equal(context.matchesSmartFilter(cachedItem, cachedFilter), true);
+      assert.equal(context.matchesSmartFilter(networkItem, cachedFilter), false);
+
+      assert.equal(context.matchesSmartFilter(networkItem, uncachedFilter), true);
+      assert.equal(context.matchesSmartFilter(cachedItem, uncachedFilter), false);
+    });
+
+    it('evaluates DOM element structure correctly', () => {
+      const parsed = context.parseSmartFilter('method:post status:200');
+
+      const fakeElement = {
+        children: [
+          { textContent: 'https://api.example.com/login' },
+          { textContent: 'POST' },
+          { textContent: '200' },
+          { textContent: '10/16 10:00:00' },
+          { textContent: 'false' },
+        ],
+        classList: { contains: () => false },
+      };
+
+      assert.equal(context.matchesSmartFilter(fakeElement, parsed), true);
+    });
+  });
+
+  /* -------------------------------------------------------------------------
+   * 9. Interactive Column Header Filter Matcher (matchesColumnFilters)
+   * ------------------------------------------------------------------------- */
+  describe('Column Header Filters Matcher (matchesColumnFilters)', () => {
+    it('returns true when filters are null, undefined, or empty', () => {
+      const item = { url: 'https://example.com/api', method: 'GET', status: '200' };
+      assert.equal(context.matchesColumnFilters(item, null), true);
+      assert.equal(context.matchesColumnFilters(item, {}), true);
+    });
+
+    it('filters by URL column supporting substring, AND (&), and OR (|)', () => {
+      const item1 = { url: 'https://api.github.com/v1/users', method: 'GET' };
+      const item2 = { url: 'https://cdn.example.com/bundle.js', method: 'GET' };
+
+      // Substring
+      assert.equal(context.matchesColumnFilters(item1, { url: 'github' }), true);
+      assert.equal(context.matchesColumnFilters(item2, { url: 'github' }), false);
+
+      // AND (&)
+      assert.equal(context.matchesColumnFilters(item1, { url: 'api & users' }), true);
+      assert.equal(context.matchesColumnFilters(item1, { url: 'api & repos' }), false);
+
+      // OR (|)
+      assert.equal(context.matchesColumnFilters(item1, { url: 'github | bitbucket' }), true);
+      assert.equal(context.matchesColumnFilters(item2, { url: 'github | bitbucket' }), false);
+    });
+
+    it('filters by Method column with case insensitivity and OR (|)', () => {
+      const postItem = { url: 'https://api.com/items', method: 'POST' };
+      const getItem = { url: 'https://api.com/items', method: 'GET' };
+      const putItem = { url: 'https://api.com/items', method: 'PUT' };
+
+      assert.equal(context.matchesColumnFilters(postItem, { method: 'post' }), true);
+      assert.equal(context.matchesColumnFilters(getItem, { method: 'post' }), false);
+      assert.equal(context.matchesColumnFilters(putItem, { method: 'get | put' }), true);
+      assert.equal(context.matchesColumnFilters(postItem, { method: 'get | put' }), false);
+    });
+
+    it('filters by Status column with exact code, wildcards (4xx, 5xx), and error keyword', () => {
+      const okItem = { url: 'https://api.com', status: '200' };
+      const notFoundItem = { url: 'https://api.com', status: '404' };
+      const serverErrItem = { url: 'https://api.com', status: '500' };
+
+      // Exact
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '404' }), true);
+      assert.equal(context.matchesColumnFilters(okItem, { status: '404' }), false);
+
+      // Wildcard 4xx
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '4xx' }), true);
+      assert.equal(context.matchesColumnFilters(serverErrItem, { status: '4xx' }), false);
+
+      // Wildcard 5xx
+      assert.equal(context.matchesColumnFilters(serverErrItem, { status: '5xx' }), true);
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: '5xx' }), false);
+
+      // Keyword error
+      assert.equal(context.matchesColumnFilters(notFoundItem, { status: 'error' }), true);
+      assert.equal(context.matchesColumnFilters(serverErrItem, { status: 'error' }), true);
+      assert.equal(context.matchesColumnFilters(okItem, { status: 'error' }), false);
+    });
+
+    it('filters by Cache column (true/1 vs false/0)', () => {
+      const cached = { url: 'https://cdn.com', fromCache: 'true' };
+      const uncached = { url: 'https://api.com', fromCache: 'false' };
+
+      assert.equal(context.matchesColumnFilters(cached, { cache: 'true' }), true);
+      assert.equal(context.matchesColumnFilters(uncached, { cache: 'true' }), false);
+
+      assert.equal(context.matchesColumnFilters(uncached, { cache: 'false' }), true);
+      assert.equal(context.matchesColumnFilters(cached, { cache: 'false' }), false);
+    });
+
+    it('combines multiple column filters simultaneously with AND logic', () => {
+      const match = { url: 'https://store.com/api/pay', method: 'POST', status: '200', fromCache: 'false' };
+      const wrongMethod = { url: 'https://store.com/api/pay', method: 'GET', status: '200', fromCache: 'false' };
+      const wrongStatus = { url: 'https://store.com/api/pay', method: 'POST', status: '500', fromCache: 'false' };
+      const wrongUrl = { url: 'https://store.com/home', method: 'POST', status: '200', fromCache: 'false' };
+
+      const multiFilter = { url: 'pay', method: 'post', status: '200' };
+
+      assert.equal(context.matchesColumnFilters(match, multiFilter), true);
+      assert.equal(context.matchesColumnFilters(wrongMethod, multiFilter), false);
+      assert.equal(context.matchesColumnFilters(wrongStatus, multiFilter), false);
+      assert.equal(context.matchesColumnFilters(wrongUrl, multiFilter), false);
+    });
+
+    it('evaluates DOM row elements accurately across columns', () => {
+      const fakeElement = {
+        children: [
+          { textContent: 'https://service.org/v2/auth' },
+          { textContent: 'POST' },
+          { textContent: '201' },
+          { textContent: '10/16 11:30:00' },
+          { textContent: 'false' },
+        ],
+        classList: { contains: () => false },
+      };
+
+      assert.equal(context.matchesColumnFilters(fakeElement, { url: 'auth', method: 'post', status: '2xx' }), true);
+      assert.equal(context.matchesColumnFilters(fakeElement, { url: 'auth', method: 'get' }), false);
+    });
+  });
 });
+

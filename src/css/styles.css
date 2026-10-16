@@ -135,19 +135,6 @@ label {
   display: flex;
 }
 
-.filter_controls_wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.filter_controls_wrapper select {
-  flex-shrink: 0;
-  height: 24px;
-}
-
 .all_headers_containers {
   flex: 1;
   min-width: 0;
@@ -334,7 +321,7 @@ label {
 
 .web_event_list_url {
   float: left;
-  width: 75%;
+  width: 52%;
   text-overflow: ellipsis;
   overflow: hidden;
   border-right: 1px solid black;
@@ -342,21 +329,21 @@ label {
 
 .web_event_list_method {
   float: left;
-  width: 5%;
+  width: 11%;
   text-align: center;
   border-right: 1px solid black;
 }
 
 .web_event_list_status {
   float: left;
-  width: 5%;
+  width: 11%;
   text-align: center;
   border-right: 1px solid black;
 }
 
 .web_event_list_date_time {
   float: left;
-  width: 10%;
+  width: 16%;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -364,6 +351,8 @@ label {
 }
 
 .web_event_list_cache {
+  float: left;
+  width: 10%;
   text-align: center;
 }
 
@@ -428,6 +417,107 @@ label {
   background-color: #DCDCDC;
   overflow: hidden;
   font-weight: bold;
+  height: 28px;
+  line-height: 28px;
+}
+
+.col_header_cell {
+  position: relative;
+  height: 28px;
+  line-height: normal;
+  box-sizing: border-box;
+}
+
+.col_header_cell.has_active_filter {
+  background-color: #bfdbfe;
+}
+
+.col_header_title_bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 4px;
+}
+
+.col_header_title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: bold;
+  flex: 1;
+  text-align: inherit;
+}
+
+.col_filter_toggle_btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.65;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.col_filter_toggle_btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.col_header_cell.has_active_filter .col_filter_toggle_btn {
+  opacity: 1;
+  color: #1d4ed8;
+  font-weight: bold;
+}
+
+.col_filter_input_wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 2px 3px;
+  gap: 2px;
+  background-color: #f1f5f9;
+  box-sizing: border-box;
+}
+
+.col_filter_input {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 1px 4px;
+  border: 1px solid #94a3b8;
+  border-radius: 3px;
+  background: #ffffff;
+  outline: none;
+}
+
+.col_filter_input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.col_filter_close_btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 3px;
+  font-size: 11px;
+  line-height: 1;
+  color: #64748b;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.col_filter_close_btn:hover {
+  color: #ef4444;
+  background-color: rgba(0, 0, 0, 0.08);
 }
 
 .web_event_details_scroll_panel {

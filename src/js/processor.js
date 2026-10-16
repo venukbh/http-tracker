@@ -1,6 +1,8 @@
 const eventTracker = (function() {
   let isCaptureFormDataEnabled = false;
-  let filterWithKey = '0';
+  let activeColumnFilters = null;
+  const COLUMN_FILTER_KEYS = ['url', 'method', 'status', 'date', 'cache'];
+  let parsedSmartFilter = null;
   let filterWithValue = '';
   let globalExcludeURLsList;
   let globalIncludeURLsList;
@@ -130,8 +132,7 @@ const eventTracker = (function() {
   }
 
   function applyFilterToElement(element) {
-    const text = element.children[filterWithKey]?.textContent || '';
-    if (matchesFilter(text, multipleSearchPatterns, isANDFilter)) {
+    if (matchesColumnFilters(element, activeColumnFilters)) {
       element.classList.remove('web_event_list_hide');
     } else {
       element.classList.add('web_event_list_hide');
@@ -139,7 +140,7 @@ const eventTracker = (function() {
   }
 
   function filterEventRow(webEvent) {
-    if (multipleSearchPatterns.length === 0) {
+    if (!activeColumnFilters) {
       return;
     }
     const element = getById(`web_events_list_${webEvent.requestIdEnhanced}`);
@@ -182,13 +183,14 @@ const eventTracker = (function() {
   }
 
   function filterAllUrlRows() {
-    if (multipleSearchPatterns.length === 0) {
+    if (!activeColumnFilters) {
       showAllUrlRows();
     } else {
       for (const element of getAllUrlRows()) {
         applyFilterToElement(element);
       }
     }
+    updateDeleteFilteredButton();
   }
 
   function removeEntry(node) {
@@ -220,9 +222,6 @@ const eventTracker = (function() {
     getById('enable_mask_patterns').onchange = onMaskFieldsChange;
     getById('include_form_data').onchange = onCaptureFormDataChange;
     getById('optimize_response_cookies').onchange = onOptimizeCookiesChange;
-    getById('filter_web_events').oninput = filterEvents;
-    getById('web_event_filter_key').oninput = filterEvents;
-    getById('clear_filter_web_events').onclick = resetFilter;
     getById('delete_all_filtered_web_events').onclick = deleteFilteredEvents;
     getById('delete_selected_web_event').onclick = removeSelectedEvent;
     getById('delete_all_web_events').onclick = clearAllEvents;
@@ -238,6 +237,7 @@ const eventTracker = (function() {
       openAddonOptions();
     });
     bindInputClearButtons();
+    bindColumnFilterEvents();
     httpTrackerHeaderRules.init();
   }
 
@@ -247,8 +247,17 @@ const eventTracker = (function() {
       return;
     }
     input.value = '';
-    if (input.id === 'filter_web_events') {
-      resetFilter();
+    if (input.classList?.contains?.('col_filter_input')) {
+      const col = input.dataset.col;
+      const cell = document.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+      if (cell) {
+        cell.classList.remove('has_active_filter');
+        const titleBar = cell.querySelector?.('.col_header_title_bar');
+        const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+        if (inputWrap) inputWrap.style.display = 'none';
+        if (titleBar) titleBar.style.display = '';
+      }
+      onColumnFilterChanged();
     } else {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -359,8 +368,142 @@ const eventTracker = (function() {
   }
 
   function clearFilterInput() {
-    filterWithValue = getById('filter_web_events').value = '';
-    multipleSearchPatterns = [];
+    activeColumnFilters = null;
+    for (const col of COLUMN_FILTER_KEYS) {
+      const input = getById(`col_filter_${col}`);
+      if (input) {
+        input.value = '';
+      }
+      const cell = document.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+      if (cell) {
+        cell.classList.remove('has_active_filter');
+        const titleBar = cell.querySelector?.('.col_header_title_bar');
+        const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+        if (titleBar) titleBar.style.display = '';
+        if (inputWrap) inputWrap.style.display = 'none';
+      }
+    }
+  }
+
+  function getActiveColumnFilters() {
+    const filters = {};
+    let count = 0;
+    for (const col of COLUMN_FILTER_KEYS) {
+      const input = getById(`col_filter_${col}`);
+      const val = input?.value?.trim() || '';
+      if (val) {
+        filters[col] = val;
+        count++;
+      }
+    }
+    return count > 0 ? filters : null;
+  }
+
+  function bindColumnFilterEvents() {
+    const heading = getById('urls_list_heading');
+    if (!heading) {
+      return;
+    }
+
+    heading.addEventListener('click', function(event) {
+      const toggleBtn = event.target.closest?.('.col_filter_toggle_btn');
+      if (toggleBtn) {
+        const col = toggleBtn.dataset.col;
+        const cell = heading.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+        if (cell) {
+          const titleBar = cell.querySelector?.('.col_header_title_bar');
+          const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+          const input = cell.querySelector?.('.col_filter_input');
+          if (titleBar) titleBar.style.display = 'none';
+          if (inputWrap) inputWrap.style.display = 'flex';
+          if (input) {
+            input.focus();
+            input.select?.();
+          }
+        }
+        return;
+      }
+
+      const closeBtn = event.target.closest?.('.col_filter_close_btn');
+      if (closeBtn) {
+        const col = closeBtn.dataset.col;
+        const cell = heading.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+        if (cell) {
+          const input = cell.querySelector?.('.col_filter_input');
+          if (input) {
+            input.value = '';
+          }
+          cell.classList.remove('has_active_filter');
+          const titleBar = cell.querySelector?.('.col_header_title_bar');
+          const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+          if (inputWrap) inputWrap.style.display = 'none';
+          if (titleBar) titleBar.style.display = '';
+          onColumnFilterChanged();
+        }
+      }
+    });
+
+    heading.addEventListener('input', function(event) {
+      if (event.target.classList?.contains?.('col_filter_input')) {
+        const col = event.target.dataset.col;
+        const cell = heading.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+        if (cell) {
+          if (event.target.value.trim()) {
+            cell.classList.add('has_active_filter');
+          } else {
+            cell.classList.remove('has_active_filter');
+          }
+        }
+        debouncedColumnFilter();
+      }
+    });
+
+    heading.addEventListener('keydown', function(event) {
+      if (event.target.classList?.contains?.('col_filter_input') && event.key === 'Escape') {
+        const col = event.target.dataset.col;
+        const cell = heading.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+        if (cell) {
+          event.target.value = '';
+          cell.classList.remove('has_active_filter');
+          const titleBar = cell.querySelector?.('.col_header_title_bar');
+          const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+          if (inputWrap) inputWrap.style.display = 'none';
+          if (titleBar) titleBar.style.display = '';
+          onColumnFilterChanged();
+        }
+      }
+    });
+
+    heading.addEventListener('focusout', function(event) {
+      if (event.target.classList?.contains?.('col_filter_input')) {
+        if (!event.target.value.trim()) {
+          const col = event.target.dataset.col;
+          const cell = heading.querySelector?.(`.col_header_cell[data-col="${col}"]`);
+          if (cell) {
+            const titleBar = cell.querySelector?.('.col_header_title_bar');
+            const inputWrap = cell.querySelector?.('.col_filter_input_wrapper');
+            if (inputWrap) inputWrap.style.display = 'none';
+            if (titleBar) titleBar.style.display = '';
+          }
+        }
+      }
+    });
+  }
+
+  const debouncedColumnFilter = debounce(function() {
+    onColumnFilterChanged();
+  }, INPUT_BOX_DELAY);
+
+  const filterEvents = debouncedColumnFilter;
+
+  function onColumnFilterChanged() {
+    updateFilterOptions();
+    filterAllUrlRows();
+    updateAllButtons();
+  }
+
+  function updateFilterOptions() {
+    activeColumnFilters = getActiveColumnFilters();
   }
 
   function handleListKeyNavigation(event) {
@@ -400,30 +543,6 @@ const eventTracker = (function() {
     }
   }
 
-  const filterEvents = debounce(function() {
-    updateFilterOptions();
-    filterAllUrlRows();
-    updateAllButtons();
-  }, INPUT_BOX_DELAY);
-
-  function updateFilterOptions() {
-    filterWithKey = getById('web_event_filter_key').selectedOptions[0].value;
-    filterWithValue = getById('filter_web_events').value.toLowerCase().trim();
-    isANDFilter = false;
-    multipleSearchPatterns = [];
-    if (filterWithValue) {
-      if (filterWithValue.length < 3 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
-        // invalid search filter text, do nothing
-      } else if (filterWithValue.includes(DELIMITER_AND)) {
-        multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_AND), 2);
-        isANDFilter = true;
-      } else {
-        multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_OR), 2);
-        isANDFilter = false;
-      }
-    }
-  }
-
   const setPatternsToExclude = debounce(function(event) {
     excludeURLsList = normalizePatterns(event.target.value).map((s) => s.toLowerCase());
   }, INPUT_BOX_DELAY);
@@ -438,8 +557,7 @@ const eventTracker = (function() {
   }, INPUT_BOX_DELAY);
 
   function setInitialStateOfPage() {
-    filterWithKey = getById('web_event_filter_key')?.value ?? '0';
-    filterWithValue = getById('filter_web_events').value;
+    updateFilterOptions();
     isCaptureFormDataEnabled = getById('include_form_data').checked;
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
     includeURLsList = normalizePatterns(getById('track_urls_pattern').value).map((s) => s.toLowerCase());
@@ -484,11 +602,14 @@ const eventTracker = (function() {
   }
 
   function updateClearFilterButton() {
-    getById('clear_filter_web_events').disabled = !filterWithValue;
+    const clearBtn = getById('clear_filter_web_events');
+    if (clearBtn) {
+      clearBtn.disabled = !activeColumnFilters;
+    }
   }
 
   function updateDeleteFilteredButton() {
-    const isEnabled = multipleSearchPatterns.length > 0 &&
+    const isEnabled = Boolean(activeColumnFilters) &&
       Boolean(getById('urls_list')?.querySelector('.web_event_list_blank:not(.web_event_list_hide)'));
     getById('delete_all_filtered_web_events').disabled = !isEnabled;
   }

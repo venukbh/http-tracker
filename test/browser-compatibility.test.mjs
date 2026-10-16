@@ -145,7 +145,6 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
         'track_urls_pattern',
         'exclude_urls_pattern',
         'block_urls_pattern',
-        'filter_web_events',
         'mask_patterns_list',
         'find_in_details_pattern',
         'delete_cookies',
@@ -162,7 +161,21 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       }
     });
 
-    it('verifies CSS contains pure CSS visibility toggle based on placeholder-shown', () => {
+    it('verifies that each table column header has an interactive filter toggle, input, and close button', () => {
+      const columns = ['url', 'method', 'status', 'date', 'cache'];
+      for (const col of columns) {
+        assert.ok(
+          htmlContent.includes(`data-col="${col}"`),
+          `Expected column ${col} to have data-col attribute`,
+        );
+        assert.ok(
+          htmlContent.includes(`id="col_filter_${col}"`),
+          `Expected column ${col} to have filter input #col_filter_${col}`,
+        );
+      }
+    });
+
+    it('verifies CSS contains pure CSS visibility toggle and column header filter styles', () => {
       assert.ok(
         cssContent.includes('.tracker_input_wrapper input:not(:placeholder-shown)'),
         'styles.css must include pure CSS toggle for :not(:placeholder-shown)',
@@ -170,6 +183,14 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       assert.ok(
         cssContent.includes('.input_clear_btn'),
         'styles.css must define .input_clear_btn styling',
+      );
+      assert.ok(
+        cssContent.includes('.col_header_cell'),
+        'styles.css must define .col_header_cell styling',
+      );
+      assert.ok(
+        cssContent.includes('.col_header_cell.has_active_filter'),
+        'styles.css must define active filter highlight',
       );
     });
   });
