@@ -371,6 +371,99 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
 
       const resHtml = domElements.get('response_headers_details_body')?.innerHTML || '';
       assert.ok(resHtml.includes('net::ERR_BLOCKED_BY_CLIENT'), 'Should display error code in response details');
+      assert.ok(resHtml.includes('web_event_style_error">net::ERR_BLOCKED_BY_CLIENT'), 'Error code in response details should be styled with web_event_style_error');
+    });
+  });
+
+  /* -------------------------------------------------------------------------
+   * 8. RequestBody Browser Limitation & Error Handling
+   * ------------------------------------------------------------------------- */
+  describe('RequestBody Browser Limitation & Error Handling', () => {
+    it('ignores requestBody property in metadata table and gracefully renders browser limitation error in Body section', () => {
+      const detailsView = context.httpTrackerDetailsView;
+
+      const rumRequest = {
+        method: 'POST',
+        url: 'https://api.github.com/_private/browser/rum?ddforward=...',
+        initiator: 'https://github.com',
+        requestBody: { error: 'Unknown error.' },
+      };
+
+      const rumRequestBody = {
+        error: 'Unknown error.',
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: rumRequest,
+        responseEvent: null,
+        requestBody: rumRequestBody,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      // Ensure requestBody is not dumped into the top metadata table
+      assert.ok(!reqHtml.includes('<td class="web_event_detail_header_key">requestBody</td>'), 'requestBody key should not appear in metadata table');
+      // Ensure graceful explanatory message appears in the Body section
+      assert.ok(reqHtml.includes('Body unavailable from browser: Unknown error.'), 'Should render body unavailable explanation');
+      assert.ok(reqHtml.includes('streaming, keepalive, or beacon'), 'Should mention common causes (streaming/keepalive/beacon)');
+      assert.ok(reqHtml.includes('web_event_style_warning'), 'Should format body unavailable warning with web_event_style_warning class');
+      assert.ok(reqHtml.includes('text-align: center'), 'Should center align body unavailable warning row');
+    });
+  });
+
+  /* -------------------------------------------------------------------------
+   * 9. Error Highlighting (4xx, 5xx, Network Errors) in Details View
+   * ------------------------------------------------------------------------- */
+  describe('Error Highlighting in Details View', () => {
+    it('styles HTTP 4xx and 5xx status codes and status lines with web_event_style_error', () => {
+      const detailsView = context.httpTrackerDetailsView;
+
+      const error404Response = {
+        method: 'GET',
+        url: 'https://httpbin.org/status/404',
+        statusCode: 404,
+        statusLine: 'HTTP/1.1 404 Not Found',
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'GET', url: 'https://httpbin.org/status/404' },
+        responseEvent: error404Response,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const resHtml = domElements.get('response_headers_details_body')?.innerHTML || '';
+      assert.ok(resHtml.includes('web_event_style_error">404</td>'), 'statusCode 404 must have web_event_style_error');
+      assert.ok(resHtml.includes('web_event_style_error">HTTP/1.1 404 Not Found</td>'), 'statusLine 404 must have web_event_style_error');
+
+      // 200 OK should NOT have web_event_style_error
+      const ok200Response = {
+        method: 'GET',
+        url: 'https://httpbin.org/status/200',
+        statusCode: 200,
+        statusLine: 'HTTP/1.1 200 OK',
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'GET', url: 'https://httpbin.org/status/200' },
+        responseEvent: ok200Response,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const okResHtml = domElements.get('response_headers_details_body')?.innerHTML || '';
+      assert.ok(!okResHtml.includes('web_event_style_error">200</td>'), 'statusCode 200 must NOT have web_event_style_error');
+      assert.ok(!okResHtml.includes('web_event_style_error">HTTP/1.1 200 OK</td>'), 'statusLine 200 must NOT have web_event_style_error');
     });
   });
 });
+
