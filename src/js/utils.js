@@ -14,14 +14,15 @@ function getByClassNames(classNamesSpaceDelimited) {
   return document.getElementsByClassName(classNamesSpaceDelimited);
 }
 
+const DIGIT_REGEX = /^\d/;
+const ALPHABET_REGEX = /^[a-zA-Z]/;
+const SYMBOL_REGEX = /^[^\w]/;
+
 function sortArray(a, b) {
-  const digitRegex = /^\d/;
-  const alphabetRegex = /^[a-zA-Z]/;
-  const symbolRegex = /^[^\w]/;
   a = a.toLowerCase();
   b = b.toLowerCase();
-  const scoreA = symbolRegex.test(a) * 1 || digitRegex.test(a) * 10 || alphabetRegex.test(a) * 100;
-  const scoreB = symbolRegex.test(b) * 1 || digitRegex.test(b) * 10 || alphabetRegex.test(b) * 100;
+  const scoreA = SYMBOL_REGEX.test(a) * 1 || DIGIT_REGEX.test(a) * 10 || ALPHABET_REGEX.test(a) * 100;
+  const scoreB = SYMBOL_REGEX.test(b) * 1 || DIGIT_REGEX.test(b) * 10 || ALPHABET_REGEX.test(b) * 100;
 
   if (scoreA !== scoreB) {
     return scoreA - scoreB;
@@ -141,6 +142,7 @@ const ALL_RESOURCE_TYPES = getAllResourceTypes();
 
 function updateBlockSessionRules(patterns) {
   const removeRuleIds = ruleIdRange(BLOCK_RULE_BASE, MAX_BLOCK_RULES);
+  const resourceTypes = getAllResourceTypes();
   const addRules = normalizePatterns(patterns)
       .filter((p) => p.trim().length > 0)
       .map((pattern, index) => ({
@@ -150,7 +152,7 @@ function updateBlockSessionRules(patterns) {
           type: 'block',
         },
         condition: {
-          urlFilter: `*${pattern.trim()}*`, resourceTypes: getAllResourceTypes(),
+          urlFilter: `*${pattern.trim()}*`, resourceTypes,
         },
       }));
   return httpTracker.browser.declarativeNetRequest.updateSessionRules({
@@ -160,6 +162,7 @@ function updateBlockSessionRules(patterns) {
 
 function updateHeaderModifySessionRules(headerRows) {
   const removeRuleIds = ruleIdRange(HEADER_RULE_BASE, MAX_HEADER_RULES);
+  const resourceTypes = getAllResourceTypes();
   const addRules = (headerRows ?? [])
       .filter((row) => row.name?.trim() && row.value !== undefined)
       .filter((row) => RFC_HEADER_NAME_REGEX.test(row.name.trim()))
@@ -176,7 +179,7 @@ function updateHeaderModifySessionRules(headerRows) {
         },
         condition: {
           urlFilter: row.url?.trim() ? `*${row.url.trim()}*` : '*',
-          resourceTypes: getAllResourceTypes(),
+          resourceTypes,
         },
       }));
   return httpTracker.browser.declarativeNetRequest.updateSessionRules({
