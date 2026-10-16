@@ -17,7 +17,7 @@
         "eslint-config-google": "^0.14.0"
     },
     "scripts": {
-        "test": "node --test 'test/*.test.mjs'",
+        "test": "node scripts/run-tests.mjs",
         "lint-fix": "eslint . --fix",
         "lint": "eslint .",
         "build": "npm run lint",

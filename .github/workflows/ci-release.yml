@@ -21,12 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Run Tests
         run: npm test
@@ -38,12 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Package Extension
         run: npm run package
@@ -56,6 +56,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -e "process.stdout.write(require('./manifest.json').version)")
-          gh release create "${{ github.ref_name }}" "archives/http-tracker-${VERSION}.zip" \
+          gh release create "${{ github.ref_name }}" \
+            "archives/http-tracker-chrome-${VERSION}.zip" \
+            "archives/http-tracker-firefox-${VERSION}.zip" \
+            "archives/http-tracker-${VERSION}.zip" \
             --title "v${VERSION}" \
             --generate-notes
