@@ -55,6 +55,7 @@ const httpTrackerDetailsView = (function() {
 
     const detailsContainer = getById('web_details_selected_container');
     if (detailsContainer) {
+      detailsContainer.style.display = 'block';
       detailsContainer.style.visibility = 'visible';
     }
   }
@@ -90,6 +91,7 @@ const httpTrackerDetailsView = (function() {
 
     const detailsContainer = getById('web_details_selected_container');
     if (detailsContainer) {
+      detailsContainer.style.display = 'none';
       detailsContainer.style.visibility = 'hidden';
     }
   }

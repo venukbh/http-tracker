@@ -465,5 +465,38 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.ok(!okResHtml.includes('web_event_style_error">HTTP/1.1 200 OK</td>'), 'statusLine 200 must NOT have web_event_style_error');
     });
   });
+
+  /* -------------------------------------------------------------------------
+   * 8. Details Container Visibility Toggling
+   * ------------------------------------------------------------------------- */
+  describe('Details Container Visibility Toggling', () => {
+    it('sets display to block when rendering details and display to none when cleared', () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const detailsContainer = domElements.get('web_details_selected_container');
+
+      // Clear view hides container
+      detailsView.clearDetailsView();
+      assert.equal(detailsContainer.style.display, 'none');
+      assert.equal(detailsContainer.style.visibility, 'hidden');
+
+      // Render view shows container
+      detailsView.renderSelectedEventDetails({
+        requestEvent: { method: 'GET', url: 'https://httpbin.org/get' },
+        responseEvent: null,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+      assert.equal(detailsContainer.style.display, 'block');
+      assert.equal(detailsContainer.style.visibility, 'visible');
+
+      // Clear view again hides container
+      detailsView.clearDetailsView();
+      assert.equal(detailsContainer.style.display, 'none');
+      assert.equal(detailsContainer.style.visibility, 'hidden');
+    });
+  });
 });
 
