@@ -167,9 +167,9 @@ const eventTracker = (function() {
   }
 
   function showAllUrlRows() {
-    const urlsList = getHiddenUrlRows();
-    while (urlsList.length) {
-      urlsList[0].classList.remove('web_event_list_hide');
+    const hiddenRows = getById('urls_list')?.querySelectorAll('.web_event_list_hide') ?? [];
+    for (const row of hiddenRows) {
+      row.classList.remove('web_event_list_hide');
     }
   }
 
@@ -196,12 +196,8 @@ const eventTracker = (function() {
     updateDeleteFilteredButton();
   }
 
-  function getHiddenUrlRows() {
-    return getById('urls_list').getElementsByClassName('web_event_list_blank web_event_list_hide');
-  }
-
   function getVisibleUrlRows() {
-    return Array.from(getAllUrlRows()).filter((eachUrl) => !eachUrl.classList.contains('web_event_list_hide'));
+    return getById('urls_list')?.querySelectorAll('.web_event_list_blank:not(.web_event_list_hide)') ?? [];
   }
 
   function getAllUrlRows() {
@@ -285,7 +281,16 @@ const eventTracker = (function() {
 
   function deleteFilteredEvents() {
     for (const node of getVisibleUrlRows()) {
-      removeEntry(node);
+      const requestIdToRemove = node.dataset.requestId;
+      const rawRequestId = node.dataset.rawRequestId || requestIdToRemove?.replace(/_\d+$/, '');
+      if (requestIdToRemove) {
+        httpTrackerEventCache.removeEntry(requestIdToRemove, rawRequestId);
+      }
+      node.remove();
+      if (requestIdToRemove === selectedWebEventRequestId) {
+        httpTrackerDetailsView.clearDetailsView();
+        selectedWebEventRequestId = '';
+      }
     }
     resetFilter();
   }
@@ -364,7 +369,7 @@ const eventTracker = (function() {
   }
 
   const setPatternsToExclude = debounce(function(event) {
-    excludeURLsList = normalizePatterns(stringToArray(event.target.value)).map((s) => s.toLowerCase());
+    excludeURLsList = normalizePatterns(event.target.value).map((s) => s.toLowerCase());
   }, INPUT_BOX_DELAY);
 
   const setPatternsToBlock = debounce(function(event) {
@@ -373,7 +378,7 @@ const eventTracker = (function() {
   }, INPUT_BOX_DELAY);
 
   const setPatternsToInclude = debounce(function(event) {
-    includeURLsList = normalizePatterns(stringToArray(event.target.value)).map((s) => s.toLowerCase());
+    includeURLsList = normalizePatterns(event.target.value).map((s) => s.toLowerCase());
   }, INPUT_BOX_DELAY);
 
   function setInitialStateOfPage() {
@@ -381,8 +386,8 @@ const eventTracker = (function() {
     filterWithValue = getById('filter_web_events').value;
     isCaptureFormDataEnabled = getById('include_form_data').checked;
     optimizeResponseCookies = getById('optimize_response_cookies').checked;
-    includeURLsList = normalizePatterns(stringToArray(getById('track_urls_pattern').value)).map((s) => s.toLowerCase());
-    excludeURLsList = normalizePatterns(stringToArray(getById('exclude_urls_pattern').value)).map((s) => s.toLowerCase());
+    includeURLsList = normalizePatterns(getById('track_urls_pattern').value).map((s) => s.toLowerCase());
+    excludeURLsList = normalizePatterns(getById('exclude_urls_pattern').value).map((s) => s.toLowerCase());
     maskedAttributesList = stringToArray(getById('mask_patterns_list').value);
     isMaskingEnabled = getById('enable_mask_patterns').checked;
     blockURLsList = stringToArray(getById('block_urls_pattern').value);
@@ -433,10 +438,7 @@ const eventTracker = (function() {
   }
 
   function updateDeleteSelectedButton() {
-    const selectedEvent = getSelectedEvent();
-    if (!selectedEvent) {
-      getById('delete_selected_web_event').disabled = true;
-    }
+    getById('delete_selected_web_event').disabled = !getSelectedEvent();
   }
 
   function markSelectedRequest(requestId) {
@@ -450,7 +452,6 @@ const eventTracker = (function() {
     element.classList.add('web_event_list_selected');
     selectedWebEventRequestId = element.dataset.requestId;
     getById('delete_selected_web_event').disabled = false;
-    getById('delete_selected_web_event').classList.remove('web_event_list_filtered');
     renderSelectedEventDetails();
   }
 
