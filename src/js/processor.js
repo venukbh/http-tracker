@@ -310,6 +310,7 @@ const eventTracker = (function() {
       btn.title = isCapturingEvents
         ? 'Pause the tracker. When paused, nothing will be tracked.'
         : 'Resume the tracker to continue capturing HTTP requests.';
+      btn.classList.toggle('is_paused', !isCapturingEvents);
     }
   }
 
