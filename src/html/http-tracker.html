@@ -64,31 +64,6 @@
             </div>
           </div>
         </div>
-        <div class="tracker_row"
-          title="Filter captured events based on available filter options. To add more filtration, use &amp;, |&#013;&#013;Examples:&#013;&#013;&nbsp;1. type: url, filter value: google&amp;gmail, outcome : filter all urls containing 'google' AND followed by 'gmail' i.e. url should contain matching words in the same order of filter.&#013;&nbsp;2. type: method, filter value: get|post, outcome : filter all urls whose method is get OR post, ignoring order of entries">
-          <label for="web_event_filter_key" class="left_pane_label"
-            title="Filter list by: Select event property to filter by (URL, METHOD, STATUS, DATE, or CACHE)">Filter list by</label>
-          <div class="filter_controls_wrapper">
-            <select id="web_event_filter_key" aria-label="Filter events by"
-              title="Select event property to filter by: URL, METHOD, STATUS, DATE, or CACHE">
-              <option value="0" selected="selected">URL</option>
-              <option value="1">METHOD</option>
-              <option value="2">STATUS</option>
-              <option value="3">DATE</option>
-              <option value="4">CACHE</option>
-            </select>
-            <label for="filter_web_events" class="web_event_list_hide">Filter pattern</label>
-            <div class="tracker_input_wrapper">
-              <input id="filter_web_events" type="text" aria-label="Filter list"
-                title="Filter captured events based on chosen property. Use &amp; for AND (in order), | for OR.&#013;&#013;Examples:&#013;1. URL: google&amp;gmail -> URLs containing 'google' AND followed by 'gmail'&#013;2. METHOD: get|post -> requests with method GET or POST&#013;3. STATUS: 200|304 -> successful or cached responses"
-                placeholder="Filter string case insensitive (min 3 chars). Read tooltip" />
-              <div class="input_trailing_icons">
-                <button id="clear_filter_web_events" type="button" class="input_clear_btn" data-clear-target="filter_web_events"
-                  aria-label="Clear filter" title="Clear filter" tabindex="-1">&#x2715;</button>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="tracker_row headers_row"
           title="Provide name, value and an optional url details for each header.&#013;&#013;examples&#013;&#013;1: Adding header to all urls containing word 'google' in them  &#013;&nbsp;&nbsp;&nbsp;&nbsp;url:google&#013;2: Add header to any url, leave the url part empty&#013;&#013;NOTES:&#013;&#013;&nbsp;&nbsp;1: Adding / modifiying forbidden headers has no effect.&#013;&nbsp;&nbsp;2: If header name is blank, that header is not added&#013;&nbsp;&nbsp;3: Only valid headers will be added for requests matching the url property value and invalid headers will mark the name field in RED color for indication.&#013;&nbsp;&nbsp;4:Its always good to keep more specific the url">
           <div id="add_modify_headers_banner" class="left_pane_label headers_banner_label"
@@ -253,11 +228,56 @@
     </div>
     <section id="urls_list" class="web_event_list_container" tabindex="0" aria-label="Captured HTTP requests"><!-- NOSONAR -->
       <div id="urls_list_heading" class="urls_list_heading">
-        <div class="web_event_list_url" title="Request URL. Click any row below to view its full request and response headers, cookies, and payload.">URL [click a tracked url (if any) to view details]</div>
-        <div class="web_event_list_method" title="HTTP Request Method (GET, POST, PUT, DELETE, OPTIONS, etc.)">Method</div>
-        <div class="web_event_list_status" title="HTTP Response Status Code (e.g. 200 OK, 304 Not Modified, 404 Not Found, 500 Error, or ERROR if request failed)">Status</div>
-        <div class="web_event_list_date_time" title="Timestamp (MM/DD HH:mm:ss) when the HTTP request was tracked">Date time</div>
-        <div class="web_event_list_cache" title="True if served directly from the browser's local cache (memory or disk), false if fetched over the network.">Cache</div>
+        <div class="web_event_list_url col_header_cell" data-col="url">
+          <div class="col_header_title_bar">
+            <span class="col_header_title" title="Request URL. Click any row below to view its full request and response details.">URL [click tracked url for details]</span>
+            <button type="button" class="col_filter_toggle_btn" data-col="url" title="Filter by URL" aria-label="Filter by URL">&#x1F50D;</button>
+          </div>
+          <div class="col_filter_input_wrapper" style="display: none;">
+            <input id="col_filter_url" type="text" class="col_filter_input" data-col="url" placeholder="Filter URL..." aria-label="Filter URL" />
+            <button type="button" class="col_filter_close_btn" data-col="url" title="Clear and close filter" aria-label="Clear filter">&#x2715;</button>
+          </div>
+        </div>
+        <div class="web_event_list_method col_header_cell" data-col="method">
+          <div class="col_header_title_bar">
+            <span class="col_header_title" title="HTTP Request Method (GET, POST, PUT, DELETE, OPTIONS, etc.)">Method</span>
+            <button type="button" class="col_filter_toggle_btn" data-col="method" title="Filter by Method" aria-label="Filter by Method">&#x1F50D;</button>
+          </div>
+          <div class="col_filter_input_wrapper" style="display: none;">
+            <input id="col_filter_method" type="text" class="col_filter_input" data-col="method" placeholder="e.g. GET, POST" aria-label="Filter Method" />
+            <button type="button" class="col_filter_close_btn" data-col="method" title="Clear and close filter" aria-label="Clear filter">&#x2715;</button>
+          </div>
+        </div>
+        <div class="web_event_list_status col_header_cell" data-col="status">
+          <div class="col_header_title_bar">
+            <span class="col_header_title" title="HTTP Response Status Code (e.g. 200 OK, 304, 404, 500, ERROR)">Status</span>
+            <button type="button" class="col_filter_toggle_btn" data-col="status" title="Filter by Status" aria-label="Filter by Status">&#x1F50D;</button>
+          </div>
+          <div class="col_filter_input_wrapper" style="display: none;">
+            <input id="col_filter_status" type="text" class="col_filter_input" data-col="status" placeholder="e.g. 200, 4xx" aria-label="Filter Status" />
+            <button type="button" class="col_filter_close_btn" data-col="status" title="Clear and close filter" aria-label="Clear filter">&#x2715;</button>
+          </div>
+        </div>
+        <div class="web_event_list_date_time col_header_cell" data-col="date">
+          <div class="col_header_title_bar">
+            <span class="col_header_title" title="Timestamp (MM/DD HH:mm:ss) when request was tracked">Date time</span>
+            <button type="button" class="col_filter_toggle_btn" data-col="date" title="Filter by Date time" aria-label="Filter by Date time">&#x1F50D;</button>
+          </div>
+          <div class="col_filter_input_wrapper" style="display: none;">
+            <input id="col_filter_date" type="text" class="col_filter_input" data-col="date" placeholder="Filter date..." aria-label="Filter Date" />
+            <button type="button" class="col_filter_close_btn" data-col="date" title="Clear and close filter" aria-label="Clear filter">&#x2715;</button>
+          </div>
+        </div>
+        <div class="web_event_list_cache col_header_cell" data-col="cache">
+          <div class="col_header_title_bar">
+            <span class="col_header_title" title="True if served directly from cache, false if fetched over network">Cache</span>
+            <button type="button" class="col_filter_toggle_btn" data-col="cache" title="Filter by Cache" aria-label="Filter by Cache">&#x1F50D;</button>
+          </div>
+          <div class="col_filter_input_wrapper" style="display: none;">
+            <input id="col_filter_cache" type="text" class="col_filter_input" data-col="cache" placeholder="true / false" aria-label="Filter Cache" />
+            <button type="button" class="col_filter_close_btn" data-col="cache" title="Clear and close filter" aria-label="Clear filter">&#x2715;</button>
+          </div>
+        </div>
       </div>
     </section>
     <div id="web_details_selected_container">

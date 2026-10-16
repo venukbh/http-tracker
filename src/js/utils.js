@@ -359,6 +359,224 @@ function matchesFilter(text, patterns, isAND) {
   return true;
 }
 
+function parseSmartFilter(filterString) {
+  if (!filterString) {
+    return null;
+  }
+  const raw = filterString.trim();
+  if (raw.length < 2) {
+    return null;
+  }
+  if (raw.includes(DELIMITER_AND) && !raw.includes(DELIMITER_OR)) {
+    const patterns = filterWithLength(stringToArray(raw, DELIMITER_AND), 1);
+    return patterns.length > 0 ? { type: 'and', patterns } : null;
+  }
+  if (raw.includes(DELIMITER_OR) && !raw.includes(DELIMITER_AND)) {
+    const patterns = filterWithLength(stringToArray(raw, DELIMITER_OR), 1);
+    return patterns.length > 0 ? { type: 'or', patterns } : null;
+  }
+
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  const conditions = [];
+  const textPatterns = [];
+
+  for (const token of tokens) {
+    const lower = token.toLowerCase();
+    if (lower.startsWith('method:')) {
+      const val = lower.slice(7).trim();
+      if (val) conditions.push({ field: 'method', value: val });
+    } else if (lower.startsWith('status:')) {
+      const val = lower.slice(7).trim();
+      if (val) conditions.push({ field: 'status', value: val });
+    } else if (lower.startsWith('cache:')) {
+      const val = lower.slice(6).trim();
+      if (val) conditions.push({ field: 'cache', value: val });
+    } else if (lower === 'is:cached' || lower === 'is:from-cache') {
+      conditions.push({ field: 'cache', value: 'true' });
+    } else if (lower === 'is:error') {
+      conditions.push({ field: 'status', value: 'error' });
+    } else if (lower.startsWith('url:')) {
+      const val = token.slice(4).trim();
+      if (val) textPatterns.push(val);
+    } else {
+      textPatterns.push(token);
+    }
+  }
+
+  if (conditions.length === 0 && textPatterns.length === 0) {
+    return null;
+  }
+
+  return {
+    type: 'smart',
+    conditions,
+    textPatterns,
+  };
+}
+
+function matchesSmartFilter(elementOrData, parsedFilter) {
+  if (!parsedFilter) {
+    return true;
+  }
+  let url = '';
+  let method = '';
+  let status = '';
+  let date = '';
+  let cache = '';
+  let isError = false;
+
+  if (elementOrData && elementOrData.children) {
+    url = elementOrData.children[0]?.textContent || '';
+    method = elementOrData.children[1]?.textContent || '';
+    status = elementOrData.children[2]?.textContent || '';
+    date = elementOrData.children[3]?.textContent || '';
+    cache = elementOrData.children[4]?.textContent || '';
+    isError = elementOrData.classList?.contains?.('web_event_style_error') || false;
+  } else if (elementOrData) {
+    url = elementOrData.url || '';
+    method = elementOrData.method || '';
+    status = String(elementOrData.statusCode ?? elementOrData.status ?? '');
+    date = elementOrData.date || '';
+    cache = String(elementOrData.fromCache ?? elementOrData.cache ?? '');
+    isError = Boolean(elementOrData.error || (status && Number(status) >= 400));
+  }
+
+  if (parsedFilter.type === 'and') {
+    return matchesFilter(url, parsedFilter.patterns, true);
+  }
+  if (parsedFilter.type === 'or') {
+    const rowText = `${url} ${method} ${status} ${cache}`;
+    return matchesFilter(rowText, parsedFilter.patterns, false);
+  }
+
+  for (const cond of parsedFilter.conditions) {
+    if (cond.field === 'method') {
+      if (!method.toLowerCase().includes(cond.value)) return false;
+    } else if (cond.field === 'status') {
+      const s = status.toLowerCase();
+      if (cond.value === 'error') {
+        if (!isError && s !== 'error' && !(Number(s) >= 400)) return false;
+      } else if (cond.value.endsWith('xx')) {
+        const prefix = cond.value[0];
+        if (!s.startsWith(prefix)) return false;
+      } else {
+        if (!s.includes(cond.value)) return false;
+      }
+    } else if (cond.field === 'cache') {
+      const c = cache.toLowerCase();
+      if (cond.value === 'true' || cond.value === '1') {
+        if (c !== 'true') return false;
+      } else if (cond.value === 'false' || cond.value === '0') {
+        if (c === 'true') return false;
+      } else if (!c.includes(cond.value)) {
+        return false;
+      }
+    }
+  }
+
+  for (const text of parsedFilter.textPatterns) {
+    const lowerText = text.toLowerCase();
+    if (!url.toLowerCase().includes(lowerText) && !method.toLowerCase().includes(lowerText)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function matchesColumnFilters(elementOrData, filters) {
+  if (!filters || Object.keys(filters).length === 0) {
+    return true;
+  }
+  let url = '';
+  let method = '';
+  let status = '';
+  let date = '';
+  let cache = '';
+  let isError = false;
+
+  if (elementOrData && elementOrData.children) {
+    url = elementOrData.children[0]?.textContent || '';
+    method = elementOrData.children[1]?.textContent || '';
+    status = elementOrData.children[2]?.textContent || '';
+    date = elementOrData.children[3]?.textContent || '';
+    cache = elementOrData.children[4]?.textContent || '';
+    isError = elementOrData.classList?.contains?.('web_event_style_error') || false;
+  } else if (elementOrData) {
+    url = elementOrData.url || '';
+    method = elementOrData.method || '';
+    status = String(elementOrData.statusCode ?? elementOrData.status ?? '');
+    date = elementOrData.date || '';
+    cache = String(elementOrData.fromCache ?? elementOrData.cache ?? '');
+    isError = Boolean(elementOrData.error || (status && Number(status) >= 400));
+  }
+
+  if (filters.url) {
+    const q = filters.url.trim().toLowerCase();
+    const u = url.toLowerCase();
+    if (q.includes('&')) {
+      const tokens = stringToArray(q, '&').map((s) => s.toLowerCase());
+      if (!matchesFilter(u, tokens, true)) return false;
+    } else if (q.includes('|')) {
+      const tokens = stringToArray(q, '|').map((s) => s.toLowerCase());
+      if (!matchesFilter(u, tokens, false)) return false;
+    } else {
+      if (!u.includes(q)) return false;
+    }
+  }
+
+  if (filters.method) {
+    const q = filters.method.trim().toLowerCase();
+    const m = method.toLowerCase();
+    if (q.includes('|')) {
+      const tokens = stringToArray(q, '|').map((s) => s.toLowerCase());
+      if (!tokens.some((token) => m.includes(token))) return false;
+    } else {
+      if (!m.includes(q)) return false;
+    }
+  }
+
+  if (filters.status) {
+    const q = filters.status.trim().toLowerCase();
+    const s = status.toLowerCase();
+    if (q === 'error') {
+      if (!isError && s !== 'error' && !(Number(s) >= 400)) return false;
+    } else if (q.endsWith('xx')) {
+      const prefix = q[0];
+      if (!s.startsWith(prefix)) return false;
+    } else if (q.includes('|')) {
+      const tokens = stringToArray(q, '|').map((t) => t.toLowerCase());
+      const matched = tokens.some((t) => {
+        if (t.endsWith('xx')) return s.startsWith(t[0]);
+        if (t === 'error') return isError || s === 'error' || Number(s) >= 400;
+        return s.includes(t);
+      });
+      if (!matched) return false;
+    } else {
+      if (!s.includes(q)) return false;
+    }
+  }
+
+  if (filters.date) {
+    const q = filters.date.trim().toLowerCase();
+    if (!date.toLowerCase().includes(q)) return false;
+  }
+
+  if (filters.cache) {
+    const q = filters.cache.trim().toLowerCase();
+    const c = cache.toLowerCase();
+    if (q === 'true' || q === '1' || q === 'cached' || q === 'yes') {
+      if (c !== 'true') return false;
+    } else if (q === 'false' || q === '0' || q === 'uncached' || q === 'no') {
+      if (c === 'true') return false;
+    } else {
+      if (!c.includes(q)) return false;
+    }
+  }
+
+  return true;
+}
+
 function maskValue(key, value, maskPatterns, isEnabled) {
   if (!isEnabled || !key) {
     return value;
