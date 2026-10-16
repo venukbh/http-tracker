@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -98,6 +98,12 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
     const version = pkg.version;
     const chromeZip = join('archives', `http-tracker-chrome-${version}.zip`);
     const firefoxZip = join('archives', `http-tracker-firefox-${version}.zip`);
+
+    before(() => {
+      if (!existsSync(chromeZip) || !existsSync(firefoxZip)) {
+        execSync('node scripts/package.mjs', { stdio: 'pipe' });
+      }
+    });
 
     it('verifies that Chrome zip has pure MV3 service_worker and NO background.scripts', () => {
       assert.ok(existsSync(chromeZip), `Expected ${chromeZip} to exist`);
