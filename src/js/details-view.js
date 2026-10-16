@@ -14,9 +14,10 @@ const httpTrackerDetailsView = (function() {
     return `<tr style="white-space: pre-wrap; word-break: break-all;"><td colspan="2">${content}</td></tr>`;
   }
 
-  function renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern) {
+  function renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern, isError = false) {
     const displayVal = maskValue(key, value, maskPatterns, isMaskEnabled);
-    return `<tr><td class="web_event_detail_header_key">${addMarkTag(key, compiledFindPattern)}</td><td class="web_event_detail_header_value">${addMarkTag(displayVal, compiledFindPattern)}</td></tr>`;
+    const errorClass = isError ? ' web_event_style_error' : '';
+    return `<tr><td class="web_event_detail_header_key">${addMarkTag(key, compiledFindPattern)}</td><td class="web_event_detail_header_value${errorClass}">${addMarkTag(displayVal, compiledFindPattern)}</td></tr>`;
   }
 
   function renderSelectedEventDetails({
@@ -53,7 +54,7 @@ const httpTrackerDetailsView = (function() {
 
     const detailsContainer = getById('web_details_selected_container');
     if (detailsContainer) {
-      detailsContainer.style = 'visibility: visible;';
+      detailsContainer.style.visibility = 'visible';
     }
   }
 
@@ -88,7 +89,7 @@ const httpTrackerDetailsView = (function() {
 
     const detailsContainer = getById('web_details_selected_container');
     if (detailsContainer) {
-      detailsContainer.style = 'visibility: hidden;';
+      detailsContainer.style.visibility = 'hidden';
     }
   }
 
@@ -103,7 +104,10 @@ const httpTrackerDetailsView = (function() {
             const content = typeof value !== 'object' ?
               value :
               Object.entries(value).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(', ');
-            tableContent += renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern);
+            const isError = key === 'error' ||
+              (key === 'statusCode' && Number(value) >= 400) ||
+              (key === 'statusLine' && /\b[45]\d{2}\b/.test(String(value)));
+            tableContent += renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern, isError);
           }
         } else { // application headers
           const headers = sortJsonByProperty(value, 'name');
