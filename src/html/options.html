@@ -12,24 +12,36 @@
 
 <body>
   <div id="persist_options" class="options_wrapper">
-    <fieldset style="border: none; padding: 0; margin: 0;">
-      <legend>Open addon window in (change takes effect on restart of addon window)</legend>
-      <input type="radio" name="uipage" value="true" id="tab" style="margin-left: 20px;">
-      <label for="tab">tab</label>
-      <input type="radio" name="uipage" value="false" id="popup" style="margin-left: 20px;">
-      <label for="popup">popup</label>
+    <fieldset class="options_fieldset">
+      <legend class="options_legend">Open addon window in (change takes effect on restart of addon window)</legend>
+      <div class="options_radio_group">
+        <label for="tab" class="options_radio_label" title="Open HTTP-TRACKER in a standard browser tab">
+          <input type="radio" name="uipage" value="true" id="tab">
+          <span>tab</span>
+        </label>
+        <label for="popup" class="options_radio_label" title="Open HTTP-TRACKER in a standalone popup window">
+          <input type="radio" name="uipage" value="false" id="popup">
+          <span>popup</span>
+        </label>
+      </div>
     </fieldset>
-    <label for="default_include_patterns" style="float:left; width:30%;">Include URL patterns</label>
-    <div>
-      <textarea id="default_include_patterns" rows="5" cols="100"></textarea>
+    <div class="options_row">
+      <label for="default_include_patterns" class="options_label"
+        title="Include URL patterns: Permanent list of comma-separated URL patterns to automatically track across sessions (e.g. google, api, checkout)">Include URL patterns</label>
+      <textarea id="default_include_patterns" class="options_textarea" rows="4"
+        title="Include URL patterns: Permanent list of comma-separated URL patterns to automatically track across sessions (e.g. google, api, checkout)"></textarea>
     </div>
-    <label for="default_exclude_patterns" style="float:left; width:30%">Exclude URL patterns</label>
-    <div>
-      <textarea id="default_exclude_patterns" rows="5" cols="100"></textarea>
+    <div class="options_row">
+      <label for="default_exclude_patterns" class="options_label"
+        title="Exclude URL patterns: Permanent list of comma-separated URL patterns to automatically skip across sessions (e.g. analytics, cdn, static)">Exclude URL patterns</label>
+      <textarea id="default_exclude_patterns" class="options_textarea" rows="4"
+        title="Exclude URL patterns: Permanent list of comma-separated URL patterns to automatically skip across sessions (e.g. analytics, cdn, static)"></textarea>
     </div>
-    <label for="default_mask_patterns" style="float:left; width:30%">Mask patterns</label>
-    <div>
-      <textarea id="default_mask_patterns" rows="5" cols="100"></textarea>
+    <div class="options_row">
+      <label for="default_mask_patterns" class="options_label"
+        title="Mask patterns: Permanent list of comma-separated sensitive header or parameter names to automatically mask across sessions (e.g. authorization, password, token)">Mask patterns</label>
+      <textarea id="default_mask_patterns" class="options_textarea" rows="4"
+        title="Mask patterns: Permanent list of comma-separated sensitive header or parameter names to automatically mask across sessions (e.g. authorization, password, token)"></textarea>
     </div>
   </div>
 </body>

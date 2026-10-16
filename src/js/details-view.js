@@ -1,6 +1,6 @@
 const httpTrackerDetailsView = (function() {
   const decoder = new TextDecoder('UTF-8');
-  const ignoreHeaders = new Set(['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId']);
+  const ignoreHeaders = new Set(['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId', 'requestBody']);
 
   function renderBannerRow(title) {
     return `<tr><td colspan="2" class="web_event_detail_cookie">${escapeHtml(title)}</td></tr>`;
@@ -255,9 +255,21 @@ const httpTrackerDetailsView = (function() {
       return;
     }
     const domain = rawInput.replace(/^https?:\/\//i, '').split('/')[0];
+    const btn = getById('delete_cookies_button');
     httpTracker.browser.cookies.getAll({
       domain,
-    }).then(removeCookies).catch(onError);
+    }).then((cookies) => {
+      removeCookies(cookies);
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = 'Deleted!';
+        setTimeout(() => {
+          if (btn) {
+            btn.textContent = originalText;
+          }
+        }, 1200);
+      }
+    }).catch(onError);
   }
 
   return {
