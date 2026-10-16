@@ -14,6 +14,23 @@ label {
   font-size: 13px;
 }
 
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1; /* Normalize Firefox default lower placeholder opacity */
+}
+
 button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_btn) {
   display: inline-flex;
   align-items: center;
@@ -436,11 +453,35 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
   overflow-y: auto;
   overflow-x: hidden;
   margin-bottom: 8px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   outline: none;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
   background-color: #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.web_event_list_container::-webkit-scrollbar,
+.web_event_details_scroll_panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.web_event_list_container::-webkit-scrollbar-track,
+.web_event_details_scroll_panel::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.web_event_list_container::-webkit-scrollbar-thumb,
+.web_event_details_scroll_panel::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.web_event_list_container::-webkit-scrollbar-thumb:hover,
+.web_event_details_scroll_panel::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
 .web_event_list_url {
@@ -509,7 +550,7 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
 .web_event_details {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .web_event_detail_request_heading {
@@ -665,6 +706,10 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
   overflow-y: auto;
   overflow-x: hidden;
   height: 500px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
 }
 
 .web_event_details thead tr {
