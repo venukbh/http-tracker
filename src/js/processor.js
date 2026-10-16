@@ -237,7 +237,50 @@ const eventTracker = (function() {
     getById('preferences').addEventListener('click', function() {
       openAddonOptions();
     });
+    bindInputClearButtons();
     httpTrackerHeaderRules.init();
+  }
+
+  function clearTextInput(target) {
+    const input = typeof target === 'string' ? getById(target) : target;
+    if (!input) {
+      return;
+    }
+    input.value = '';
+    if (input.id === 'filter_web_events') {
+      resetFilter();
+    } else {
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      if (input.id === 'delete_cookies') {
+        const delBtn = getById('delete_cookies_button');
+        if (delBtn) {
+          delBtn.disabled = true;
+        }
+      }
+    }
+    input.focus();
+  }
+
+  function bindInputClearButtons() {
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest?.('.input_clear_btn');
+      if (btn) {
+        e.preventDefault();
+        const targetId = btn.dataset?.clearTarget;
+        const input = targetId ? getById(targetId) : btn.closest('.tracker_input_wrapper')?.querySelector('input[type="text"]');
+        if (input) {
+          clearTextInput(input);
+        }
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && e.target?.matches?.('.tracker_input_wrapper input[type="text"]') && e.target.value) {
+        e.preventDefault();
+        clearTextInput(e.target);
+      }
+    });
   }
 
   const setFindPatterns = debounce(function(event) {
@@ -252,7 +295,13 @@ const eventTracker = (function() {
 
   function toggleCapture() {
     isCapturingEvents = !isCapturingEvents;
-    getById('toggle_track_web_events').textContent = isCapturingEvents ? 'Pause tracker' : 'Resume tracker';
+    const btn = getById('toggle_track_web_events');
+    if (btn) {
+      btn.textContent = isCapturingEvents ? 'Pause tracker' : 'Resume tracker';
+      btn.title = isCapturingEvents
+        ? 'Pause the tracker. When paused, nothing will be tracked.'
+        : 'Resume the tracker to continue capturing HTTP requests.';
+    }
   }
 
   function onCaptureFormDataChange() {
@@ -341,7 +390,6 @@ const eventTracker = (function() {
     const selectedEvent = getSelectedEvent();
     if (selectedEvent) {
       removeEntry(selectedEvent);
-      getById('delete_selected_web_event').disabled = true;
     }
   }
 
