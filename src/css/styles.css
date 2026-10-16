@@ -37,12 +37,13 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
   justify-content: center;
   height: 26px;
   padding: 2px 10px;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
   border-radius: 4px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
-  color: #334155;
+  color: #0f172a;
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
@@ -310,7 +311,25 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
 .checkbox_group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+}
+
+.checkbox_group label,
+.right_pane_trailing_slot label,
+.add_header_apply label {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox_group input[type="checkbox"],
+.right_pane_trailing_slot input[type="checkbox"],
+.add_header_apply input[type="checkbox"] {
+  cursor: pointer;
+  margin: 0;
 }
 
 .right_pane_label {
@@ -404,7 +423,7 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
 .web_event_button_preferences {
   white-space: nowrap;
   background-color: #f8fafc;
-  color: #475569;
+  color: #0f172a;
 }
 
 .web_event_list_blank:hover {
@@ -761,6 +780,16 @@ button:not(.input_clear_btn):not(.col_filter_toggle_btn):not(.col_filter_close_b
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0f172a;
+  user-select: none;
+}
+
+.options_radio_label input[type="radio"] {
+  cursor: pointer;
+  margin: 0;
 }
 
 .options_row {
