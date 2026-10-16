@@ -10,8 +10,9 @@ const httpTrackerDetailsView = (function() {
     return `<tr><td class="web_event_detail_header_key">${escapeHtml(key)}</td><td class="web_event_detail_header_value web_event_style_error">${escapeHtml(message)}</td></tr>`;
   }
 
-  function renderMessageRow(content) {
-    return `<tr style="white-space: pre-wrap; word-break: break-all;"><td colspan="2">${content}</td></tr>`;
+  function renderMessageRow(content, textAlign = 'left') {
+    const alignStyle = textAlign === 'center' ? ' text-align: center;' : '';
+    return `<tr style="white-space: pre-wrap; word-break: break-all;${alignStyle}"><td colspan="2"${alignStyle ? ' style="text-align: center;"' : ''}>${content}</td></tr>`;
   }
 
   function renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern, isError = false) {
@@ -154,6 +155,10 @@ const httpTrackerDetailsView = (function() {
           }
           formData += renderMessageRow(displayContent);
         }
+      } else if (webEventIdRequestForm.error) {
+        formData = renderBannerRow('Body');
+        const errorNotice = `<span class="web_event_style_warning">[⚠️ Body unavailable from browser: ${escapeHtml(webEventIdRequestForm.error)} (e.g. streaming, keepalive, or beacon)]</span>`;
+        formData += renderMessageRow(errorNotice, 'center');
       }
     }
     return formData;
