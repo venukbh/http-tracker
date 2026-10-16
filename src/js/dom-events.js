@@ -31,7 +31,14 @@ LISTENER_CONFIG.forEach(({event, headers}) => {
   webRequest[event].addListener(forwardEvent(event), trackUrls, headers);
 });
 
-// Firefox does not support extraHeaders on onErrorOccurred
-webRequest.onErrorOccurred.addListener(
-    forwardEvent('onErrorOccurred'), trackUrls, httpTracker.isFF ? undefined : errorHeaders,
-);
+// Firefox does not accept a 3rd argument (extraInfoSpec) for onErrorOccurred
+if (httpTracker.isFF) {
+  webRequest.onErrorOccurred.addListener(
+      forwardEvent('onErrorOccurred'), trackUrls,
+  );
+} else {
+  webRequest.onErrorOccurred.addListener(
+      forwardEvent('onErrorOccurred'), trackUrls, errorHeaders,
+  );
+}
+
