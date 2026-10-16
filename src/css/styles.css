@@ -105,6 +105,16 @@ input {
   color: #FF0000;
 }
 
+.web_event_detail_header_value.web_event_style_error {
+  font-weight: 600;
+}
+
+.web_event_style_warning {
+  color: #b45309;
+  font-style: italic;
+  font-weight: 500;
+}
+
 .web_event_list_hide {
   display: none;
 }
