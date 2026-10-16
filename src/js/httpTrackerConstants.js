@@ -18,3 +18,4 @@ const DELIMITER_REQUEST_COOKIE_KEY_NAME = 'Cookie';
 const DELIMITER_RESPONSE_COOKIE = '\n';
 const DELIMITER_RESPONSE_COOKIE_KEY_NAME = 'set-cookie';
 const STRING_ERROR = 'ERR';
+const RFC_HEADER_NAME_REGEX = /^[a-zA-Z0-9!#$%&'*+^_`|~.-]+$/;

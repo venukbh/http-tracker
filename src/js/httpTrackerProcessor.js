@@ -216,7 +216,9 @@ const eventTracker = (function() {
   }
 
   function filterEventList(webEvent) {
-    if (multipleSearchPatterns.length === 0) return;
+    if (multipleSearchPatterns.length === 0) {
+      return;
+    }
     const element = getById(`web_events_list_${webEvent.requestIdEnhanced}`);
     if (element) {
       applyFilterToElement(element);
@@ -268,21 +270,20 @@ const eventTracker = (function() {
 
   function insertResponseHeaders(webEvent) {
     const existing = allResponseHeaders.get(webEvent.requestIdEnhanced);
+    let entry = webEvent;
     if (existing) {
-      const merged = Object.assign({}, existing, webEvent);
+      entry = {...existing, ...webEvent};
       if (!webEvent.responseHeaders && existing.responseHeaders) {
-        merged.responseHeaders = existing.responseHeaders;
+        entry.responseHeaders = existing.responseHeaders;
       }
       if (webEvent.statusCode === undefined && existing.statusCode !== undefined) {
-        merged.statusCode = existing.statusCode;
+        entry.statusCode = existing.statusCode;
       }
       if (webEvent.statusLine === undefined && existing.statusLine !== undefined) {
-        merged.statusLine = existing.statusLine;
+        entry.statusLine = existing.statusLine;
       }
-      allResponseHeaders.set(webEvent.requestIdEnhanced, merged);
-    } else {
-      allResponseHeaders.set(webEvent.requestIdEnhanced, webEvent);
     }
+    allResponseHeaders.set(webEvent.requestIdEnhanced, entry);
   }
 
   function displaySelectedEventDetails(webEvent) {
@@ -301,7 +302,9 @@ const eventTracker = (function() {
    *  build the request container, response container
    */
   function displayEventProperties() {
-    if (!selectedWebEventRequestId) return;
+    if (!selectedWebEventRequestId) {
+      return;
+    }
     const webEventIdRequest = allRequestHeaders.get(selectedWebEventRequestId);
     const webEventIdResponse = allResponseHeaders.get(selectedWebEventRequestId);
     const webEventIdRequestForm = requestFormData.get(selectedWebEventRequestId);
@@ -319,9 +322,11 @@ const eventTracker = (function() {
   }
 
   function deleteCookiesForSelectedDomain() {
-    let domain = getById('delete_cookies').value.trim();
-    if (!domain) return;
-    domain = domain.replace(/^https?:\/\//i, '').split('/')[0];
+    const rawInput = getById('delete_cookies').value.trim();
+    if (!rawInput) {
+      return;
+    }
+    const domain = rawInput.replace(/^https?:\/\//i, '').split('/')[0];
     httpTracker.browser.cookies.getAll({
       domain,
     }).then(removeCookies).catch(onError);
@@ -359,10 +364,11 @@ const eventTracker = (function() {
 
   function maskValue(key, value) {
     if (maskFieldsPattern(key)) {
-      const str = (value !== undefined && value !== null) ? value.toString().trim() : '';
+      const str = value?.toString().trim() ?? '';
       if (str.length > 2) {
         return str.charAt(0) + '*****' + str.charAt(str.length - 1);
-      } else if (str.length > 0) {
+      }
+      if (str.length > 0) {
         return '*****';
       }
     }
@@ -384,7 +390,9 @@ const eventTracker = (function() {
   }
 
   function addMarkTag(text) {
-    if (text === null || text === undefined) return '';
+    if (text === null || text === undefined) {
+      return '';
+    }
     const str = String(text);
     if (!compiledFindPattern) {
       return escapeHtml(str);
@@ -392,16 +400,20 @@ const eventTracker = (function() {
     compiledFindPattern.lastIndex = 0;
     let result = '';
     let lastIndex = 0;
-    let match;
-    while ((match = compiledFindPattern.exec(str)) !== null) {
+    let match = compiledFindPattern.exec(str);
+    while (match !== null) {
       if (match[0].length === 0) {
         compiledFindPattern.lastIndex++;
-        if (match.index >= str.length) break;
+        if (match.index >= str.length) {
+          break;
+        }
+        match = compiledFindPattern.exec(str);
         continue;
       }
       result += escapeHtml(str.slice(lastIndex, match.index));
       result += `<mark>${escapeHtml(match[0])}</mark>`;
       lastIndex = match.index + match[0].length;
+      match = compiledFindPattern.exec(str);
     }
     result += escapeHtml(str.slice(lastIndex));
     return result;
@@ -494,9 +506,7 @@ const eventTracker = (function() {
     });
     if (optimizeResponseCookies) {
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
-        const cookieName = key.split(':', 1)[0];
-        const displayVal = maskValue(cookieName, value.cookieValue);
-        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
+        cookieContent += generateHeaderKeyValueContent(key.split(':', 1)[0], value.cookieValue);
       });
     }
     if (cookieContent) {
@@ -523,8 +533,7 @@ const eventTracker = (function() {
       }
     });
     cookieMap.forEach((value, key) => {
-      const displayVal = maskValue(key, value);
-      cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(key)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
+      cookieContent += generateHeaderKeyValueContent(key, value);
     });
     return cookieContent;
   }
@@ -535,8 +544,7 @@ const eventTracker = (function() {
     cookieList.forEach((cookie) => {
       if (cookie) {
         const cookieDetails = getCookieNameValue(cookie);
-        const displayVal = maskValue(cookieDetails.cookieName, cookieDetails.cookieValue);
-        cookieContent += `${HEADER_CONTENT_KEY}${addMarkTag(cookieDetails.cookieName)}${HEADER_CONTENT_VALUE}${addMarkTag(displayVal)}</td></tr>`;
+        cookieContent += generateHeaderKeyValueContent(cookieDetails.cookieName, cookieDetails.cookieValue);
       }
     });
     return cookieContent;
@@ -566,7 +574,7 @@ const eventTracker = (function() {
     }
     const removedCookies = [];
     for (const cookie of cookies) {
-      const cleanDomain = cookie.domain.replace(/^\./, '');
+      const cleanDomain = cookie.domain?.replace(/^\./, '') ?? '';
       const path = cookie.path?.startsWith('/') ? cookie.path : `/${cookie.path || ''}`;
       const protocol = cookie.secure ? 'https:' : 'http:';
       const cookieUrl = `${protocol}//${cleanDomain}${path}`;
@@ -702,8 +710,8 @@ const eventTracker = (function() {
     getById('add_modify_headers').oninput = debouncedGenerateHeadersToAddOrModify; // either on text change
     getById('find_in_details_pattern').oninput = setFindPatterns;
     getById('delete_cookies_button').onclick = deleteCookiesForSelectedDomain;
-    getById('delete_cookies').oninput = function() {
-      getById('delete_cookies_button').disabled = !this.value.trim();
+    getById('delete_cookies').oninput = function(event) {
+      getById('delete_cookies_button').disabled = !event.target.value.trim();
     };
     getById('preferences').addEventListener('click', function() {
       openAddonOptions();
@@ -716,7 +724,7 @@ const eventTracker = (function() {
     findPatterns = event.target.value.trim();
     try {
       compiledFindPattern = findPatterns ? new RegExp(findPatterns, 'gi') : null;
-    } catch (e) {
+    } catch {
       compiledFindPattern = null;
     }
     displayEventProperties();
@@ -733,7 +741,7 @@ const eventTracker = (function() {
       const urlInput = headerContainer.querySelector('.header_input_url');
 
       const headerName = nameInput.value.trim();
-      const isValidHeaderName = /^[!#$%&'*+\-.^_`|~0-9a-zA-Z]+$/.test(headerName);
+      const isValidHeaderName = RFC_HEADER_NAME_REGEX.test(headerName);
       if (headerName) {
         if (isValidHeaderName &&
           !FORBIDDEN_HEADERS.some((v) => headerName.toLowerCase() === v.toLowerCase()) &&
@@ -765,7 +773,9 @@ const eventTracker = (function() {
       getById('header_url_0').value = '';
       getById('header_apply_0').checked = false;
       const nameLabel = getById('header_details_0')?.querySelector('.add_header_name');
-      if (nameLabel) nameLabel.style.color = '';
+      if (nameLabel) {
+        nameLabel.style.color = '';
+      }
     } else {
       const container = event.target.closest('.single_header_container');
       if (container) {
@@ -936,29 +946,18 @@ const eventTracker = (function() {
     }
   }
 
-  function selectNextEligibleEvent(selectedEvent, key) {
-    if (key === 'ArrowDown') {
-      let nextElement = selectedEvent
-        ? selectedEvent.nextElementSibling
-        : getById('urls_list').firstElementChild;
-      while (nextElement) {
-        if (nextElement.classList.contains('web_event_list_blank') && !nextElement.classList.contains('web_event_list_hide')) {
-          markSelectedRequest(nextElement.id);
-          nextElement.scrollIntoView({block: 'nearest'});
-          break;
-        }
-        nextElement = nextElement.nextElementSibling;
+  function selectNextEligibleEvent(selectedEvent, key) { // NOSONAR javascript:S3776
+    const isDown = key === 'ArrowDown';
+    let current = isDown
+      ? (selectedEvent?.nextElementSibling ?? getById('urls_list')?.firstElementChild)
+      : selectedEvent?.previousElementSibling;
+    while (current) {
+      if (current.classList.contains('web_event_list_blank') && !current.classList.contains('web_event_list_hide')) {
+        markSelectedRequest(current.id);
+        current.scrollIntoView({block: 'nearest'});
+        break;
       }
-    } else if (key === 'ArrowUp') {
-      let previousElement = selectedEvent?.previousElementSibling;
-      while (previousElement) {
-        if (previousElement.classList.contains('web_event_list_blank') && !previousElement.classList.contains('web_event_list_hide')) {
-          markSelectedRequest(previousElement.id);
-          previousElement.scrollIntoView({block: 'nearest'});
-          break;
-        }
-        previousElement = previousElement.previousElementSibling;
-      }
+      current = isDown ? current.nextElementSibling : current.previousElementSibling;
     }
   }
 
@@ -971,7 +970,7 @@ const eventTracker = (function() {
   }
 
   function setEventRowAsSelected(event) {
-    if (event.target?.parentElement.classList.contains('web_event_list_blank')) {
+    if (event.target?.parentElement?.classList.contains('web_event_list_blank')) {
       markSelectedRequest(event.target.parentElement.id);
     }
   }
@@ -990,14 +989,12 @@ const eventTracker = (function() {
     if (filterWithValue) {
       if (filterWithValue.length < 3 || (filterWithValue.includes(DELIMITER_OR) && filterWithValue.includes(DELIMITER_AND))) {
         // invalid search filter text, do nothing
+      } else if (filterWithValue.includes(DELIMITER_AND)) {
+        multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_AND), 2);
+        isANDFilter = true;
       } else {
-        if (filterWithValue.includes(DELIMITER_AND)) {
-          multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_AND), 2);
-          isANDFilter = true;
-        } else {
-          multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_OR), 2);
-          isANDFilter = false;
-        }
+        multipleSearchPatterns = filterWithLength(stringToArray(filterWithValue, DELIMITER_OR), 2);
+        isANDFilter = false;
       }
     }
   }
@@ -1028,12 +1025,12 @@ const eventTracker = (function() {
     updateAllButtons();
     hideOrShowURLList();
     hideOrShowInfoIcons();
-    Promise.resolve(clearAllSessionRules()).then(() => {
+    clearAllSessionRules().then(() => {
       if (blockURLSList?.length) {
         updateBlockSessionRules(blockURLSList);
       }
       generateHeadersToAddOrModify();
-    });
+    }).catch(onError);
   }
 
   function updateInfoIcon(elementId, list) {
@@ -1070,16 +1067,8 @@ const eventTracker = (function() {
   }
 
   function updateButtonDeleteAllFilteredWebEvents() {
-    if (multipleSearchPatterns.length > 0) {
-      const visibleUrlList = getVisibleUrlsList();
-      if (visibleUrlList?.length > 0) {
-        getById('delete_all_filtered_web_events').disabled = false;
-      } else {
-        getById('delete_all_filtered_web_events').disabled = true;
-      }
-    } else {
-      getById('delete_all_filtered_web_events').disabled = true;
-    }
+    const isEnabled = multipleSearchPatterns.length > 0 && (getVisibleUrlsList()?.length > 0);
+    getById('delete_all_filtered_web_events').disabled = !isEnabled;
   }
 
   function updateButtonDeleteSelectedWebEvent() {
@@ -1091,7 +1080,9 @@ const eventTracker = (function() {
 
   function markSelectedRequest(requestId) {
     const element = getById(requestId);
-    if (!element || !element.classList.contains('web_event_list_blank')) return;
+    if (!element?.classList.contains('web_event_list_blank')) {
+      return;
+    }
     getById('web_event_detail_request_head').style.removeProperty('display');
     getById('web_event_detail_response_head').style.removeProperty('display');
     deselectEvent();

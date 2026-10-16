@@ -126,7 +126,7 @@ function focusExistingWindow(addOnWindowDetails) {
 
 // Only register the browser action listener in the background context,
 // not when loaded in extension UI pages (e.g. http-tracker.html).
-const isUiPage = typeof window !== 'undefined' && window.location?.pathname?.includes('/src/html/');
+const isUiPage = globalThis.window?.location?.pathname?.includes('/src/html/');
 if (!isUiPage) {
   httpTracker.browser.action.setTitle({
     'title': getManifestDetails().title,
