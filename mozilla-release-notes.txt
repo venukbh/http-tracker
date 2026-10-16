@@ -1,0 +1,8 @@
+What's new in v3.1.0:
+• In-Table Column Find Filters: Added interactive search and filtering directly inside table column headers (URL, Method, Status, Date time, Cache).
+• Inline Clear Buttons: Clean '✕' button on all text inputs with Escape key keyboard delegation.
+• Error Highlighting: DevTools-style red highlight for HTTP 4xx/5xx responses and blocked network requests.
+• RFC 6265 Cookie Normalization: Improved domain cookie deduplication and reliable domain cookie deletion.
+• Blocked Request Caching: Preserves request metadata (URL, Method, Type, Initiator) even when requests are blocked early by DNR rules or ad-blockers.
+• Modular Architecture & Native Templates: Decomposed into clean ES modules using HTML5 templates for faster rendering and zero DOM re-parsing overhead.
+• Performance & Accessibility: Replaced live DOM collection thrashing with static snapshot iteration, added accessible landmarks, and improved contrast.

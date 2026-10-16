@@ -1,0 +1,1 @@
+Monitor browser network traffic across all tabs in a single window. Inspect HTTP request/response headers and cookies, filter in real time with column search, block URLs, and dynamically modify outgoing headers.

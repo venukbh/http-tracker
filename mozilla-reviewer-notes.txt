@@ -1,0 +1,15 @@
+1. Automated Linter Warning (innerHTML in src/js/details-view.js, lines 48 & 53):
+All dynamic data rendered into the details view is strictly sanitized before DOM insertion:
+- Header names and values pass through escapeHtml() (in src/js/utils.js) or addMarkTag() (which escapes all text before adding safe <mark> tags).
+- Request payloads pass through TextDecoder and escapeHtml().
+- No unsanitized user or network data is ever assigned to innerHTML.
+- (A pure DOM refactor using replaceChildren is scheduled for v3.1.1).
+
+2. Testing:
+- No account or credentials are required.
+- Click the toolbar icon or press Ctrl/Cmd + Shift + 1 to open the tracker window.
+- Browse any website in other tabs to view live captured requests, apply column header filters, or test header modification rules.
+
+3. Architecture & Privacy:
+- Zero build tools or minification: Pure vanilla JavaScript with ES modules.
+- 100% local & privacy-first: Network traffic is held strictly in-memory during the session and is never stored on disk or transmitted to any third party or developer.
