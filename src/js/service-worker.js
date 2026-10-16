@@ -1,8 +1,10 @@
-importScripts(
-    '/src/js/constants.js',
-    '/src/js/utils.js',
-    '/src/js/open.js',
-);
+if (typeof importScripts === 'function') {
+  importScripts(
+      '/src/js/constants.js',
+      '/src/js/utils.js',
+      '/src/js/open.js',
+  );
+}
 
 const connectedTrackerPorts = new Set();
 const clearRules = () => clearAllSessionRules().catch(onError);
