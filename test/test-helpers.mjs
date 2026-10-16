@@ -90,6 +90,7 @@ export function createTestContext(customGlobals = {}) {
   const mockDocument = {
     getElementById: (id) => getOrCreateElement(id),
     getElementsByClassName: (cls) => [],
+    querySelectorAll: (sel) => [],
     ...customGlobals.document,
   };
 
