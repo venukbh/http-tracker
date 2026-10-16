@@ -541,9 +541,6 @@ function matchesColumnFilters(elementOrData, filters) {
     const s = status.toLowerCase();
     if (q === 'error') {
       if (!isError && s !== 'error' && !(Number(s) >= 400)) return false;
-    } else if (q.endsWith('xx')) {
-      const prefix = q[0];
-      if (!s.startsWith(prefix)) return false;
     } else if (q.includes('|')) {
       const tokens = stringToArray(q, '|').map((t) => t.toLowerCase());
       const matched = tokens.some((t) => {
@@ -552,6 +549,9 @@ function matchesColumnFilters(elementOrData, filters) {
         return s.includes(t);
       });
       if (!matched) return false;
+    } else if (q.endsWith('xx')) {
+      const prefix = q[0];
+      if (!s.startsWith(prefix)) return false;
     } else {
       if (!s.includes(q)) return false;
     }

@@ -220,6 +220,149 @@ describe('DNR Session Rules Unit Tests', () => {
     });
   });
 
+  describe('UI Header Rules Synchronization & Validation (httpTrackerHeaderRules)', () => {
+    function setupHeaderRuleDOM(domElements, customGlobals) {
+      const banner = { textContent: 'Modify headers' };
+      domElements.set('add_modify_headers_banner', banner);
+
+      const name0 = { value: '', style: {}, classList: new Set(), focus: () => {} };
+      name0.classList.add = (c) => name0.classList[c] = true;
+      name0.classList.remove = (c) => delete name0.classList[c];
+      const val0 = { value: '' };
+      const url0 = { value: '' };
+      const apply0 = { checked: true };
+      const label0 = { style: {} };
+
+      const container0 = {
+        querySelector: (sel) => {
+          if (sel === '.header_input_name') return name0;
+          if (sel === '.header_input_value') return val0;
+          if (sel === '.header_input_url') return url0;
+          if (sel === '.header_input_apply') return apply0;
+          if (sel === '.add_header_name') return label0;
+          return null;
+        },
+      };
+
+      const containerList = [container0];
+      return { banner, name0, val0, url0, apply0, label0, containerList };
+    }
+
+    it('synchronizes valid UI header rules to DNR and updates banner count', async () => {
+      const { context, sessionRulesStore, domElements } = createTestContext({
+        document: {
+          getElementsByClassName: (cls) => cls === 'single_header_container' ? dom.containerList : [],
+        },
+      });
+      const dom = setupHeaderRuleDOM(domElements);
+
+      dom.name0.value = 'X-API-Key';
+      dom.val0.value = 'secret-999';
+      dom.url0.value = 'api.github.com';
+      dom.apply0.checked = true;
+
+      context.httpTrackerHeaderRules.syncHeaderRulesFromUI();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      assert.equal(sessionRulesStore.length, 1);
+      assert.equal(sessionRulesStore[0].action.requestHeaders[0].header, 'X-API-Key');
+      assert.equal(sessionRulesStore[0].action.requestHeaders[0].value, 'secret-999');
+      assert.equal(sessionRulesStore[0].condition.urlFilter, '*api.github.com*');
+      assert.equal(dom.banner.textContent, 'Modify headers (1)');
+    });
+
+    it('marks invalid or forbidden headers with invalid styling and excludes them from DNR', async () => {
+      const { context, sessionRulesStore, domElements } = createTestContext({
+        document: {
+          getElementsByClassName: (cls) => cls === 'single_header_container' ? dom.containerList : [],
+        },
+      });
+      const dom = setupHeaderRuleDOM(domElements);
+
+      // 1. Forbidden header: Connection
+      dom.name0.value = 'Connection';
+      dom.val0.value = 'close';
+      dom.apply0.checked = true;
+
+      context.httpTrackerHeaderRules.syncHeaderRulesFromUI();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      assert.equal(sessionRulesStore.length, 0);
+      assert.equal(dom.name0.style.borderColor, '#e53e3e');
+      assert.equal(dom.label0.style.color, 'red');
+
+      // 2. Forbidden prefix: Sec-
+      dom.name0.value = 'Sec-Fetch-Dest';
+      context.httpTrackerHeaderRules.syncHeaderRulesFromUI();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      assert.equal(sessionRulesStore.length, 0);
+      assert.equal(dom.name0.style.borderColor, '#e53e3e');
+
+      // 3. Invalid RFC characters (spaces)
+      dom.name0.value = 'Bad Header Name';
+      context.httpTrackerHeaderRules.syncHeaderRulesFromUI();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      assert.equal(sessionRulesStore.length, 0);
+      assert.equal(dom.name0.style.borderColor, '#e53e3e');
+    });
+
+    it('does not send rules to DNR when apply checkbox is unchecked', async () => {
+      const { context, sessionRulesStore, domElements } = createTestContext({
+        document: {
+          getElementsByClassName: (cls) => cls === 'single_header_container' ? dom.containerList : [],
+        },
+      });
+      const dom = setupHeaderRuleDOM(domElements);
+
+      dom.name0.value = 'X-Custom-Header';
+      dom.val0.value = 'valid-val';
+      dom.apply0.checked = false; // Unchecked
+
+      context.httpTrackerHeaderRules.syncHeaderRulesFromUI();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      assert.equal(sessionRulesStore.length, 0);
+      assert.equal(dom.banner.textContent, 'Modify headers (0)');
+    });
+
+    it('clears inputs and unchecks apply when removing row 0 without deleting element', () => {
+      const { context } = createTestContext();
+      const name0 = globalThis.document.getElementById('header_name_0');
+      const val0 = globalThis.document.getElementById('header_value_0');
+      const url0 = globalThis.document.getElementById('header_url_0');
+      const apply0 = globalThis.document.getElementById('header_apply_0');
+
+      name0.value = 'X-Existing';
+      val0.value = 'existing-val';
+      url0.value = 'existing.com';
+      apply0.checked = true;
+
+      context.httpTrackerHeaderRules.removeHeaderRow({ target: { dataset: { headerIndex: '0' } } });
+
+      assert.equal(name0.value, '');
+      assert.equal(val0.value, '');
+      assert.equal(url0.value, '');
+      assert.equal(apply0.checked, false);
+    });
+
+    it('removes container from DOM when removing dynamic row with index > 0', () => {
+      const { context } = createTestContext();
+      let removed = false;
+      const fakeContainer = {
+        remove: () => { removed = true; },
+      };
+      const fakeTarget = {
+        dataset: { headerIndex: '1' },
+        closest: (sel) => sel === '.single_header_container' ? fakeContainer : null,
+      };
+
+      context.httpTrackerHeaderRules.removeHeaderRow({ target: fakeTarget });
+      assert.equal(removed, true);
+    });
+  });
+
   describe('Version Parity Verification', () => {
     it('ensures package.json and manifest.json versions are strictly identical', async () => {
       const fs = await import('node:fs');

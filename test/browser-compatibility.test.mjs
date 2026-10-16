@@ -3,82 +3,60 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
+import { runDomEventsInBrowser, createTestContext } from './test-helpers.mjs';
 
 describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () => {
-  describe('Firefox vs Chrome WebRequest Listener Arguments', () => {
-    function simulateListenerSetup(isFirefox) {
-      const calls = {};
-      const fakeWebRequest = {
-        onBeforeRequest: { addListener: (...args) => { calls.onBeforeRequest = args; } },
-        onBeforeSendHeaders: { addListener: (...args) => { calls.onBeforeSendHeaders = args; } },
-        onSendHeaders: { addListener: (...args) => { calls.onSendHeaders = args; } },
-        onHeadersReceived: { addListener: (...args) => { calls.onHeadersReceived = args; } },
-        onAuthRequired: { addListener: (...args) => { calls.onAuthRequired = args; } },
-        onBeforeRedirect: { addListener: (...args) => { calls.onBeforeRedirect = args; } },
-        onResponseStarted: { addListener: (...args) => { calls.onResponseStarted = args; } },
-        onCompleted: { addListener: (...args) => { calls.onCompleted = args; } },
-        onErrorOccurred: { addListener: (...args) => { calls.onErrorOccurred = args; } },
-      };
-
-      const trackUrls = { urls: ['<all_urls>'] };
-      const reqBodyHeaders = isFirefox ? ['requestBody'] : ['requestBody', 'extraHeaders'];
-      const reqHeaders = isFirefox ? ['requestHeaders'] : ['requestHeaders', 'extraHeaders'];
-      const resHeaders = isFirefox ? ['responseHeaders'] : ['responseHeaders', 'extraHeaders'];
-      const errorHeaders = ['extraHeaders'];
-
-      const LISTENER_CONFIG = [
-        { event: 'onBeforeRequest', headers: reqBodyHeaders },
-        { event: 'onBeforeSendHeaders', headers: reqHeaders },
-        { event: 'onSendHeaders', headers: reqHeaders },
-        { event: 'onHeadersReceived', headers: resHeaders },
-        { event: 'onAuthRequired', headers: resHeaders },
-        { event: 'onBeforeRedirect', headers: resHeaders },
-        { event: 'onResponseStarted', headers: resHeaders },
-        { event: 'onCompleted', headers: resHeaders },
-      ];
-
-      function forwardEvent(eventName) {
-        return function(details) { return eventName; };
-      }
-
-      LISTENER_CONFIG.forEach(({ event, headers }) => {
-        fakeWebRequest[event].addListener(forwardEvent(event), trackUrls, headers);
-      });
-
-      if (isFirefox) {
-        fakeWebRequest.onErrorOccurred.addListener(forwardEvent('onErrorOccurred'), trackUrls);
-      } else {
-        fakeWebRequest.onErrorOccurred.addListener(forwardEvent('onErrorOccurred'), trackUrls, errorHeaders);
-      }
-
-      return calls;
-    }
-
-    it('passes strictly 2 arguments to onErrorOccurred in Firefox to conform to Firefox schema', () => {
-      const calls = simulateListenerSetup(true);
+  describe('Firefox vs Chrome WebRequest Listener Arguments (Real dom-events.js Execution)', () => {
+    it('executes actual dom-events.js in Firefox mode: strictly 2 arguments to onErrorOccurred and no extraHeaders', () => {
+      const calls = runDomEventsInBrowser(true);
       assert.equal(calls.onErrorOccurred.length, 2, 'Firefox onErrorOccurred must have exactly 2 arguments');
       assert.equal(typeof calls.onErrorOccurred[0], 'function');
       assert.deepEqual(calls.onErrorOccurred[1], { urls: ['<all_urls>'] });
-    });
-
-    it('omits extraHeaders in Firefox for all header listeners', () => {
-      const calls = simulateListenerSetup(true);
       assert.deepEqual(calls.onBeforeRequest[2], ['requestBody']);
       assert.deepEqual(calls.onBeforeSendHeaders[2], ['requestHeaders']);
       assert.deepEqual(calls.onHeadersReceived[2], ['responseHeaders']);
     });
 
-    it('passes 3 arguments including extraHeaders to onErrorOccurred in Chrome', () => {
-      const calls = simulateListenerSetup(false);
+    it('executes actual dom-events.js in Chrome mode: 3 arguments including extraHeaders for all listeners', () => {
+      const calls = runDomEventsInBrowser(false);
       assert.equal(calls.onErrorOccurred.length, 3, 'Chrome onErrorOccurred accepts 3 arguments');
       assert.deepEqual(calls.onErrorOccurred[2], ['extraHeaders']);
-    });
-
-    it('includes extraHeaders in Chrome for high-fidelity header interception', () => {
-      const calls = simulateListenerSetup(false);
       assert.deepEqual(calls.onBeforeRequest[2], ['requestBody', 'extraHeaders']);
       assert.deepEqual(calls.onBeforeSendHeaders[2], ['requestHeaders', 'extraHeaders']);
       assert.deepEqual(calls.onHeadersReceived[2], ['responseHeaders', 'extraHeaders']);
+    });
+  });
+
+  describe('Cross-Browser Cookie Removal (Chrome partitionKey vs Firefox firstPartyDomain)', () => {
+    it('passes Chrome CHIPS partitionKey when removing partitioned cookies', async () => {
+      const { context, mockBrowser } = createTestContext();
+      context.removeCookies([
+        {
+          name: 'chips_session',
+          domain: 'example.com',
+          path: '/',
+          secure: true,
+          partitionKey: { topLevelSite: 'https://parent.example' },
+        },
+      ]);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      assert.equal(mockBrowser.cookies.removed.length, 1);
+      assert.deepEqual(mockBrowser.cookies.removed[0].partitionKey, { topLevelSite: 'https://parent.example' });
+    });
+
+    it('passes Firefox firstPartyDomain when removing container/isolated cookies', async () => {
+      const { context, mockBrowser } = createTestContext();
+      context.removeCookies([
+        {
+          name: 'ff_isolated_cookie',
+          domain: 'tracker.com',
+          path: '/',
+          firstPartyDomain: 'example.org',
+        },
+      ]);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      assert.equal(mockBrowser.cookies.removed.length, 1);
+      assert.equal(mockBrowser.cookies.removed[0].firstPartyDomain, 'example.org');
     });
   });
 

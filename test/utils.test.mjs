@@ -221,7 +221,19 @@ describe('httpTrackerUtils Unit Tests', () => {
     it('handles cookie with no extra attributes', () => {
       const parsed = context.getCookieNameValue('user=john');
       assert.equal(parsed.cookieName, 'user');
-      assert.equal(parsed.cookieValue, 'user=john'.substring(5));
+      assert.equal(parsed.cookieValue, 'john');
+    });
+
+    it('handles cookies with multiple equal signs in the value', () => {
+      const parsed = context.getCookieNameValue('jwt=eyJhbGciOi===; Domain=auth.io; Path=/');
+      assert.equal(parsed.cookieName, 'jwt');
+      assert.equal(parsed.cookieValue.startsWith('eyJhbGciOi==='), true);
+      assert.equal(parsed.domain, 'auth.io');
+    });
+
+    it('handles malformed cookies without equal signs gracefully', () => {
+      const parsed = context.getCookieNameValue('malformed_cookie_no_equals');
+      assert.deepEqual(parsed, {});
     });
   });
 
@@ -246,6 +258,15 @@ describe('httpTrackerUtils Unit Tests', () => {
       assert.equal(removed.name, 'auth');
       assert.equal(removed.storeId, 'store_1');
       assert.deepEqual(removed.partitionKey, { topLevelSite: 'https://example.com' });
+    });
+
+    it('handles null, undefined, or empty cookie arrays gracefully', () => {
+      const { context: localCtx } = createTestContext();
+      assert.doesNotThrow(() => {
+        localCtx.removeCookies(null);
+        localCtx.removeCookies(undefined);
+        localCtx.removeCookies([]);
+      });
     });
   });
 
