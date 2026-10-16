@@ -99,19 +99,27 @@ const eventTracker = (function() {
     cacheDiv.id = `web_event_cache_${webEvent.requestIdEnhanced}`;
     cacheDiv.className = 'web_event_list_cache';
     cacheDiv.textContent = webEvent.fromCache ?? 'N/A';
+
+    if (webEvent.callerName === 'onErrorOccurred' || webEvent.error || (webEvent.statusCode && Number(webEvent.statusCode) >= 400)) {
+      row.classList.add('web_event_style_error');
+    }
   }
 
   function updateEventRow(webEvent) {
     const listEl = getById(`web_events_list_${webEvent.requestIdEnhanced}`);
     const statusEl = getById(`web_event_status_${webEvent.requestIdEnhanced}`);
     const cacheEl = getById(`web_event_cache_${webEvent.requestIdEnhanced}`);
-    if (webEvent.callerName === 'onErrorOccurred') {
+    if (webEvent.callerName === 'onErrorOccurred' || webEvent.error) {
       listEl?.classList.add('web_event_style_error');
       if (statusEl) {
         statusEl.textContent = STRING_ERROR;
       }
     } else if (webEvent.statusCode) {
-      listEl?.classList.remove('web_event_style_error');
+      if (Number(webEvent.statusCode) >= 400) {
+        listEl?.classList.add('web_event_style_error');
+      } else {
+        listEl?.classList.remove('web_event_style_error');
+      }
       if (statusEl) {
         statusEl.textContent = webEvent.statusCode;
       }
