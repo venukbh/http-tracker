@@ -389,6 +389,8 @@ label {
   background: #DCDCDC;
   border: 1px solid black;
   width: 50%;
+  font-weight: bold;
+  font-size: 13px;
 }
 
 .web_event_detail_response_heading {
@@ -397,6 +399,8 @@ label {
   border-top: 1px solid black;
   border-right: 1px solid black;
   border-bottom: 1px solid black;
+  font-weight: bold;
+  font-size: 13px;
 }
 
 .web_event_response_header_details {
@@ -417,6 +421,7 @@ label {
   background-color: #DCDCDC;
   overflow: hidden;
   font-weight: bold;
+  font-size: 13px;
   height: 28px;
   line-height: 28px;
 }
@@ -426,6 +431,8 @@ label {
   height: 28px;
   line-height: normal;
   box-sizing: border-box;
+  font-weight: bold;
+  font-size: 13px;
 }
 
 .col_header_cell.has_active_filter {
@@ -444,7 +451,8 @@ label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-family: inherit;
+  font-size: 13px;
   font-weight: bold;
   flex: 1;
   text-align: inherit;
