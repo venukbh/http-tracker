@@ -2,7 +2,7 @@
 
 From the captured data, you can filter requests to view based on various attributes, clear all captured data, compare with previous/different requests, single page to see all the traffic in a centralized place instead of each tab.
 
-✏️ Add/modify the request headers before sending the request — for all requests, a domain, or a single URL.
+✏️ Add/modify the request headers before sending the request — for all requests, a domain, or a single URL (supports Cookie, Referer, Origin, Host, and custom headers).
 🍪 Delete all cookies for the selected domain, or for a domain of your choice.
 
 ✨ Features:
@@ -12,6 +12,7 @@ From the captured data, you can filter requests to view based on various attribu
         ✅ Capture only required URLs containing particular pattern(s)
         🚫 Exclude all unwanted URLs containing particular pattern(s)
         🛑 Block request URLs containing particular pattern(s) to simulate a 404 behavior
+        🛡️ Retain metadata for blocked requests — Preserves Method, URL, and Initiator even when requests are blocked early by ad-blockers or rules
         🎭 Mask data in form fields containing particular pattern(s)
         🔍 Filter URLs to display and analyze
         🗑️ Delete complete captured data
@@ -20,14 +21,14 @@ From the captured data, you can filter requests to view based on various attribu
         🔄 Compare request and responses between sessions and incognito (requires incognito access)
         📋 Capture form data only if needed
         💾 Use preferences page to store settings in the browser storage to avoid repeated entry of patterns
-        🌗 Dark mode support — Light / Dark / System default theme selector
-        🔒 High security
-        ⚡ High performance
+        ⚡ Template-driven UI — Ultra-fast rendering with native browser HTML templates
         💡 Tooltips on the page to give an understanding of each UI element
         ⏸️ Pause and resume the tracker
         ✏️ Add or modify request headers before sending requests
-        🍪 Delete all cookies for a domain (either selected event or manually)
-        🔎 Find text in details with text highlighting
+        🍪 Delete all cookies for a domain (either selected event or manually) with RFC 6265 domain normalization
+        🔎 Find text in details with regex search and text highlighting
+        🔒 High security
+        ⚡ High performance
 
 🔒 Security:
         🎭 Mask form field data like usernames, passwords, etc., providing high security

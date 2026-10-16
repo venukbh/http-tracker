@@ -22,13 +22,27 @@ Unlike the built-in DevTools, HTTP-TRACKER aggregates requests from **all open t
 
 ---
 
+## 🆕 What's New in v3.1.0
+
+- ⚡ **HTML `<template>` Engine**: Native browser template cloning for near-instant DOM instantiation, avoiding string parsing overhead.
+- 🛡️ **Blocked Request Metadata Inspection**: Retains and displays Method, URL, and Initiator even when requests are blocked early by ad-blockers or rules (`ERR_BLOCKED_BY_CLIENT`).
+- ✏️ **Expanded Header Injection**: Full support for overriding `Cookie`, `Referer`, `Origin`, and `Host` headers via DeclarativeNetRequest session rules.
+- 🍪 **RFC 6265 Cookie Normalization**: Correct domain cookie deduplication and safe deletion handling leading dot differences (`.domain.com` vs `domain.com`).
+- 🧪 **106 Automated Unit & Integration Tests**: Comprehensive zero-dependency test runner suite (`node:test`) covering pure algorithms, filtering, masking, real payload playback, and cross-browser Chrome/Firefox compatibility.
+- 🚀 **Automated GitHub Actions CI/CD**: Automatic testing on pull requests and automated release packaging with `.DS_Store` elimination.
+
+---
+
 ## ✨ Features
 
 ### 🔍 Network Tracking
 
-- 📡 Tracks **all HTTP/HTTPS requests** across all tabs and windows in real time
-- 🕵️ Supports **private/incognito window** tracking when permission is enabled
-- ⚡ Fully **async and non-blocking** — zero added latency to your actual requests
+- 📡 Tracks **all network traffic** across all tabs, all windows, and background contexts in real time
+- 🌐 Covers **HTTP, HTTPS**, and **WebSocket (`ws://`, `wss://`)** connections
+- 📦 Intercepts all resource types: **Fetch API, XHR, Scripts, Stylesheets, Images, Fonts, Media, Iframes, and Beacons (`navigator.sendBeacon`)**
+- 🔄 **Full lifecycle tracking from request to response** (capturing request headers, payload bodies, response headers, cookies, redirects, and blocked/failed requests)
+- 🕵️ Supports **private/incognito window** tracking when extension permission is granted
+- ⚡ Fully **async and non-blocking** — zero added latency to your browsing
 
 ### 🎯 Filtering & Pattern Matching
 
@@ -104,59 +118,10 @@ Unlike the built-in DevTools, HTTP-TRACKER aggregates requests from **all open t
 
 ---
 
-## 🛠️ Development & Release Process
+## 📚 Documentation & Guides
 
-HTTP-TRACKER uses a zero-build vanilla architecture. The browser directly runs the modular ES6 files from `src/` without transpilers or bundlers.
-
-### 🧪 Running Tests & Quality Checks
-
-```bash
-# Run the automated unit and integration test suite (99 tests)
-npm test
-
-# Run ESLint code checks
-npm run lint
-```
-
-### 🏷️ Setting Version in Lockstep
-
-To keep `package.json` and `manifest.json` in 100% parallel sync without unwanted auto-increments during development, set the version explicitly whenever you are ready to ship:
-
-```bash
-# Sets the exact version in both package.json and manifest.json
-npm run set-version 3.1.0
-```
-
-> **Safety Guard**: Both `npm test` and `npm run package` will prevent building or packaging if `manifest.json` and `package.json` versions ever drift.
-
-### 📦 Packaging for Web Stores (Chrome & Firefox)
-
-```bash
-# Preview files to be bundled (excluding .DS_Store and development files)
-npm run package:dry-run
-
-# Create a clean release zip (e.g. archives/http-tracker-3.1.0.zip)
-npm run package
-
-# Verify zip archive contents
-npm run package:verify
-```
-
-### 🚀 Releasing via GitHub Actions
-
-Whenever a version tag is pushed, GitHub Actions automatically verifies all 99 tests, packages the extension, and publishes a GitHub Release with the downloadable `.zip` attached:
-
-```bash
-# 1. Update version across both files
-npm run set-version 3.1.0
-
-# 2. Commit and tag
-git commit -am "chore: release v3.1.0"
-git tag v3.1.0
-
-# 3. Push commit and tag to trigger GitHub Actions release
-git push origin <branch> --tags
-```
+- 🛠️ [Development & Release Guide](RELEASING.md) — Running tests, dual-browser packaging, and publishing.
+- 📝 [Technical Notes & Browser Quirks](NOTES.md) — Architectural notes, Chromium streaming limitations, cross-browser compatibility, and font rendering.
 
 ---
 
