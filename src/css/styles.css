@@ -275,7 +275,61 @@ input {
 }
 
 .options_wrapper {
-  margin: 2% 2% 2% 2%;
-  height: 100%;
-  border: dashed;
+  margin: 20px auto;
+  max-width: 800px;
+  padding: 20px;
+  border: 1px dashed #94a3b8;
+  border-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.options_fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.options_legend {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.options_radio_group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.options_radio_label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.options_row {
+  margin-bottom: 14px;
+}
+
+.options_label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.options_textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.options_textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
