@@ -11,11 +11,13 @@ if (manifestJson.version !== packageJson.version) {
   process.exit(1);
 }
 
-// 2. Prevent overwriting already tagged versions
+// 2. Prevent overwriting already tagged past versions
 try {
-  const tags = execSync('git tag', { encoding: 'utf8' }).trim().split('\n');
-  if (tags.includes(`v${manifestJson.version}`)) {
-    console.error(`\x1b[31mERROR: v${manifestJson.version} is already tagged in git. Bump version with npm run set-version <ver> before packaging.\x1b[0m`);
+  const currentTagsAtHead = execSync('git tag --points-at HEAD', { encoding: 'utf8' }).trim().split('\n');
+  const allTags = execSync('git tag', { encoding: 'utf8' }).trim().split('\n');
+  const targetTag = `v${manifestJson.version}`;
+  if (!process.env.CI && allTags.includes(targetTag) && !currentTagsAtHead.includes(targetTag)) {
+    console.error(`\x1b[31mERROR: ${targetTag} is an older tag in git. Bump version with npm run set-version <ver> before packaging.\x1b[0m`);
     process.exit(1);
   }
 } catch (e) {
