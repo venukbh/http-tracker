@@ -1,15 +1,16 @@
 <div align="center">
-
-# <img src="src/assets/icon_128px.png" width="20" alt="HTTP-TRACKER Icon"> HTTP-TRACKER
-
-**A powerful browser extension that brings your network traffic into one central place — across all tabs, all windows, even incognito.**
-
-[![Version](https://img.shields.io/badge/version-3.1.0-blue?style=for-the-badge)](https://github.com/venukbh/http-tracker/releases)
-[![Manifest](https://img.shields.io/badge/Manifest-V3-green?style=for-the-badge)](https://developer.chrome.com/docs/extensions/mv3/intro/)
-[![License](https://img.shields.io/badge/license-MIT-orange?style=for-the-badge)](LICENSE)
-[![Chrome](https://img.shields.io/badge/Chrome-Extension-yellow?style=for-the-badge&logo=google-chrome)](https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi)
-[![Firefox](https://img.shields.io/badge/Firefox-Add--on-red?style=for-the-badge&logo=firefox)](https://addons.mozilla.org/en-US/firefox/addon/http-tracker/)
-
+  <p>
+    <img src="src/assets/icon_128px.png" width="48" height="48" alt="HTTP-TRACKER Icon" style="vertical-align: middle;">
+  </p>
+  <h1>HTTP-TRACKER</h1>
+  <p><strong>A powerful browser extension that brings your network traffic into one central place — across all tabs, all windows, even incognito.</strong></p>
+  <p>
+    <a href="https://github.com/venukbh/http-tracker/releases"><img src="https://img.shields.io/badge/version-3.2.0-blue?style=for-the-badge" alt="Version"></a>
+    <a href="https://developer.chrome.com/docs/extensions/mv3/intro/"><img src="https://img.shields.io/badge/Manifest-V3-green?style=for-the-badge" alt="Manifest V3"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-orange?style=for-the-badge" alt="License"></a>
+    <a href="https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi"><img src="https://img.shields.io/badge/Chrome-Extension-yellow?style=for-the-badge&logo=google-chrome" alt="Chrome Extension"></a>
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/http-tracker/"><img src="https://img.shields.io/badge/Firefox-Add--on-red?style=for-the-badge&logo=firefox" alt="Firefox Add-on"></a>
+  </p>
 </div>
 
 ---
@@ -132,9 +133,6 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 <div align="center">
-
-Made with ❤️ for developers who live in the network tab.
-
-⭐ If you find this useful, please star the repo and leave a review!
-
+  <p>Made with ❤️ for developers who live in the network tab.</p>
+  <p>⭐ If you find this useful, please star the repo and leave a review!</p>
 </div>
