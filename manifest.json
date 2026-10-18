@@ -17,7 +17,7 @@
   "host_permissions": [
     "<all_urls>"
   ],
-  "version": "3.1.0",
+  "version": "3.2.0",
   "action": {
     "default_icon": {
       "16": "/src/assets/icon_320px.png",
