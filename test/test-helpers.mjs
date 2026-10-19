@@ -14,7 +14,7 @@ export function createTestContext(customGlobals = {}) {
     runtime: {
       getURL: (path = '') => `chrome-extension://mock-id/${path.replace(/^\//, '')}`,
       getManifest: () => ({
-        version: '3.1.0',
+        version: '3.2.0',
         action: { default_title: 'HTTP-TRACKER' },
       }),
       lastError: null,
@@ -77,41 +77,115 @@ export function createTestContext(customGlobals = {}) {
     },
   };
 
+  function serializeDomNode(node) {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    if (node.nodeType === 3 || (!node.tagName && node.textContent !== undefined)) {
+      return node.textContent || '';
+    }
+    const tag = (node.tagName || 'DIV').toLowerCase();
+    let attrs = '';
+    const classNames = [];
+    if (node.className) classNames.push(node.className);
+    if (node._classListSet) classNames.push(...node._classListSet);
+    const uniqueClasses = [...new Set(classNames.join(' ').trim().split(/\s+/).filter(Boolean))].join(' ');
+    if (uniqueClasses) {
+      attrs += ` class="${uniqueClasses}"`;
+    }
+    if (node.id) attrs += ` id="${node.id}"`;
+    if (node.colSpan) attrs += ` colspan="${node.colSpan}"`;
+    if (node.style && typeof node.style === 'object') {
+      const entries = Object.entries(node.style);
+      if (entries.length > 0) {
+        const styleStr = entries.map(([k, v]) => {
+          const cssK = k.replace(/([A-Z])/g, '-$1').toLowerCase();
+          return `${cssK}: ${v};`;
+        }).join(' ');
+        attrs += ` style="${styleStr}"`;
+      }
+    }
+    let inner = '';
+    if (node.children && node.children.length > 0) {
+      inner = node.children.map(serializeDomNode).join('');
+    } else if (node.textContent) {
+      inner = node.textContent;
+    } else if (node._rawInnerHTML) {
+      inner = node._rawInnerHTML;
+    }
+    return `<${tag}${attrs}>${inner}</${tag}>`;
+  }
+
+  const createMockElement = (tag = 'DIV', id = '') => {
+    const classSet = new Set();
+    const el = {
+      tagName: tag.toUpperCase(),
+      id,
+      className: '',
+      colSpan: undefined,
+      value: '',
+      checked: false,
+      disabled: false,
+      style: {},
+      dataset: {},
+      children: [],
+      parentElement: null,
+      _classListSet: classSet,
+      _rawInnerHTML: '',
+      _textContent: '',
+      get innerHTML() {
+        if (this.children && this.children.length > 0) {
+          return this.children.map(serializeDomNode).join('');
+        }
+        return this._rawInnerHTML || '';
+      },
+      set innerHTML(val) {
+        this._rawInnerHTML = String(val);
+        this.children = [];
+      },
+      get textContent() {
+        if (this.children && this.children.length > 0) {
+          return this.children.map((c) => (c ? (c.textContent || '') : '')).join('');
+        }
+        return this._textContent || '';
+      },
+      set textContent(val) {
+        this._textContent = String(val);
+        this._rawInnerHTML = '';
+        this.children = [];
+      },
+      classList: {
+        add: (cls) => classSet.add(cls),
+        remove: (cls) => classSet.delete(cls),
+        toggle: (cls, force) => {
+          if (force === undefined) {
+            if (classSet.has(cls)) { classSet.delete(cls); return false; }
+            classSet.add(cls); return true;
+          }
+          if (force) { classSet.add(cls); return true; }
+          classSet.delete(cls); return false;
+        },
+        contains: (cls) => classSet.has(cls),
+      },
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      replaceChildren: function(...args) {
+        this.children = args;
+        this._rawInnerHTML = '';
+        this._textContent = '';
+      },
+      appendChild: function(child) {
+        this.children.push(child);
+        return child;
+      },
+      remove: () => {},
+    };
+    return el;
+  };
+
   const domElements = new Map();
   const getOrCreateElement = (id) => {
     if (!domElements.has(id)) {
-      const classSet = new Set();
-      const el = {
-        id,
-        innerHTML: '',
-        textContent: '',
-        value: '',
-        checked: false,
-        disabled: false,
-        style: {},
-        dataset: {},
-        children: [],
-        parentElement: null,
-        classList: {
-          add: (cls) => classSet.add(cls),
-          remove: (cls) => classSet.delete(cls),
-          toggle: (cls, force) => {
-            if (force === undefined) {
-              if (classSet.has(cls)) { classSet.delete(cls); return false; }
-              classSet.add(cls); return true;
-            }
-            if (force) { classSet.add(cls); return true; }
-            classSet.delete(cls); return false;
-          },
-          contains: (cls) => classSet.has(cls),
-        },
-        querySelector: () => null,
-        querySelectorAll: () => [],
-        replaceChildren: (...args) => { el.children = args; },
-        appendChild: (child) => { el.children.push(child); return child; },
-        remove: () => {},
-      };
-      domElements.set(id, el);
+      domElements.set(id, createMockElement('DIV', id));
     }
     return domElements.get(id);
   };
@@ -120,32 +194,8 @@ export function createTestContext(customGlobals = {}) {
     getElementById: (id) => getOrCreateElement(id),
     getElementsByClassName: (cls) => [],
     querySelectorAll: (sel) => [],
-    createElement: (tag) => {
-      const classSet = new Set();
-      return {
-        tagName: tag.toUpperCase(),
-        id: '',
-        textContent: '',
-        innerHTML: '',
-        style: {},
-        dataset: {},
-        children: [],
-        classList: {
-          add: (cls) => classSet.add(cls),
-          remove: (cls) => classSet.delete(cls),
-          toggle: (cls, force) => {
-            if (force === undefined) {
-              if (classSet.has(cls)) { classSet.delete(cls); return false; }
-              classSet.add(cls); return true;
-            }
-            if (force) { classSet.add(cls); return true; }
-            classSet.delete(cls); return false;
-          },
-          contains: (cls) => classSet.has(cls),
-        },
-        appendChild(child) { this.children.push(child); return child; },
-      };
-    },
+    createElement: (tag) => createMockElement(tag),
+    createTextNode: (text) => ({ nodeType: 3, textContent: String(text) }),
     ...customGlobals.document,
   };
 
