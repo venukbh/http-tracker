@@ -2,23 +2,107 @@ const httpTrackerDetailsView = (function() {
   const decoder = new TextDecoder('UTF-8');
   const ignoreHeaders = new Set(['frameAncestors', 'frameId', 'parentFrameId', 'tabId', 'timeStamp', 'type', 'callerName', 'requestIdEnhanced', 'requestId', 'requestBody']);
 
+  function appendMarkedText(parent, text, compiledFindPattern) {
+    if (text === null || text === undefined) {
+      return;
+    }
+    const str = String(text);
+    if (!compiledFindPattern) {
+      parent.appendChild(document.createTextNode(str));
+      return;
+    }
+    compiledFindPattern.lastIndex = 0;
+    let lastIndex = 0;
+    let match = compiledFindPattern.exec(str);
+    while (match !== null) {
+      if (match[0].length === 0) {
+        compiledFindPattern.lastIndex++;
+        if (match.index >= str.length) {
+          break;
+        }
+        match = compiledFindPattern.exec(str);
+        continue;
+      }
+      if (match.index > lastIndex) {
+        parent.appendChild(document.createTextNode(str.slice(lastIndex, match.index)));
+      }
+      const mark = document.createElement('mark');
+      mark.textContent = match[0];
+      parent.appendChild(mark);
+      lastIndex = match.index + match[0].length;
+      match = compiledFindPattern.exec(str);
+    }
+    if (lastIndex < str.length) {
+      parent.appendChild(document.createTextNode(str.slice(lastIndex)));
+    }
+  }
+
   function renderBannerRow(title) {
-    return `<tr><td colspan="2" class="web_event_detail_cookie">${escapeHtml(title)}</td></tr>`;
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 2;
+    td.className = 'web_event_detail_cookie';
+    td.textContent = title;
+    tr.appendChild(td);
+    return tr;
   }
 
   function renderNoticeRow(message, key = '') {
-    return `<tr><td class="web_event_detail_header_key">${escapeHtml(key)}</td><td class="web_event_detail_header_value web_event_style_error">${escapeHtml(message)}</td></tr>`;
+    const tr = document.createElement('tr');
+    const tdKey = document.createElement('td');
+    tdKey.className = 'web_event_detail_header_key';
+    tdKey.textContent = key;
+    const tdVal = document.createElement('td');
+    tdVal.className = 'web_event_detail_header_value web_event_style_error';
+    tdVal.textContent = message;
+    tr.appendChild(tdKey);
+    tr.appendChild(tdVal);
+    return tr;
   }
 
-  function renderMessageRow(content, textAlign = 'left') {
-    const alignStyle = textAlign === 'center' ? ' text-align: center;' : '';
-    return `<tr style="white-space: pre-wrap; word-break: break-all;${alignStyle}"><td colspan="2"${alignStyle ? ' style="text-align: center;"' : ''}>${content}</td></tr>`;
+  function renderMessageRow(contentNodeOrText, textAlign = 'left') {
+    const tr = document.createElement('tr');
+    tr.style.whiteSpace = 'pre-wrap';
+    tr.style.wordBreak = 'break-all';
+    if (textAlign === 'center') {
+      tr.style.textAlign = 'center';
+    }
+
+    const td = document.createElement('td');
+    td.colSpan = 2;
+    if (textAlign === 'center') {
+      td.style.textAlign = 'center';
+    }
+
+    if (contentNodeOrText && typeof contentNodeOrText === 'object') {
+      if (Array.isArray(contentNodeOrText)) {
+        contentNodeOrText.forEach((child) => td.appendChild(child));
+      } else {
+        td.appendChild(contentNodeOrText);
+      }
+    } else if (contentNodeOrText !== undefined && contentNodeOrText !== null) {
+      td.appendChild(document.createTextNode(String(contentNodeOrText)));
+    }
+
+    tr.appendChild(td);
+    return tr;
   }
 
   function renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern, isError = false) {
     const displayVal = maskValue(key, value, maskPatterns, isMaskEnabled);
-    const errorClass = isError ? ' web_event_style_error' : '';
-    return `<tr><td class="web_event_detail_header_key">${addMarkTag(key, compiledFindPattern)}</td><td class="web_event_detail_header_value${errorClass}">${addMarkTag(displayVal, compiledFindPattern)}</td></tr>`;
+    const tr = document.createElement('tr');
+
+    const tdKey = document.createElement('td');
+    tdKey.className = 'web_event_detail_header_key';
+    appendMarkedText(tdKey, key, compiledFindPattern);
+    tr.appendChild(tdKey);
+
+    const tdVal = document.createElement('td');
+    tdVal.className = 'web_event_detail_header_value' + (isError ? ' web_event_style_error' : '');
+    appendMarkedText(tdVal, displayVal, compiledFindPattern);
+    tr.appendChild(tdVal);
+
+    return tr;
   }
 
   function renderSelectedEventDetails({
@@ -30,9 +114,9 @@ const httpTrackerDetailsView = (function() {
     optimizeResponseCookies,
     compiledFindPattern,
   }) {
-    const requestContainer = buildURLDetailsContainer(requestEvent, 'requestDetails', maskPatterns, isMaskEnabled, compiledFindPattern, false);
-    const responseContainer = buildURLDetailsContainer(responseEvent, 'responseDetails', maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies);
-    const requestFormContainer = buildRequestFormContainer(requestBody, maskPatterns, isMaskEnabled, compiledFindPattern);
+    const requestRows = buildURLDetailsRows(requestEvent, 'requestDetails', maskPatterns, isMaskEnabled, compiledFindPattern, false);
+    const responseRows = buildURLDetailsRows(responseEvent, 'responseDetails', maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies);
+    const requestFormRows = buildRequestFormRows(requestBody, maskPatterns, isMaskEnabled, compiledFindPattern);
 
     const reqEl = getById('web_event_details_selected_request');
     const resEl = getById('web_event_details_selected_response');
@@ -45,12 +129,22 @@ const httpTrackerDetailsView = (function() {
 
     const reqBodyEl = getById('request_headers_details_body') || getById('request_headers_details');
     if (reqBodyEl) {
-      reqBodyEl.innerHTML = requestContainer + requestFormContainer;
+      if (typeof reqBodyEl.replaceChildren === 'function') {
+        reqBodyEl.replaceChildren(...requestRows, ...requestFormRows);
+      } else {
+        reqBodyEl.textContent = '';
+        [...requestRows, ...requestFormRows].forEach((r) => reqBodyEl.appendChild(r));
+      }
     }
 
     const resBodyEl = getById('response_headers_details_body') || getById('response_headers_details');
     if (resBodyEl) {
-      resBodyEl.innerHTML = responseContainer;
+      if (typeof resBodyEl.replaceChildren === 'function') {
+        resBodyEl.replaceChildren(...responseRows);
+      } else {
+        resBodyEl.textContent = '';
+        responseRows.forEach((r) => resBodyEl.appendChild(r));
+      }
     }
 
     const detailsContainer = getById('web_details_selected_container');
@@ -81,12 +175,20 @@ const httpTrackerDetailsView = (function() {
 
     const reqBodyEl = getById('request_headers_details_body') || getById('request_headers_details');
     if (reqBodyEl) {
-      reqBodyEl.textContent = '';
+      if (typeof reqBodyEl.replaceChildren === 'function') {
+        reqBodyEl.replaceChildren();
+      } else {
+        reqBodyEl.textContent = '';
+      }
     }
 
     const resBodyEl = getById('response_headers_details_body') || getById('response_headers_details');
     if (resBodyEl) {
-      resBodyEl.textContent = '';
+      if (typeof resBodyEl.replaceChildren === 'function') {
+        resBodyEl.replaceChildren();
+      } else {
+        resBodyEl.textContent = '';
+      }
     }
 
     const detailsContainer = getById('web_details_selected_container');
@@ -96,11 +198,10 @@ const httpTrackerDetailsView = (function() {
     }
   }
 
-  function buildURLDetailsContainer(webEventIdDetails, detailsType, maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies) {
-    let tableContent = '';
-    let headersContent = '';
+  function buildURLDetailsRows(webEventIdDetails, detailsType, maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies) {
+    const rows = [];
     if (webEventIdDetails) {
-      tableContent = renderBannerRow('Headers');
+      rows.push(renderBannerRow('Headers'));
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
         if (key !== 'responseHeaders' && key !== 'requestHeaders') { // headers added by browser
           if (!ignoreHeaders.has(key) && value !== undefined && value !== null) {
@@ -110,77 +211,92 @@ const httpTrackerDetailsView = (function() {
             const isError = key === 'error' ||
               (key === 'statusCode' && Number(value) >= 400) ||
               (key === 'statusLine' && /\b[45]\d{2}\b/.test(String(value)));
-            tableContent += renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern, isError);
+            rows.push(renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern, isError));
           }
         } else { // application headers
           const headers = sortJsonByProperty(value, 'name');
-          headersContent = generateHeaderDetails(headers, optimizeResponseCookies, maskPatterns, isMaskEnabled, compiledFindPattern);
+          const headerRows = generateHeaderDetails(headers, optimizeResponseCookies, maskPatterns, isMaskEnabled, compiledFindPattern);
+          rows.push(...headerRows);
         }
       });
       if (detailsType === 'requestDetails' && !webEventIdDetails.requestHeaders) {
-        headersContent = renderNoticeRow('Request blocked');
+        rows.push(renderNoticeRow('Request blocked'));
       }
     } else if (detailsType === 'responseDetails') {
-      tableContent = renderNoticeRow('Response not available');
+      rows.push(renderNoticeRow('Response not available'));
     } else {
-      tableContent = renderNoticeRow('Request not available');
+      rows.push(renderNoticeRow('Request not available'));
     }
-    return tableContent + headersContent;
+    return rows;
   }
 
-  function buildRequestFormContainer(webEventIdRequestForm, maskPatterns, isMaskEnabled, compiledFindPattern) {
-    let formData = '';
+  function buildRequestFormRows(webEventIdRequestForm, maskPatterns, isMaskEnabled, compiledFindPattern) {
+    const rows = [];
     if (webEventIdRequestForm) {
       if (webEventIdRequestForm.formData) {
-        formData = renderBannerRow('Body (form fields data)');
+        rows.push(renderBannerRow('Body (form fields data)'));
         Object.entries(webEventIdRequestForm.formData).forEach(([key, value]) => {
-          formData += renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern);
+          rows.push(renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern));
         });
       } else if (webEventIdRequestForm.raw) {
-        formData = renderBannerRow('Body (raw form data)');
+        rows.push(renderBannerRow('Body (raw form data)'));
         for (const eachByte of webEventIdRequestForm.raw) {
           if (!eachByte.bytes) {
             if (eachByte.file) {
-              const fileNotice = `<span style="color:#888;font-style:italic;">[File upload: ${escapeHtml(eachByte.file)}]</span>`;
-              formData += renderMessageRow(fileNotice);
+              const fileSpan = document.createElement('span');
+              fileSpan.style.color = '#888';
+              fileSpan.style.fontStyle = 'italic';
+              fileSpan.textContent = `[File upload: ${eachByte.file}]`;
+              rows.push(renderMessageRow(fileSpan));
             }
             continue;
           }
           const dataView = new DataView(eachByte.bytes);
           const decodedString = decoder.decode(dataView);
-          let displayContent;
           if (isBinaryData(decodedString)) {
             const type = detectCompressionType(dataView);
-            displayContent = `<span style="color:#888;font-style:italic;">[Binary data \u2014 ${dataView.byteLength} bytes, likely ${type}. Cannot display compressed content.]</span>`;
+            const binarySpan = document.createElement('span');
+            binarySpan.style.color = '#888';
+            binarySpan.style.fontStyle = 'italic';
+            binarySpan.textContent = `[Binary data \u2014 ${dataView.byteLength} bytes, likely ${type}. Cannot display compressed content.]`;
+            rows.push(renderMessageRow(binarySpan));
           } else {
-            displayContent = addMarkTag(decodedString, compiledFindPattern);
+            const tr = document.createElement('tr');
+            tr.style.whiteSpace = 'pre-wrap';
+            tr.style.wordBreak = 'break-all';
+            const td = document.createElement('td');
+            td.colSpan = 2;
+            appendMarkedText(td, decodedString, compiledFindPattern);
+            tr.appendChild(td);
+            rows.push(tr);
           }
-          formData += renderMessageRow(displayContent);
         }
       } else if (webEventIdRequestForm.error) {
-        formData = renderBannerRow('Body');
-        const errorNotice = `<span class="web_event_style_warning">[⚠️ Body unavailable from browser: ${escapeHtml(webEventIdRequestForm.error)} (e.g. streaming, keepalive, or beacon)]</span>`;
-        formData += renderMessageRow(errorNotice, 'center');
+        rows.push(renderBannerRow('Body'));
+        const errorSpan = document.createElement('span');
+        errorSpan.className = 'web_event_style_warning';
+        errorSpan.textContent = `[⚠️ Body unavailable from browser: ${webEventIdRequestForm.error} (e.g. streaming, keepalive, or beacon)]`;
+        rows.push(renderMessageRow(errorSpan, 'center'));
       }
     }
-    return formData;
+    return rows;
   }
 
   function generateHeaderDetails(headers, optimizeResponseCookies, maskPatterns, isMaskEnabled, compiledFindPattern) {
-    let generalHeadersContent = '';
+    const generalHeaderRows = [];
     let bannerTitle = 'Cookies (sorted: symbols, 0-9, Aa-Zz)'; // request cookies
-    let cookieContent = '';
+    const cookieRows = [];
     const optimizedCookiesMap = new Map();
     headers.forEach((header) => {
       // request cookies
       if (header.name === HEADER_NAME_COOKIE) {
-        cookieContent += generateRequestCookieDetails(header.value, DELIMITER_REQUEST_COOKIE, maskPatterns, isMaskEnabled, compiledFindPattern);
+        cookieRows.push(...generateRequestCookieDetails(header.value, DELIMITER_REQUEST_COOKIE, maskPatterns, isMaskEnabled, compiledFindPattern));
       }
       // response cookies
       else if (header.name.toLowerCase() === HEADER_NAME_SET_COOKIE) {
         if (!optimizeResponseCookies) {
           bannerTitle = 'Cookies (unoptimized)';
-          cookieContent += generateResponseCookieDetails(header.value, DELIMITER_RESPONSE_COOKIE, maskPatterns, isMaskEnabled, compiledFindPattern);
+          cookieRows.push(...generateResponseCookieDetails(header.value, DELIMITER_RESPONSE_COOKIE, maskPatterns, isMaskEnabled, compiledFindPattern));
         } else {
           bannerTitle = 'Cookies (optimized)';
           buildOptimizedCookiesMap(header.value, DELIMITER_RESPONSE_COOKIE, optimizedCookiesMap);
@@ -188,23 +304,23 @@ const httpTrackerDetailsView = (function() {
       }
       // other headers
       else {
-        generalHeadersContent += renderKeyValueRow(header.name, header.value, maskPatterns, isMaskEnabled, compiledFindPattern);
+        generalHeaderRows.push(renderKeyValueRow(header.name, header.value, maskPatterns, isMaskEnabled, compiledFindPattern));
       }
     });
     if (optimizeResponseCookies) {
       sortMapByKey(optimizedCookiesMap).forEach((value, key) => {
-        cookieContent += renderKeyValueRow(key.split(':', 1)[0], value.cookieValue, maskPatterns, isMaskEnabled, compiledFindPattern);
+        cookieRows.push(renderKeyValueRow(key.split(':', 1)[0], value.cookieValue, maskPatterns, isMaskEnabled, compiledFindPattern));
       });
     }
-    if (cookieContent) {
-      cookieContent = renderBannerRow(bannerTitle) + cookieContent;
+    if (cookieRows.length > 0) {
+      return [...generalHeaderRows, renderBannerRow(bannerTitle), ...cookieRows];
     }
-    return generalHeadersContent + cookieContent;
+    return generalHeaderRows;
   }
 
   function generateRequestCookieDetails(cookieValue, cookieDelim, maskPatterns, isMaskEnabled, compiledFindPattern) {
     const cookieList = cookieValue.split(cookieDelim).sort(sortArray);
-    let cookieContent = '';
+    const rows = [];
     const cookieMap = new Map();
     cookieList.forEach((cookie) => {
       if (cookie) {
@@ -213,21 +329,21 @@ const httpTrackerDetailsView = (function() {
       }
     });
     cookieMap.forEach((value, key) => {
-      cookieContent += renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern);
+      rows.push(renderKeyValueRow(key, value, maskPatterns, isMaskEnabled, compiledFindPattern));
     });
-    return cookieContent;
+    return rows;
   }
 
   function generateResponseCookieDetails(cookieValue, cookieDelim, maskPatterns, isMaskEnabled, compiledFindPattern) {
     const cookieList = cookieValue.split(cookieDelim);
-    let cookieContent = '';
+    const rows = [];
     cookieList.forEach((cookie) => {
       if (cookie) {
         const cookieDetails = getCookieNameValue(cookie);
-        cookieContent += renderKeyValueRow(cookieDetails.cookieName, cookieDetails.cookieValue, maskPatterns, isMaskEnabled, compiledFindPattern);
+        rows.push(renderKeyValueRow(cookieDetails.cookieName, cookieDetails.cookieValue, maskPatterns, isMaskEnabled, compiledFindPattern));
       }
     });
-    return cookieContent;
+    return rows;
   }
 
   function buildOptimizedCookiesMap(cookieValue, cookieDelim, optimizedCookiesMap) {
