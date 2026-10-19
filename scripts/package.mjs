@@ -64,6 +64,9 @@ const firefoxManifest = {
     gecko: {
       id: '{2939349f-b516-4674-afa4-4dc8311a75ef}',
       strict_min_version: '113.0',
+      data_collection_permissions: {
+        required: ['none'],
+      },
     },
   },
 };
