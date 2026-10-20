@@ -32,9 +32,12 @@ const chromeZip = join(archivesDir, `http-tracker-chrome-${version}.zip`);
 const firefoxZip = join(archivesDir, `http-tracker-firefox-${version}.zip`);
 const genericZip = join(archivesDir, `http-tracker-${version}.zip`);
 
+// 3. Run automated test suite to ensure 100% test pass before packaging
+execSync('node scripts/run-tests.mjs', { stdio: 'inherit' });
+
 console.log(`\x1b[36m📦 Packaging HTTP-TRACKER v${version}...\x1b[0m\n`);
 
-// 3. Build Chrome Package (pure MV3 with service_worker, 0 warnings in Chrome)
+// 4. Build Chrome Package (pure MV3 with service_worker, 0 warnings in Chrome)
 rmSync(chromeZip, { force: true });
 rmSync(genericZip, { force: true });
 

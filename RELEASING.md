@@ -9,7 +9,7 @@ HTTP-TRACKER uses a zero-build vanilla JavaScript architecture. The browser dire
 HTTP-TRACKER includes an automated test runner suite (`node:test`) covering pure algorithms, filtering, masking, real payload playback, and cross-browser Chrome/Firefox compatibility:
 
 ```bash
-# Run the 106 automated unit and integration tests
+# Run the 144 automated unit and integration tests
 npm test
 
 # Run ESLint code checks
@@ -36,15 +36,30 @@ npm run set-version 3.1.0
 
 ## 📦 Multi-Store Packaging (Chrome & Firefox)
 
-The packaging script automatically builds two tailored distributions into `archives/`:
+Whenever `npm run package` runs, it automatically executes a 3-step packaging pipeline:
+1. **Version Parity Guard**: Validates that `manifest.json` and `package.json` are in 100% lockstep and ensures the target version tag has not been previously released.
+2. **Automated Test Suite**: Executes the complete test suite (`npm test`, 144 tests) to guarantee 100% pass before archiving.
+3. **Dual-Store Distribution**: Builds clean, store-tailored packages in `archives/` with zero warnings for their respective stores.
 
 ```bash
-# Build pristine Chrome and Firefox release archives
+# Automatically run all tests and build release archives
 npm run package
 
 # Verify archive contents and file tables
 npm run package:verify
 ```
+
+### Pre-Packaging Standards Verification (Periodic / Major Releases)
+Because new browser-controlled transport headers are ratified very infrequently (years apart), automated fetching during build is unnecessary. Before publishing major releases, manually check whether new non-`Sec-*` transport headers have been standardized:
+
+1. **Check WHATWG Specification**: Visit the authoritative [WHATWG Fetch Living Standard (§ 2.2.2 Forbidden Header Name)](https://fetch.spec.whatwg.org/#forbidden-header-name).
+2. **Review Codebase**: Verify against [`FORBIDDEN_HEADERS`](src/js/constants.js) and `FORBIDDEN_HEADER_PREFIXES` in `src/js/constants.js`. (All `Sec-*` and `Proxy-*` headers are automatically covered by prefix matching).
+3. If a new non-`Sec` header is ratified (e.g. `Priority`), add it to `FORBIDDEN_HEADERS` in `src/js/constants.js` and add a corresponding test case in `test/rules.test.mjs`.
+
+#### Reference Specifications:
+- 🌐 **WHATWG Fetch Living Standard (Forbidden Headers)**: [https://fetch.spec.whatwg.org/#forbidden-header-name](https://fetch.spec.whatwg.org/#forbidden-header-name)
+- 📖 **MDN Web Docs (Forbidden Header Name Glossary)**: [https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name](https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name)
+- 🛠️ **Chrome DeclarativeNetRequest Header Restrictions**: [https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#modify-headers](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#modify-headers)
 
 ### Generated Artifacts:
 - **`archives/http-tracker-chrome-<version>.zip`**:
@@ -114,6 +129,6 @@ git push origin v3.1.0
 
 **Automated GitHub Actions CI/CD will immediately:**
 1. Spin up an Ubuntu runner.
-2. Run all 106 automated tests on Node 24.
+2. Run all 144 automated tests on Node 24.
 3. Package both Chrome and Firefox release archives.
 4. Automatically create and publish the GitHub Release with notes and both `.zip` files attached!

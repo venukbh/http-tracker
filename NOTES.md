@@ -177,3 +177,98 @@ To ensure rapid error diagnosis consistent with Chrome DevTools:
   - **Browser Limitations & Warnings**: Explanatory notices where the request succeeded but browser recording was limited (e.g. `[⚠️ Body unavailable from browser: Unknown error. (e.g. streaming, keepalive, or beacon)]`) are styled with `.web_event_style_warning` in accessible amber-700 (`#b45309;`) to prevent false alarms that the API call failed.
   - Standard headers (`Date`, `Content-Type`, `Server`) remain clean and neutral to prevent eye strain and preserve readability.
 
+---
+
+## 7. Browser-Generated Headers vs. Application Headers Architecture
+
+### Conceptual Distinction: Internal Metadata vs. Wire Headers
+In network monitoring extensions, request details fall into two fundamentally distinct architectural categories:
+
+1. **Internal Extension Event Metadata**:
+   - Properties attached to the request event object by the browser engine's internal WebRequest API (such as `initiator`, `originUrl`, `documentId`, `cookieStoreId`, `thirdParty`, `tabId`, and `fromCache`).
+   - **Network Destination**: These fields exist exclusively in browser RAM for extension and DevTools inspection. They never leave the browser, are never serialized into network packets, and never reach the application server.
+
+2. **HTTP Wire Headers**:
+   - Key-value pairs serialized into the actual HTTP/1.1 request stream or HTTP/2 & HTTP/3 HEADERS frames.
+   - **Network Destination**: These travel over the TCP/TLS socket and are received, parsed, and evaluated by the web server, reverse proxy, or API gateway.
+
+### Browser-Controlled vs. Webpage-Controlled Wire Headers
+Not all HTTP wire headers originate from web applications. The browser network stack automatically injects and governs a dedicated set of headers:
+
+- **Fetch Metadata (`Sec-Fetch-*`)**: Injected by the browser to declare request isolation context (destination, mode, cross-site origin, and user activation). Used by servers to thwart CSRF and cross-origin leaks.
+- **Client Hints (`Sec-CH-UA*`, `Device-Memory`, `Save-Data`)**: Injected by the browser to convey device architecture, platform, and performance preferences.
+- **Context & Security (`Origin`, `Referer`)**: Enforced by the browser to maintain origin boundaries and CORS compliance.
+- **Transport & Protocol Control (`Host`, `Connection`, `Priority`, `Accept-Encoding`)**: Managed by the network layer to handle TCP sockets, multiplexing, stream priorities (RFC 9218), and compression algorithms.
+- **Session State (`Cookie`)**: Extracted directly from the browser's secure cookie jar for matching domains and paths.
+
+### Cross-Browser Implementation Differences (Chromium vs. Gecko)
+
+1. **Client Hints (`Sec-CH-UA*`)**:
+   - **Chrome (Chromium)**: Automatically generates and attaches brand, mobile, and platform Client Hints on all outgoing requests.
+   - **Firefox (Gecko)**: Deliberately omits `Sec-CH-UA*` headers on all requests. Mozilla considers User-Agent Client Hints an unnecessary entropy vector for passive browser fingerprinting.
+
+2. **WebRequest Header Visibility & `extraHeaders`**:
+   - **Chrome**: By default, Chromium suppresses browser-managed headers (`Cookie`, `Origin`, `Referer`, Client Hints) from extension observers for performance and security. Extensions must explicitly pass the `extraHeaders` specifier in listener configurations to unlock full visibility.
+   - **Firefox**: Gecko exposes all outgoing headers to extensions holding host permissions by default, without requiring an `extraHeaders` toggle.
+
+3. **Contextual Metadata Differences**:
+   - **Firefox**: Uniquely exposes `cookieStoreId` (identifying Firefox Multi-Account Containers like Personal, Work, or Banking), `originUrl` (the full initiator document URL), and a direct `thirdParty` boolean flag.
+   - **Chrome**: Exposes `initiator` (origin only) and Manifest V3 document identifiers (`documentId`, `parentDocumentId`, `frameType`).
+
+### Forward Compatibility & Identifying Future Browser Headers
+When browser vendors introduce new headers in future engine releases, the extension classifies and handles them reliably:
+
+1. **Dynamic Capture Guarantee**:
+   Because request headers are delivered as an open-ended collection of key-value pairs rather than a static enumeration, network tracking that iterates over the received header collection will capture and display newly standardized headers immediately upon browser release without code updates.
+
+2. **The W3C Prefix Standard (`Sec-`)**:
+   Under the W3C Fetch Specification and IETF standards, browser vendors are prohibited from inventing arbitrary un-prefixed names for new browser-governed security or state features. Any new header intended to represent verified browser state or security boundaries must use the `Sec-` prefix (or `Proxy-`). Webpage scripts are physically barred by browser engines from setting or overriding any header with this prefix, guaranteeing that any `Sec-*` header on the wire is authentic and browser-generated.
+
+3. **W3C Forbidden Header Names**:
+   For historical headers that do not use the `Sec-` prefix (such as `Host`, `Origin`, `Referer`, `Cookie`, `Priority`, and `Connection`), the W3C maintains the Forbidden Header Names specification. Browser JavaScript runtimes silently drop any attempt by webpage scripts (`fetch`, `XMLHttpRequest`) to set or modify these names. As a result, the presence of any forbidden header name indicates that its value is managed exclusively by the browser's network layer.
+
+### Can Browser Vendors Introduce "Random" Header Names in the Future?
+A common architectural question is whether browser vendors (Google, Mozilla, Apple, Microsoft) could suddenly introduce a brand new browser-controlled header with an arbitrary or random name (e.g. `Fast-Track` or `Client-Tier`) without using the `Sec-` prefix:
+
+- **Strict Web Security Boundary**:
+  Browser vendors **cannot** arbitrarily introduce unreserved, random-named headers for browser-controlled features. If a browser vendor created a browser-state header with an unreserved name, any website's JavaScript could trivially forge it via `fetch('/api', { headers: { 'Fast-Track': 'true' } })`. The receiving application server would have no mathematical or cryptographic way to verify whether the header was produced by the trusted browser engine or spoofed by a malicious script.
+
+- **The Universal Standardization Rule**:
+  Because of this security boundary, international standards (IETF RFC 8470 and WHATWG Fetch Specification Section 2.2.2) mandate that browser vendors can only introduce browser-only headers through two strictly governed paths:
+  1. **The Reserved Prefix (`Sec-` or `Proxy-`)**: Any modern feature created exclusively by browser engines (such as Client Hints `Sec-CH-*`, Fetch Metadata `Sec-Fetch-*`, Speculative Loading `Sec-Purpose`, or Privacy Sandbox `Sec-Browsing-Topics`) must begin with `Sec-`. Webpage runtimes are universally blocked from touching this namespace.
+  2. **IETF RFC Formal Standardization**: If a non-`Sec` header is ever ratified across all browser engines (such as the recent `Priority` header in RFC 9218), it must be formally added to the browser engine's internal "Forbidden Header Names" list so that webpage scripts are blocked from forging it.
+
+- **Practical Classification Rule**:
+  If a header appears on the wire that does **not** start with `Sec-` and is **not** on the standardized forbidden list, it is guaranteed by the web platform architecture to be an **Application / Webpage header** (injected by frontend JavaScript, an analytics SDK, or an API client). Regardless of the header name, HTTP-TRACKER captures and displays it immediately because its network listener uses open-ended dynamic iteration rather than a hardcoded allowlist.
+
+
+### Complete Mental Model & Classification Matrix
+
+| Category | Who Generates It? | Can Webpages Modify It? | Can Extensions Modify It? | Does It Reach App Server? |
+| :--- | :--- | :---: | :---: | :---: |
+| **1. Internal Event Metadata** (`initiator`, `originUrl`, `documentId`, `fromCache`, `cookieStoreId`) | Extension Engine | ❌ No | ❌ No | ❌ **NEVER** (RAM only) |
+| **2A. Browser Wire Transport** (`Sec-*`, `Connection`, `Host`, `Priority`) | Browser C++ Network Stack | ❌ Blocked | ❌ Blocked (`FORBIDDEN_HEADERS` in `src/js/constants.js`) | ✅ **YES** (Over wire) |
+| **2B. Browser Wire Context** (`Cookie`, `Origin`, `Referer`, `User-Agent`) | Browser C++ Network Stack | ❌ Blocked | ✅ **Yes** (via `Modify headers` rule builder) | ✅ **YES** (Over wire) |
+| **3. Webpage Wire Headers** (`Authorization`, `Content-Type`, `X-Api-Key`, custom `X-*`) | Webpage JavaScript | ✅ Yes | ✅ **Yes** (via `Modify headers` rule builder) | ✅ **YES** (Over wire) |
+
+#### Key Operational Insights:
+- **Extension Modification Boundaries**: Webpages can never touch browser-controlled headers. Extensions with host permissions cannot touch raw transport/framing headers (`Connection`, `Keep-Alive`, `Sec-*` as enforced by `FORBIDDEN_HEADERS`), but can explicitly override context headers (`Cookie`, `Referer`, `Origin`, `User-Agent`) to enable developer testing and header manipulation workflows.
+- **Directionality (Request vs. Response)**: The classifications above govern client-to-server **Request Headers**. Server-to-client **Response Headers** (`Set-Cookie`, `Content-Type`, `Server`, `Cache-Control`) are generated by backend application servers, and the browser merely receives and enforces them.
+- **HTTP/2 and HTTP/3 Protocol Pseudo-Headers**: Modern HTTP/2 and HTTP/3 connections introduce framing pseudo-headers prefixed with a colon (`:method`, `:path`, `:scheme`, `:authority`). These are low-level binary protocol fields generated by the browser's transport layer; they travel over the wire but cannot be altered by webpages or extension scripts.
+
+### Authoritative Standards & References
+- **WHATWG Fetch Living Standard (§ 2.2.2 Forbidden Header Name)**: [https://fetch.spec.whatwg.org/#forbidden-header-name](https://fetch.spec.whatwg.org/#forbidden-header-name)
+- **MDN Web Docs (Forbidden Header Name Reference)**: [https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name](https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name)
+- **Chrome DeclarativeNetRequest Header Rules**: [https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#modify-headers](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#modify-headers)
+
+### Manual Pre-Packaging Verification Checklist
+Because new browser-controlled transport headers are ratified very rarely (years apart), automated build-time network sync is unnecessary and brittle. Before major packaging milestones:
+1. Open the [WHATWG Fetch Living Standard (§ 2.2.2)](https://fetch.spec.whatwg.org/#forbidden-header-name).
+2. Review the list of lowercase header names.
+3. Check `FORBIDDEN_HEADERS` and `FORBIDDEN_HEADER_PREFIXES` in [`src/js/constants.js`](src/js/constants.js).
+   - Any header starting with `sec-` or `proxy-` is automatically covered by `FORBIDDEN_HEADER_PREFIXES`.
+   - Any new standalone non-`sec` transport header (like `priority`) should be appended to `FORBIDDEN_HEADERS`.
+4. If updated, add a unit test in `test/rules.test.mjs` and run `npm test`.
+
+
+
