@@ -669,3 +669,154 @@ function addMarkTag(text, compiledFindPattern) {
   result += escapeHtml(str.slice(lastIndex));
   return result;
 }
+
+/**
+ * Extracts and serializes request body data for cURL command generation.
+ * Supports form data, raw text/JSON payloads, file uploads, and binary buffers.
+ */
+function extractCurlRequestBody(requestBody) {
+  if (!requestBody) {
+    return null;
+  }
+  if (typeof requestBody === 'string' && requestBody.length > 0) {
+    return { type: 'raw', value: requestBody };
+  }
+  if (typeof requestBody !== 'object') {
+    return null;
+  }
+
+  // 1. Form data dictionary (e.g. { user: ['alice'], pass: ['secret'] })
+  if (requestBody.formData && typeof requestBody.formData === 'object') {
+    const entries = [];
+    for (const [key, val] of Object.entries(requestBody.formData)) {
+      if (Array.isArray(val)) {
+        for (const item of val) {
+          entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(item)}`);
+        }
+      } else if (val !== undefined && val !== null) {
+        entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(val)}`);
+      }
+    }
+    if (entries.length > 0) {
+      return { type: 'raw', value: entries.join('&') };
+    }
+  }
+
+  // 2. Raw upload items array (e.g. [{ bytes: ArrayBuffer }, { file: 'path' }])
+  if (requestBody.raw) {
+    if (typeof requestBody.raw === 'string' && requestBody.raw.length > 0) {
+      return { type: 'raw', value: requestBody.raw };
+    }
+    if (Array.isArray(requestBody.raw)) {
+      const segments = [];
+      for (const item of requestBody.raw) {
+        if (!item) continue;
+        if (item.file) {
+          return { type: 'file', value: item.file };
+        }
+        if (item.bytes) {
+          let text = '';
+          if (typeof item.bytes === 'string') {
+            text = item.bytes;
+          } else if (item.bytes instanceof ArrayBuffer || ArrayBuffer.isView(item.bytes)) {
+            try {
+              const view = item.bytes instanceof ArrayBuffer ?
+                new DataView(item.bytes) :
+                new DataView(item.bytes.buffer, item.bytes.byteOffset, item.bytes.byteLength);
+              const decoded = new TextDecoder('utf-8').decode(view);
+              if (isBinaryData(decoded)) {
+                return { type: 'binary', value: '[binary data]' };
+              }
+              text = decoded;
+            } catch {
+              text = '';
+            }
+          }
+          if (text) {
+            segments.push(text);
+          }
+        }
+      }
+      if (segments.length > 0) {
+        return { type: 'raw', value: segments.join('') };
+      }
+    }
+  }
+
+  if (typeof requestBody.body === 'string' && requestBody.body.length > 0) {
+    return { type: 'raw', value: requestBody.body };
+  }
+
+  return null;
+}
+
+/**
+ * Generates an executable cURL command string for a captured network request.
+ * Safely quotes all arguments in single quotes with POSIX shell escaping.
+ */
+function generateCurlCommand(requestEvent, requestBody) {
+  if (!requestEvent || typeof requestEvent !== 'object' || !requestEvent.url) {
+    return '';
+  }
+
+  const url = String(requestEvent.url);
+  const method = (requestEvent.method || 'GET').toUpperCase();
+  const parts = [`curl '${url.replace(/'/g, "'\\''")}'`];
+
+  // Headers extraction
+  let headers = [];
+  if (Array.isArray(requestEvent.requestHeaders)) {
+    headers = requestEvent.requestHeaders;
+  } else if (requestEvent.requestHeaders && typeof requestEvent.requestHeaders === 'object') {
+    headers = Object.entries(requestEvent.requestHeaders).map(([name, value]) => ({ name, value }));
+  }
+
+  let hasCompressed = false;
+  const filteredHeaders = [];
+
+  for (const h of headers) {
+    if (!h || !h.name) continue;
+    const name = String(h.name).trim();
+    if (!name || name.startsWith(':')) {
+      // Exclude HTTP/2 and HTTP/3 pseudo-headers (:method, :path, :authority, :scheme)
+      continue;
+    }
+    const lowerName = name.toLowerCase();
+    if (lowerName === 'content-length') {
+      // cURL automatically computes Content-Length for payloads
+      continue;
+    }
+    if (lowerName === 'accept-encoding') {
+      hasCompressed = true;
+    }
+    filteredHeaders.push({
+      name,
+      value: h.value !== undefined && h.value !== null ? String(h.value) : '',
+    });
+  }
+
+  if (method !== 'GET') {
+    parts.push(`-X ${method}`);
+  }
+
+  if (hasCompressed) {
+    parts.push('--compressed');
+  }
+
+  for (const h of filteredHeaders) {
+    parts.push(`-H '${h.name.replace(/'/g, "'\\''")}: ${h.value.replace(/'/g, "'\\''")}'`);
+  }
+
+  const bodyData = extractCurlRequestBody(requestBody);
+  if (bodyData) {
+    if (bodyData.type === 'raw') {
+      parts.push(`--data-raw '${bodyData.value.replace(/'/g, "'\\''")}'`);
+    } else if (bodyData.type === 'file') {
+      parts.push(`--data-binary '@${bodyData.value.replace(/'/g, "'\\''")}'`);
+    } else if (bodyData.type === 'binary') {
+      parts.push(`--data-binary '${bodyData.value.replace(/'/g, "'\\''")}'`);
+    }
+  }
+
+  return parts.join(' \\\n  ');
+}

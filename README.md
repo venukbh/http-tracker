@@ -84,6 +84,7 @@ Unlike the built-in DevTools, HTTP-TRACKER aggregates requests from **all open t
 
 ### 🖱️ UX Controls
 
+- 📋 **Copy as cURL** — One-click export of any selected request into an executable, shell-escaped cURL command (with HTTP method, headers, cookies, and JSON/form-data payload) with instant visual feedback
 - ⏸️ **Pause tracking** without closing the extension — hold data for reference
 - 🗑️ Delete all captured data, selected pairs, or all filtered results
 - 📋 Captures **form data** in requests (when the option is enabled)

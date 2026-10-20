@@ -164,6 +164,11 @@ const eventTracker = (function() {
     const webEventIdRequestForm = httpTrackerEventCache.getRequestBody(selectedWebEventRequestId);
     const allMaskPatterns = (maskedAttributesList || []).concat(globalMaskPatternsList || []);
 
+    const copyCurlBtn = getById('copy_curl_button');
+    if (copyCurlBtn) {
+      copyCurlBtn.disabled = !webEventIdRequest || !webEventIdRequest.url;
+    }
+
     httpTrackerDetailsView.renderSelectedEventDetails({
       requestEvent: webEventIdRequest,
       responseEvent: webEventIdResponse,
@@ -233,6 +238,10 @@ const eventTracker = (function() {
     getById('delete_cookies').oninput = function(event) {
       getById('delete_cookies_button').disabled = !event.target.value.trim();
     };
+    const copyCurlBtn = getById('copy_curl_button');
+    if (copyCurlBtn) {
+      copyCurlBtn.onclick = copySelectedEventAsCurl;
+    }
     getById('preferences').addEventListener('click', function() {
       openAddonOptions();
     });
@@ -619,6 +628,42 @@ const eventTracker = (function() {
 
   function updateDeleteSelectedButton() {
     getById('delete_selected_web_event').disabled = !getSelectedEvent();
+  }
+
+  function copySelectedEventAsCurl() {
+    if (!selectedWebEventRequestId) {
+      return;
+    }
+    const requestEvent = httpTrackerEventCache.getRequest(selectedWebEventRequestId);
+    if (!requestEvent || !requestEvent.url) {
+      return;
+    }
+    const requestBody = httpTrackerEventCache.getRequestBody(selectedWebEventRequestId);
+    const curlCommand = generateCurlCommand(requestEvent, requestBody);
+    if (!curlCommand) {
+      return;
+    }
+    const btn = getById('copy_curl_button');
+    const writePromise = (navigator?.clipboard?.writeText)
+      ? navigator.clipboard.writeText(curlCommand)
+      : Promise.resolve();
+
+    writePromise.then(() => {
+      if (btn) {
+        if (btn._copyTimeout) {
+          clearTimeout(btn._copyTimeout);
+        }
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copy_success');
+        btn._copyTimeout = setTimeout(() => {
+          if (btn) {
+            btn.textContent = 'Copy as cURL';
+            btn.classList.remove('copy_success');
+            delete btn._copyTimeout;
+          }
+        }, 1200);
+      }
+    }).catch(onError);
   }
 
   function markSelectedRequest(requestId) {
