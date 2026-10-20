@@ -9,7 +9,7 @@ HTTP-TRACKER uses a zero-build vanilla JavaScript architecture. The browser dire
 HTTP-TRACKER includes an automated test runner suite (`node:test`) covering pure algorithms, filtering, masking, real payload playback, and cross-browser Chrome/Firefox compatibility:
 
 ```bash
-# Run the 144 automated unit and integration tests
+# Run the 165 automated unit and integration tests
 npm test
 
 # Run ESLint code checks
@@ -38,7 +38,7 @@ npm run set-version 3.1.0
 
 Whenever `npm run package` runs, it automatically executes a 3-step packaging pipeline:
 1. **Version Parity Guard**: Validates that `manifest.json` and `package.json` are in 100% lockstep and ensures the target version tag has not been previously released.
-2. **Automated Test Suite**: Executes the complete test suite (`npm test`, 144 tests) to guarantee 100% pass before archiving.
+2. **Automated Test Suite**: Executes the complete test suite (`npm test`, 165 tests) to guarantee 100% pass before archiving.
 3. **Dual-Store Distribution**: Builds clean, store-tailored packages in `archives/` with zero warnings for their respective stores.
 
 ```bash
@@ -129,6 +129,6 @@ git push origin v3.1.0
 
 **Automated GitHub Actions CI/CD will immediately:**
 1. Spin up an Ubuntu runner.
-2. Run all 144 automated tests on Node 24.
+2. Run all 165 automated tests on Node 24.
 3. Package both Chrome and Firefox release archives.
 4. Automatically create and publish the GitHub Release with notes and both `.zip` files attached!

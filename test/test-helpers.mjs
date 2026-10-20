@@ -201,12 +201,28 @@ export function createTestContext(customGlobals = {}) {
 
   const mockNavigator = {
     userAgent: 'Mozilla/5.0 Chrome/120.0',
+    clipboard: {
+      writtenText: '',
+      writeText: async (text) => {
+        mockNavigator.clipboard.writtenText = text;
+        return text;
+      },
+    },
     ...customGlobals.navigator,
   };
 
   globalThis.browser = mockBrowser;
   globalThis.chrome = mockBrowser;
   globalThis.document = mockDocument;
+  try {
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      value: mockNavigator.clipboard,
+      configurable: true,
+      writable: true,
+    });
+  } catch {
+    // Ignore in environments where navigator cannot be modified
+  }
 
   const constantsCode = fs.readFileSync(path.join(rootDir, 'src/js/constants.js'), 'utf-8');
   const utilsCode = fs.readFileSync(path.join(rootDir, 'src/js/utils.js'), 'utf-8');
@@ -266,6 +282,8 @@ export function createTestContext(customGlobals = {}) {
       urlMatchIncludePattern: matchesIncludePattern,
       urlMatchExcludePattern: matchesExcludePattern,
       addMarkTag,
+      extractCurlRequestBody,
+      generateCurlCommand,
       ALL_RESOURCE_TYPES,
       CHROME_RESOURCE_TYPES,
       FIREFOX_RESOURCE_TYPES,

@@ -173,6 +173,17 @@ const httpTrackerDetailsView = (function() {
       resHead.style.display = 'none';
     }
 
+    const copyCurlBtn = getById('copy_curl_button');
+    if (copyCurlBtn) {
+      copyCurlBtn.disabled = true;
+      if (copyCurlBtn._copyTimeout) {
+        clearTimeout(copyCurlBtn._copyTimeout);
+        delete copyCurlBtn._copyTimeout;
+      }
+      copyCurlBtn.textContent = 'Copy as cURL';
+      copyCurlBtn.classList.remove('copy_success');
+    }
+
     const reqBodyEl = getById('request_headers_details_body') || getById('request_headers_details');
     if (reqBodyEl) {
       if (typeof reqBodyEl.replaceChildren === 'function') {

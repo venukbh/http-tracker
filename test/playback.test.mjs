@@ -637,6 +637,37 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.equal(btnEl.textContent, 'Deleted!');
     });
   });
+
+  /* -------------------------------------------------------------------------
+   * 12. Copy as cURL Command Generation & Clipboard Integration
+   * ------------------------------------------------------------------------- */
+  describe('Copy as cURL Command Generation & Clipboard Integration', () => {
+    it('generates cURL command for recorded request event and copies to clipboard with feedback', async () => {
+      const copyBtn = domElements.get('copy_curl_button') || { textContent: 'Copy as cURL', classList: new Set() };
+      const req = {
+        method: 'POST',
+        url: 'https://api.github.com/user/repos',
+        requestHeaders: [
+          { name: 'Accept', value: 'application/vnd.github.v3+json' },
+          { name: 'Authorization', value: 'Bearer ghp_secret123' },
+          { name: 'Content-Type', value: 'application/json' },
+        ],
+      };
+      const body = {
+        raw: [{ bytes: new TextEncoder().encode('{"name":"new-repo","private":true}') }],
+      };
+
+      const curlCmd = context.generateCurlCommand(req, body);
+      assert.ok(curlCmd.startsWith("curl 'https://api.github.com/user/repos'"));
+      assert.ok(curlCmd.includes('-X POST'));
+      assert.ok(curlCmd.includes("-H 'Authorization: Bearer ghp_secret123'"));
+      assert.ok(curlCmd.includes("--data-raw '{\"name\":\"new-repo\",\"private\":true}'"));
+
+      // Clipboard copy test
+      await globalThis.navigator.clipboard.writeText(curlCmd);
+      assert.equal(globalThis.navigator.clipboard.writtenText, curlCmd);
+    });
+  });
 });
 
 

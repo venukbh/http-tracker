@@ -287,9 +287,19 @@
           <thead>
             <tr>
               <th id="web_event_detail_request_head" scope="col" class="web_event_detail_request_heading"
-                style="display: none;" title="HTTP Request details and headers sent by the browser">Request Details</th>
+                style="display: none;" title="HTTP Request details and headers sent by the browser">
+                <div class="web_event_detail_heading_wrapper">
+                  <span>Request Details</span>
+                  <button id="copy_curl_button" type="button" class="web_event_button_copy_curl"
+                    title="Copy request as cURL command" aria-label="Copy as cURL">Copy as cURL</button>
+                </div>
+              </th>
               <th id="web_event_detail_response_head" scope="col" class="web_event_detail_response_heading"
-                style="display: none;" title="HTTP Response details, headers, and cookies returned by the server">Response Details</th>
+                style="display: none;" title="HTTP Response details, headers, and cookies returned by the server">
+                <div class="web_event_detail_heading_wrapper">
+                  <span>Response Details</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
