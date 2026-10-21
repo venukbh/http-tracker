@@ -587,7 +587,7 @@ function maskValue(key, value, maskPatterns, isEnabled) {
   if (isMatched) {
     const str = value?.toString().trim() ?? '';
     if (str.length > 2) {
-      return str.charAt(0) + '*****' + str.charAt(str.length - 1);
+      return str.at(0) + '*****' + str.at(-1);
     }
     if (str.length > 0) {
       return '*****';
