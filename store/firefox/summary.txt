@@ -1,0 +1,1 @@
+Real-time network monitor & HTTP inspector: track headers and cookies, export cURL, block URLs, and modify outgoing headers.

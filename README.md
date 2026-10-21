@@ -110,20 +110,13 @@ Unlike the built-in DevTools, HTTP-TRACKER aggregates requests from **all open t
 
 ### Chrome
 
-[![Install from Chrome Web Store](https://img.shields.io/badge/Install-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi?hl=en&authuser=0)
-[![Rate on Chrome Web Store](https://img.shields.io/badge/⭐_Rate-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chrome.google.com/webstore/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi?hl=en&authuser=0)
+[![Install from Chrome Web Store](https://img.shields.io/badge/Install-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi)
+[![Rate on Chrome Web Store](https://img.shields.io/badge/⭐_Rate-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/http-tracker/fklakbbaaknbgcedidhblbnhclijnhbi)
 
 ### Firefox
 
 [![Install from Firefox Add-ons](https://img.shields.io/badge/Install-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/http-tracker/)
 [![Rate on Firefox Add-ons](https://img.shields.io/badge/⭐_Rate-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/http-tracker/)
-
----
-
-## 📚 Documentation & Guides
-
-- 🛠️ [Development & Release Guide](RELEASING.md) — Running tests, dual-browser packaging, and publishing.
-- 📝 [Technical Notes & Browser Quirks](NOTES.md) — Architectural notes, Chromium streaming limitations, cross-browser compatibility, and font rendering.
 
 ---
 

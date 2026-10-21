@@ -1,0 +1,13 @@
+1. DOM Hygiene & Security (100% replaceChildren, Zero innerHTML):
+- All dynamic data rendered across HTTP-TRACKER (details view, request stream, and release notes) is constructed using native DOM nodes and updated via replaceChildren().
+- Strictly zero innerHTML assignments exist in the codebase.
+- No unsanitized user or network data is ever parsed as HTML markup.
+
+2. Testing:
+- No account or credentials are required.
+- Click the toolbar icon or press Ctrl/Cmd + Shift + 1 to open the tracker window.
+- Browse any website in other tabs to view live captured requests, click "Copy as cURL" on any request, apply column filters, or test header modification rules.
+
+3. Architecture & Privacy:
+- Zero build tools or minification: Pure vanilla JavaScript with standard ES6 modules.
+- 100% local & privacy-first: Network traffic is held strictly in-memory during the session and is never stored on disk or transmitted to any third party or developer.
