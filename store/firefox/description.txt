@@ -1,0 +1,70 @@
+🌐 Real-time HTTP network monitor and developer inspection workbench in a dedicated single-instance window. Track network traffic across all browser tabs — inspect request and response headers, analyze cookies, export requests as POSIX-safe cURL commands, test blocking rules, and dynamically modify outgoing headers without leaving the browser.
+
+Designed for frontend engineers, backend developers, QA testers, and security researchers who need a lightweight, centralized alternative to heavy DevTools tabs. View all browser requests in one unified stream instead of switching between separate DevTools tabs.
+
+---
+
+### 🚀 New in Version 3.2:
+- 📋 **One-Click "Copy as cURL"**: Instantly copy any captured request as a POSIX-compliant cURL terminal command with automatically serialized form data, JSON payloads, and headers.
+- 📖 **Offline "What's New" Hub**: Integrated offline changelog that lets you view new features and historical release notes anytime.
+- 🪟 **Strict Window Deduplication**: Scoped window and tab activation strictly to this extension's origin to prevent false matches.
+- ⚙️ **Preferences Auto-Save**: Instant, debounced saving of default pattern rules and settings with visual confirmation.
+- 🔒 **Safe Native DOM**: 100% innerHTML-free details inspector with zero data collection.
+
+---
+
+### ✨ Core Features & Capabilities:
+
+🪟 **Centralized Single-Instance Workspace**
+- Loads in a dedicated popup or tab that always comes to the foreground on subsequent clicks.
+- Inspect traffic from all open tabs and background requests simultaneously in one place.
+
+🚀 **Non-Blocking Asynchronous Monitoring**
+- Pure in-memory event capture operates asynchronously with zero delay or latency added to your browsing.
+- Instant search and filtering responds in < 100 ms even with 10,000+ captured requests.
+
+📋 **One-Click cURL Terminal Generator**
+- Generates POSIX-safe single-quoted terminal cURL commands with proper shell escaping.
+- Filters out browser-internal pseudo-headers and automatically calculates Content-Length.
+
+✏️ **Dynamic Request Header Modification**
+- Add or modify request headers before outgoing transmission — globally, per domain, or for a single URL.
+- Supports Cookie, Referer, Origin, Host, Authorization, and custom development headers via declarativeNetRequest session rules.
+
+🛑 **Request Blocking & Simulation**
+- Block requests matching specific URL patterns to simulate network failures, ad-blocker behavior, or 404 endpoints.
+- Retains critical metadata (Method, URL, Initiator) even when requests are blocked early.
+
+🍪 **Deep Cookie Inspection & Domain Deletion**
+- Inspect all request and response cookies with attribute breakdowns.
+- One-click domain cookie deletion with RFC 6265 domain normalization (cleans leading dots and cross-origin paths).
+
+🎭 **Privacy Masking**
+- Automatically masks sensitive form fields and headers (passwords, auth tokens, session IDs) so sensitive credentials never leak on screen or in recordings.
+
+🔍 **Smart Multi-Column Filtering & Regex Search**
+- Filter captured traffic in real time by URL, HTTP method, status code, date, or cache.
+- Built-in regex search in details with real-time text highlighting.
+
+🗑️ Precision Traffic Management
+- Delete single captured requests, wipe currently filtered subsets, or clear all captured traffic in one click.
+
+---
+
+### 🔒 Security & Privacy Guarantee:
+- **100% Local & In-Memory**: All captured traffic remains strictly in your browser's local memory.
+- **Zero Data Collection**: HTTP-TRACKER does not track, collect, or transmit your browsing history, credentials, or network data to any remote server or third party.
+- **Safe Native DOM**: 100% clean DOM rendering using native browser templates and `replaceChildren()` (strictly zero `innerHTML`).
+
+### ⚡ Performance:
+- Near-zero memory footprint with automatic session garbage collection.
+- Handles heavy streaming single-page applications without stutter.
+
+### ♿ Accessibility & Shortcuts:
+- Press Ctrl+Shift+1 (Cmd+Shift+1 on macOS) anytime to open or bring HTTP-TRACKER to the front.
+- Full keyboard navigation support across filter inputs and inspection panes.
+
+---
+
+### ⭐ Reviews & Feedback:
+We are committed to building the fastest, cleanest network monitor for web developers. If you find HTTP-TRACKER useful in your daily workflow, please leave a review!

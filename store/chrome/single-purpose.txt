@@ -1,0 +1,52 @@
+# ==============================================================================
+# CHROME WEB STORE: SINGLE PURPOSE DESCRIPTION & PERMISSION JUSTIFICATIONS
+# Location in Chrome Developer Dashboard: "Privacy practices" tab
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Single Purpose Description (Character Count: < 1,000 characters)
+# ------------------------------------------------------------------------------
+Monitor browser network traffic across all tabs and pages in a single dedicated window. Track HTTP/HTTPS requests, responses, and cookies in real time. Inspect headers, copy requests as POSIX-safe cURL commands, filter traffic with instant search, block unwanted URLs, and dynamically add or modify outgoing headers globally or per domain without delaying web requests.
+
+Core Capabilities:
+• Centralized Window: Inspect traffic across all browser tabs in a focused singleton window.
+• Non-Blocking Monitoring: In-memory async event capture with zero latency to actual web traffic.
+• One-Click cURL Export: Instantly generate POSIX-safe terminal cURL commands from captured requests.
+• Smart URL Filtering: Include, exclude, or block URLs by pattern with instant column search.
+• Declarative Header Overrides: Add or modify outgoing HTTP request headers via declarativeNetRequest session rules.
+• Cookie Management: Inspect sent/received cookies and delete domain cookies with RFC 6265 normalization.
+• Privacy Masking: Automatically mask sensitive authorization tokens and passwords.
+• 100% Local: All captured data is held strictly in-memory and never stored on disk or transmitted.
+
+
+# ------------------------------------------------------------------------------
+# 2. Permission Justifications (For Developer Dashboard "Privacy practices")
+# ------------------------------------------------------------------------------
+
+Permission: webRequest
+Justification:
+Monitors HTTP/HTTPS network traffic events across browser tabs in real-time to display request/response headers, status codes, cookies, and timing metadata in the developer inspection stream.
+
+Permission: declarativeNetRequest
+Justification:
+Enforces user-defined URL blocking rules and dynamic request header modifications safely via declarativeNetRequest session rules without delaying or stalling web traffic.
+
+Permission: declarativeNetRequestWithHostAccess
+Justification:
+Allows declarativeNetRequest session rules to apply header modifications and request blocking across domains matching user-specified rules.
+
+Permission: cookies
+Justification:
+Reads session cookies associated with inspected network events and provides developer functionality to clear domain cookies during debugging sessions.
+
+Permission: tabs
+Justification:
+Maps captured network events to their originating browser tab and focuses the single-instance tracker window when re-invoked.
+
+Permission: storage
+Justification:
+Stores user preferences (default URL include/exclude/block patterns, field masking lists, window layout preference) locally in browser storage so they persist across sessions.
+
+Host Permissions: <all_urls>
+Justification:
+Required to monitor and inspect HTTP/HTTPS network traffic across arbitrary domains that the developer visits and debugs during web development.
