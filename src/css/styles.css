@@ -315,8 +315,78 @@ label {
   outline: none;
 }
 
+/* Shared Modern Button System (Used across Tracker, What's New, and Preferences) */
+.wn_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  line-height: 1.4;
+  transition: all 0.15s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.wn_btn_icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+.wn_btn_primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+}
+
+.wn_btn_primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.wn_btn_primary:active {
+  background-color: #1e40af;
+}
+
+.wn_btn_secondary {
+  background-color: #ffffff;
+  color: #334155;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.wn_btn_secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.wn_btn_secondary:active {
+  background-color: #e2e8f0;
+}
+
 .web_event_button_preferences {
   white-space: nowrap;
+  height: 26px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.tracker_header_actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .web_event_list_url {
@@ -418,28 +488,32 @@ label {
   position: absolute;
   right: 6px;
   font-size: 11px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: normal;
-  padding: 1px 7px;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 1px 8px;
   height: 20px;
   line-height: 16px;
-  border: 1px solid #767676;
-  border-radius: 3px;
-  background: #f0f0f0;
-  color: #000;
+  border: 1px solid #1d4ed8;
+  border-radius: 4px;
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   user-select: none;
+  transition: all 0.15s ease;
 }
 
 .web_event_button_copy_curl:hover {
-  background: #e2e8f0;
+  background-color: #1d4ed8;
+  border-color: #1e40af;
+  color: #ffffff;
 }
 
 .web_event_button_copy_curl:active {
-  background: #cbd5e1;
+  background-color: #1e40af;
 }
 
 .web_event_button_copy_curl:disabled {
@@ -633,10 +707,17 @@ label {
   margin-bottom: 14px;
 }
 
+.options_label_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 .options_label {
   display: block;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .options_textarea {
@@ -653,4 +734,359 @@ label {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.options_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+
+.options_header_title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.options_logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.options_header_title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.options_footer_row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.options_link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  transition: color 0.15s ease;
+}
+
+.options_link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.options_saved_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-1px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+.options_saved_badge.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   What's New Release Hub Styles
+   ========================================================================== */
+
+body.wn_body {
+  background-color: #f8fafc;
+  color: #1e293b;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wn_container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.wn_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 20px;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wn_header_left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.wn_logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wn_title_group h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.wn_title_group p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.wn_header_actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Hero Release Card */
+.wn_hero_card {
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 36px;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.wn_hero_card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+}
+
+.wn_badge_latest {
+  background-color: #d1fae5;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.4;
+}
+
+/* Release Timeline Section */
+.wn_timeline_heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wn_timeline {
+  position: relative;
+  padding-left: 24px;
+  border-left: 2px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.wn_timeline_item {
+  position: relative;
+}
+
+.wn_timeline_item::before {
+  content: "";
+  position: absolute;
+  left: -31px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #3b82f6;
+}
+
+.wn_timeline_header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.wn_timeline_version {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.wn_timeline_date {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.wn_timeline_title {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.wn_timeline_card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.wn_timeline_summary {
+  margin: 0 0 14px;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.wn_timeline_section_title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin: 14px 0 8px;
+  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 4px;
+}
+
+.wn_timeline_card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.wn_timeline_card li {
+  margin-bottom: 8px;
+  line-height: 1.55;
+}
+
+.wn_timeline_card li:last-child {
+  margin-bottom: 0;
+}
+
+.wn_tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.wn_tag_feat {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.wn_tag_perf {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+.wn_tag_fix {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.wn_tag_sec {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.wn_tag_ui {
+  background-color: #ccfbf1;
+  color: #0f766e;
+}
+
+.wn_tag_build {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+/* Footer */
+.wn_footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.wn_footer p {
+  margin: 4px 0;
+}
+
+.wn_footer_links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.wn_footer_links a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.wn_footer_links a:hover {
+  text-decoration: underline;
 }

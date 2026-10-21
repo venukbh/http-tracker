@@ -7,13 +7,25 @@
   <link rel="stylesheet" type="text/css" href="/src/css/styles.css" />
   <script type="text/javascript" src="/src/js/constants.js" defer></script>
   <script type="text/javascript" src="/src/js/utils.js" defer></script>
+  <script type="text/javascript" src="/src/js/open.js" defer></script>
   <script type="text/javascript" src="/src/js/options.js" defer></script>
 </head>
 
 <body>
   <div id="persist_options" class="options_wrapper">
+    <div class="options_header">
+      <div class="options_header_title">
+        <img src="/src/assets/icon_128px.png" alt="HTTP-TRACKER Logo" class="options_logo" />
+        <h2>HTTP-TRACKER Preferences</h2>
+      </div>
+      <button id="open_tracker" type="button" class="wn_btn wn_btn_primary"
+        title="Open HTTP-TRACKER inspection window"><img src="/src/assets/icon_128px.png" alt="" class="wn_btn_icon" />Open Tracker</button>
+    </div>
     <fieldset class="options_fieldset">
-      <legend class="options_legend">Open addon window in (change takes effect on restart of addon window)</legend>
+      <div class="options_label_row">
+        <legend class="options_legend">Open addon window in (change takes effect on restart of addon window)</legend>
+        <span id="status_uipage" class="options_saved_badge">✓ Saved</span>
+      </div>
       <div class="options_radio_group">
         <label for="tab" class="options_radio_label" title="Open HTTP-TRACKER in a standard browser tab">
           <input type="radio" name="uipage" value="true" id="tab">
@@ -26,22 +38,35 @@
       </div>
     </fieldset>
     <div class="options_row">
-      <label for="default_include_patterns" class="options_label"
-        title="Include URL patterns: Permanent list of comma-separated URL patterns to automatically track across sessions (e.g. google, api, checkout)">Include URL patterns</label>
+      <div class="options_label_row">
+        <label for="default_include_patterns" class="options_label"
+          title="Include URL patterns: Permanent list of comma-separated URL patterns to automatically track across sessions (e.g. google, api, checkout)">Include URL patterns</label>
+        <span id="status_default_include_patterns" class="options_saved_badge">✓ Saved</span>
+      </div>
       <textarea id="default_include_patterns" class="options_textarea" rows="4"
         title="Include URL patterns: Permanent list of comma-separated URL patterns to automatically track across sessions (e.g. google, api, checkout)"></textarea>
     </div>
     <div class="options_row">
-      <label for="default_exclude_patterns" class="options_label"
-        title="Exclude URL patterns: Permanent list of comma-separated URL patterns to automatically skip across sessions (e.g. analytics, cdn, static)">Exclude URL patterns</label>
+      <div class="options_label_row">
+        <label for="default_exclude_patterns" class="options_label"
+          title="Exclude URL patterns: Permanent list of comma-separated URL patterns to automatically skip across sessions (e.g. analytics, cdn, static)">Exclude URL patterns</label>
+        <span id="status_default_exclude_patterns" class="options_saved_badge">✓ Saved</span>
+      </div>
       <textarea id="default_exclude_patterns" class="options_textarea" rows="4"
         title="Exclude URL patterns: Permanent list of comma-separated URL patterns to automatically skip across sessions (e.g. analytics, cdn, static)"></textarea>
     </div>
     <div class="options_row">
-      <label for="default_mask_patterns" class="options_label"
-        title="Mask patterns: Permanent list of comma-separated sensitive header or parameter names to automatically mask across sessions (e.g. authorization, password, token)">Mask patterns</label>
+      <div class="options_label_row">
+        <label for="default_mask_patterns" class="options_label"
+          title="Mask patterns: Permanent list of comma-separated sensitive header or parameter names to automatically mask across sessions (e.g. authorization, password, token)">Mask patterns</label>
+        <span id="status_default_mask_patterns" class="options_saved_badge">✓ Saved</span>
+      </div>
       <textarea id="default_mask_patterns" class="options_textarea" rows="4"
         title="Mask patterns: Permanent list of comma-separated sensitive header or parameter names to automatically mask across sessions (e.g. authorization, password, token)"></textarea>
+    </div>
+    <!-- Future Extension Note: If the preferences page expands in the future and becomes lengthy, add a secondary "Open Tracker" button here at the bottom to avoid requiring users to scroll back to top. -->
+    <div class="options_footer_row">
+      <a id="whats_new_link" class="options_link" href="/src/html/whats-new.html">📖 View What's New & Release History</a>
     </div>
   </div>
 </body>
