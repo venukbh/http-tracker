@@ -3,8 +3,9 @@
   "background": {
     "service_worker": "/src/js/service-worker.js"
   },
-  "description": "Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests",
+  "description": "Real-time network monitor & HTTP inspector: track headers and cookies, export cURL, block URLs, and modify outgoing headers.",
   "manifest_version": 3,
+  "minimum_chrome_version": "102",
   "name": "HTTP-TRACKER",
   "permissions": [
     "storage",
@@ -20,10 +21,10 @@
   "version": "3.2.0",
   "action": {
     "default_icon": {
-      "16": "/src/assets/icon_320px.png",
-      "32": "/src/assets/icon_320px.png"
+      "16": "/src/assets/icon_16px.png",
+      "32": "/src/assets/icon_32px.png"
     },
-    "default_title": "HTTP-TRACKER : Inspect HTTP request headers, cookies, data, response Headers, cookies and add/modify request headers before sending requests"
+    "default_title": "HTTP-TRACKER: Network Monitor & HTTP Inspector (Ctrl+Shift+1)"
   },
   "commands": {
     "_execute_action": {
@@ -38,6 +39,10 @@
     "open_in_tab": true
   },
   "icons": {
+    "16": "/src/assets/icon_16px.png",
+    "32": "/src/assets/icon_32px.png",
+    "48": "/src/assets/icon_48px.png",
+    "128": "/src/assets/icon_128px.png",
     "320": "/src/assets/icon_320px.png"
   },
   "browser_specific_settings": {

@@ -89,6 +89,7 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       const manifest = JSON.parse(manifestStr);
 
       assert.equal(manifest.manifest_version, 3);
+      assert.equal(manifest.minimum_chrome_version, '102', 'Chrome manifest must specify minimum_chrome_version 102');
       assert.ok(manifest.background.service_worker, 'Chrome manifest must specify service_worker');
       assert.equal(manifest.background.scripts, undefined, 'Chrome manifest must NOT contain background.scripts (causes warning)');
     });
@@ -99,6 +100,7 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       const manifest = JSON.parse(manifestStr);
 
       assert.equal(manifest.manifest_version, 3);
+      assert.equal(manifest.minimum_chrome_version, undefined, 'Firefox manifest must not include Chrome-specific minimum_chrome_version');
       assert.ok(Array.isArray(manifest.background.scripts), 'Firefox manifest must specify background.scripts array');
       assert.equal(manifest.background.service_worker, undefined, 'Firefox manifest must NOT contain service_worker');
       assert.equal(

@@ -73,6 +73,7 @@ const firefoxManifest = {
     },
   },
 };
+delete firefoxManifest.minimum_chrome_version;
 
 // Write tailored Firefox manifest
 writeFileSync(join(tempDir, 'manifest.json'), JSON.stringify(firefoxManifest, null, 2) + '\n');
