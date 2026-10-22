@@ -9,6 +9,8 @@ const httpTracker = {
   browser: browserInstance,
   isFF: isFirefox,
   PAGE_PATH: '/src/html/http-tracker.html',
+  PAGE_PATH_WHATS_NEW: '/src/html/whats-new.html',
+  PAGE_PATH_OPTIONS: '/src/html/options.html',
   STORAGE_KEY_EXCLUDE_PATTERN: 'httpTrackerGlobalExcludePatterns',
   STORAGE_KEY_INCLUDE_PATTERN: 'httpTracker_GlobalIncludePatterns',
   STORAGE_KEY_BLOCK_PATTERN: 'httpTracker_GlobalBlockPatterns',
