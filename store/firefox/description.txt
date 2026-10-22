@@ -13,6 +13,15 @@ Designed for frontend engineers, backend developers, QA testers, and security re
 
 ---
 
+### 💡 Why Use HTTP-TRACKER Instead of Built-in DevTools?
+- 🌐 **Cross-Tab & OAuth Tracking**: Built-in DevTools only records the active tab; HTTP-TRACKER aggregates network traffic across all tabs, popups, and OAuth redirects into one unified stream.
+- 🎯 **Zero-Noise API Focus**: Automatically skip fonts, images, and trackers with permanent URL rules so you only see the API calls you care about.
+- 🪟 **Dedicated Second-Screen Workspace**: Operates in its own dedicated window without shrinking or breaking your responsive testing viewport.
+- ⚡ **Silent Native Interception**: Modify headers and block requests via DeclarativeNetRequest session rules with zero intrusive debugger banners.
+- 🎭 **Credential Privacy**: Mask sensitive tokens and passwords on screen during presentations, team demos, and video recordings.
+
+---
+
 ### ✨ Core Features & Capabilities:
 
 🪟 **Centralized Single-Instance Workspace**
