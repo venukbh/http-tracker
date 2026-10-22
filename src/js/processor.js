@@ -242,8 +242,15 @@ const eventTracker = (function() {
     if (copyCurlBtn) {
       copyCurlBtn.onclick = copySelectedEventAsCurl;
     }
-    getById('preferences').addEventListener('click', function() {
-      openAddonOptions();
+    const bindBtn = (id, fn) => {
+      const el = getById(id);
+      if (el) el.addEventListener('click', fn);
+    };
+    bindBtn('preferences', openAddonOptions);
+    bindBtn('whats_new', () => {
+      if (typeof openWhatsNewPage === 'function') {
+        openWhatsNewPage(true);
+      }
     });
     bindInputClearButtons();
     bindColumnFilterEvents();

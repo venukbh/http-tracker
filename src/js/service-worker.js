@@ -21,6 +21,18 @@ httpTracker.browser.runtime.onConnect.addListener((port) => {
   }
 });
 
-httpTracker.browser.runtime.onInstalled.addListener(clearRules);
+const handleInstalled = (details) => {
+  clearRules();
+  if (details?.reason === 'update') {
+    const currentVersion = httpTracker.browser?.runtime?.getManifest?.()?.version;
+    if (details.previousVersion && details.previousVersion !== currentVersion) {
+      if (typeof openWhatsNewPage === 'function') {
+        openWhatsNewPage(false);
+      }
+    }
+  }
+};
+
+httpTracker.browser.runtime.onInstalled.addListener(handleInstalled);
 httpTracker.browser.runtime.onStartup.addListener(clearRules);
 
