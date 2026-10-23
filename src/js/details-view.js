@@ -213,6 +213,10 @@ const httpTrackerDetailsView = (function() {
     const rows = [];
     if (webEventIdDetails) {
       rows.push(renderBannerRow('Headers'));
+
+      const metadataRows = [];
+      const headerRows = [];
+
       Object.entries(webEventIdDetails).forEach(([key, value]) => {
         if (key !== 'responseHeaders' && key !== 'requestHeaders') { // headers added by browser
           if (!ignoreHeaders.has(key) && value !== undefined && value !== null) {
@@ -222,14 +226,17 @@ const httpTrackerDetailsView = (function() {
             const isError = key === 'error' ||
               (key === 'statusCode' && Number(value) >= 400) ||
               (key === 'statusLine' && /\b[45]\d{2}\b/.test(String(value)));
-            rows.push(renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern, isError));
+            metadataRows.push(renderKeyValueRow(key, content, maskPatterns, isMaskEnabled, compiledFindPattern, isError));
           }
-        } else { // application headers
+        } else if (Array.isArray(value)) { // application headers
           const headers = sortJsonByProperty(value, 'name');
-          const headerRows = generateHeaderDetails(headers, optimizeResponseCookies, maskPatterns, isMaskEnabled, compiledFindPattern);
-          rows.push(...headerRows);
+          headerRows.push(...generateHeaderDetails(headers, optimizeResponseCookies, maskPatterns, isMaskEnabled, compiledFindPattern));
         }
       });
+
+      rows.push(...metadataRows);
+      rows.push(...headerRows);
+
       if (detailsType === 'requestDetails' && !webEventIdDetails.requestHeaders) {
         rows.push(renderNoticeRow('Request blocked'));
       }

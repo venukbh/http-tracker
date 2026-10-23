@@ -51,6 +51,15 @@ describe('DNR Session Rules Unit Tests', () => {
       await context.updateBlockSessionRules([]);
       assert.equal(sessionRulesStore.length, 0);
     });
+
+    it('safely caps block rules at MAX_BLOCK_RULES (1000) to prevent ID collision with header rules', async () => {
+      const { context, sessionRulesStore } = createTestContext();
+      const largePatterns = Array.from({ length: 1200 }, (_, i) => `tracker-${i}.com`);
+      await context.updateBlockSessionRules(largePatterns);
+      assert.equal(sessionRulesStore.length, 1000);
+      assert.equal(sessionRulesStore[0].id, 1000);
+      assert.equal(sessionRulesStore[999].id, 1999);
+    });
   });
 
   describe('updateHeaderModifySessionRules', () => {
@@ -142,6 +151,18 @@ describe('DNR Session Rules Unit Tests', () => {
 
       assert.equal(sessionRulesStore.length, 1);
       assert.equal(sessionRulesStore[0].action.requestHeaders[0].header, 'X-Valid-Token');
+    });
+
+    it('safely caps header modify rules at MAX_HEADER_RULES (1000)', async () => {
+      const { context, sessionRulesStore } = createTestContext();
+      const largeHeaders = Array.from({ length: 1200 }, (_, i) => ({
+        name: `X-Header-${i}`,
+        value: `val-${i}`,
+      }));
+      await context.updateHeaderModifySessionRules(largeHeaders);
+      assert.equal(sessionRulesStore.length, 1000);
+      assert.equal(sessionRulesStore[0].id, 2000);
+      assert.equal(sessionRulesStore[999].id, 2999);
     });
   });
 

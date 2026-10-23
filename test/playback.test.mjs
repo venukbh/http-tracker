@@ -272,6 +272,104 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.ok(html.includes('token_v2'), 'Should retain updated cookie token_v2');
       assert.ok(!html.includes('token_v1'), 'Should deduplicate .example.com and example.com');
     });
+
+    it('ensures browser metadata (statusCode, url, ip, error) renders before Cookies banner and never under it', () => {
+      const detailsView = context.httpTrackerDetailsView;
+
+      // Realistic response with streaming drop or ERR_FAILED and Set-Cookie headers
+      const mixedResponse = {
+        documentId: 'D1B2E287C3C65CDFF852BFA92340EAE4',
+        documentLifecycle: 'active',
+        frameType: 'outermost_frame',
+        initiator: 'https://docs.google.com',
+        method: 'GET',
+        statusCode: 200,
+        statusLine: 'HTTP/1.1 200 OK',
+        url: 'https://docs.google.com/spreadsheets/d/test',
+        fromCache: false,
+        ip: '2607:f8b0:4005:806::200e',
+        error: 'net::ERR_FAILED',
+        responseHeaders: [
+          { name: 'content-type', value: 'text/plain; charset=utf-8' },
+          { name: 'cache-control', value: 'no-cache, no-store' },
+          { name: 'Set-Cookie', value: 'SIDCC=test_sidcc_123; domain=.google.com; path=/; Secure' },
+          { name: 'Set-Cookie', value: '__Secure-1PSIDCC=test_1p_456; domain=.google.com; path=/; Secure' },
+        ],
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: null,
+        responseEvent: mixedResponse,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: true,
+        compiledFindPattern: null,
+      });
+
+      const resHtml = domElements.get('response_headers_details_body')?.innerHTML || '';
+      const cookieBannerIdx = resHtml.indexOf('Cookies (optimized)');
+      assert.ok(cookieBannerIdx !== -1, 'Cookies (optimized) banner must be present');
+
+      // 1. All browser metadata must appear BEFORE the cookie banner
+      const errorIdx = resHtml.indexOf('net::ERR_FAILED');
+      const ipIdx = resHtml.indexOf('2607:f8b0:4005:806::200e');
+      const statusCodeIdx = resHtml.indexOf('200');
+      const urlIdx = resHtml.indexOf('spreadsheets/d/test');
+
+      assert.ok(errorIdx !== -1 && errorIdx < cookieBannerIdx, 'error (net::ERR_FAILED) must appear before Cookies banner');
+      assert.ok(ipIdx !== -1 && ipIdx < cookieBannerIdx, 'IP address must appear before Cookies banner');
+      assert.ok(statusCodeIdx !== -1 && statusCodeIdx < cookieBannerIdx, 'statusCode must appear before Cookies banner');
+      assert.ok(urlIdx !== -1 && urlIdx < cookieBannerIdx, 'URL must appear before Cookies banner');
+
+      // 2. Error must have error styling
+      assert.ok(resHtml.includes('web_event_style_error">net::ERR_FAILED</td>'), 'net::ERR_FAILED must be highlighted with web_event_style_error');
+
+      // 3. Cookies must appear AFTER the cookie banner
+      const sidccIdx = resHtml.indexOf('test_sidcc_123');
+      const secureSidccIdx = resHtml.indexOf('test_1p_456');
+      assert.ok(sidccIdx > cookieBannerIdx, 'Cookie SIDCC must appear after Cookies banner');
+      assert.ok(secureSidccIdx > cookieBannerIdx, 'Cookie __Secure-1PSIDCC must appear after Cookies banner');
+    });
+
+    it('isolates request metadata before request Cookies banner', () => {
+      const detailsView = context.httpTrackerDetailsView;
+
+      const requestWithCookies = {
+        method: 'POST',
+        url: 'https://api.example.com/v1/checkout',
+        initiator: 'https://example.com',
+        requestHeaders: [
+          { name: 'Accept', value: 'application/json' },
+          { name: 'Cookie', value: 'session_id=abc; user_pref=dark' },
+        ],
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: requestWithCookies,
+        responseEvent: null,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      const cookieBannerIdx = reqHtml.indexOf('Cookies (sorted:');
+      assert.ok(cookieBannerIdx !== -1, 'Request Cookies banner must be present');
+
+      const methodIdx = reqHtml.indexOf('POST');
+      const urlIdx = reqHtml.indexOf('api.example.com/v1/checkout');
+      const initiatorIdx = reqHtml.indexOf('https://example.com');
+
+      assert.ok(methodIdx < cookieBannerIdx, 'Request method must appear before Cookies banner');
+      assert.ok(urlIdx < cookieBannerIdx, 'Request URL must appear before Cookies banner');
+      assert.ok(initiatorIdx < cookieBannerIdx, 'Request initiator must appear before Cookies banner');
+
+      const cookieValIdx = reqHtml.indexOf('user_pref');
+      assert.ok(cookieValIdx > cookieBannerIdx, 'Request cookie user_pref must appear after Cookies banner');
+    });
   });
 
   /* -------------------------------------------------------------------------
