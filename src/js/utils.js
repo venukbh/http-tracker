@@ -145,6 +145,7 @@ function updateBlockSessionRules(patterns) {
   const resourceTypes = getAllResourceTypes();
   const addRules = normalizePatterns(patterns)
       .filter((p) => p.trim().length > 0)
+      .slice(0, MAX_BLOCK_RULES)
       .map((pattern, index) => ({
         id: BLOCK_RULE_BASE + index,
         priority: 1,
@@ -168,6 +169,7 @@ function updateHeaderModifySessionRules(headerRows) {
       .filter((row) => RFC_HEADER_NAME_REGEX.test(row.name.trim()))
       .filter((row) => !FORBIDDEN_HEADERS.some((v) => row.name.toLowerCase() === v.toLowerCase()) &&
                        !FORBIDDEN_HEADER_PREFIXES.some((p) => row.name.toLowerCase().startsWith(p.toLowerCase())))
+      .slice(0, MAX_HEADER_RULES)
       .map((row, index) => ({
         id: HEADER_RULE_BASE + index,
         priority: 1,

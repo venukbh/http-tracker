@@ -2,8 +2,6 @@ const eventTracker = (function() {
   let isCaptureFormDataEnabled = false;
   let activeColumnFilters = null;
   const COLUMN_FILTER_KEYS = ['url', 'method', 'status', 'date', 'cache'];
-  let parsedSmartFilter = null;
-  let filterWithValue = '';
   let globalExcludeURLsList;
   let globalIncludeURLsList;
   let globalMaskPatternsList;
@@ -14,8 +12,6 @@ const eventTracker = (function() {
   let isCapturingEvents = true;
   let findPatterns = '';
   let compiledFindPattern = null;
-  let multipleSearchPatterns = [];
-  let isANDFilter = false;
   let excludeURLsList;
   let includeURLsList;
   let blockURLsList;
@@ -51,7 +47,7 @@ const eventTracker = (function() {
       updateEventRow(webEvent);
     }
     filterEventRow(webEvent);
-    if (multipleSearchPatterns.length > 0) {
+    if (activeColumnFilters) {
       updateDeleteFilteredButton();
     }
   }
@@ -615,26 +611,24 @@ const eventTracker = (function() {
   }
 
   function updateAllButtons() {
-    updateClearFilterButton();
     updateDeleteSelectedButton();
     updateDeleteFilteredButton();
-  }
-
-  function updateClearFilterButton() {
-    const clearBtn = getById('clear_filter_web_events');
-    if (clearBtn) {
-      clearBtn.disabled = !activeColumnFilters;
-    }
   }
 
   function updateDeleteFilteredButton() {
     const isEnabled = Boolean(activeColumnFilters) &&
       Boolean(getById('urls_list')?.querySelector('.web_event_list_blank:not(.web_event_list_hide)'));
-    getById('delete_all_filtered_web_events').disabled = !isEnabled;
+    const btn = getById('delete_all_filtered_web_events');
+    if (btn) {
+      btn.disabled = !isEnabled;
+    }
   }
 
   function updateDeleteSelectedButton() {
-    getById('delete_selected_web_event').disabled = !getSelectedEvent();
+    const btn = getById('delete_selected_web_event');
+    if (btn) {
+      btn.disabled = !getSelectedEvent();
+    }
   }
 
   function copySelectedEventAsCurl() {
