@@ -126,12 +126,10 @@ const FIREFOX_RESOURCE_TYPES = [
 const FALLBACK_RESOURCE_TYPES = CHROME_RESOURCE_TYPES;
 
 function getAllResourceTypes() {
-  const isFirefox = (typeof httpTracker !== 'undefined' && (httpTracker.isFF || httpTracker.isFirefox));
-  if (isFirefox) {
+  if (httpTracker.isFF) {
     return FIREFOX_RESOURCE_TYPES;
   }
-  const dnrResourceType = (typeof httpTracker !== 'undefined' &&
-    httpTracker.browser?.declarativeNetRequest?.ResourceType);
+  const dnrResourceType = httpTracker.browser?.declarativeNetRequest?.ResourceType;
   if (dnrResourceType && typeof dnrResourceType === 'object') {
     return Object.values(dnrResourceType);
   }

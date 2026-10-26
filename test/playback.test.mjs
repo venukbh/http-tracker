@@ -57,6 +57,27 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       // 404 response
       assert.equal(eventCache.getResponse('39531')?.statusCode, 404);
     });
+
+    it('records and tracks multi-hop redirects even when IP is omitted (Chromium HSTS 307 & disk cache)', () => {
+      eventCache.clearAll();
+      for (const event of events) {
+        const e = { ...event };
+        if (e.callerName === 'onBeforeRedirect') {
+          delete e.ip;
+        }
+        eventCache.recordEvent(e);
+      }
+
+      const hop1 = eventCache.getRequest('39521');
+      const hop2 = eventCache.getRequest('39521_1');
+      const hop3 = eventCache.getRequest('39521_2');
+      assert.equal(hop1?.url, 'https://httpbin.org/redirect/2');
+      assert.equal(hop2?.url, 'https://httpbin.org/relative-redirect/1');
+      assert.equal(hop3?.url, 'https://httpbin.org/get');
+      assert.equal(eventCache.getResponse('39521')?.statusCode, 302);
+      assert.equal(eventCache.getResponse('39521_1')?.statusCode, 302);
+      assert.equal(eventCache.getResponse('39521_2')?.statusCode, 200);
+    });
   });
 
   /* -------------------------------------------------------------------------
@@ -469,6 +490,40 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       assert.ok(resHtml.includes('net::ERR_BLOCKED_BY_CLIENT'), 'Should display error code in response details');
       assert.ok(resHtml.includes('web_event_style_error">net::ERR_BLOCKED_BY_CLIENT'), 'Error code in response details should be styled with web_event_style_error');
     });
+
+    it('renders informative notice and avoids false "Request blocked" when a request is redirected before headers are sent', () => {
+      const detailsView = context.httpTrackerDetailsView;
+
+      const redirectRequest = {
+        requestId: 'upgrade-1',
+        url: 'http://example.org/',
+        method: 'GET',
+        initiator: 'http://example.org/',
+      };
+      const redirectResponse = {
+        requestId: 'upgrade-1',
+        url: 'http://example.org/',
+        statusCode: 307,
+        statusLine: 'HTTP/1.1 307 Internal Redirect',
+        redirectUrl: 'https://example.org/',
+      };
+
+      detailsView.renderSelectedEventDetails({
+        requestEvent: redirectRequest,
+        responseEvent: redirectResponse,
+        requestBody: null,
+        maskPatterns: [],
+        isMaskEnabled: false,
+        optimizeResponseCookies: false,
+        compiledFindPattern: null,
+      });
+
+      const reqHtml = domElements.get('request_headers_details_body')?.innerHTML || '';
+      assert.ok(reqHtml.includes('http://example.org/'), 'Should display requested URL');
+      assert.equal(reqHtml.includes('Request blocked'), false, 'Must NOT display "Request blocked" for redirects');
+      assert.ok(reqHtml.includes('No request headers sent (internal browser redirect)'), 'Should display informational notice');
+      assert.equal(reqHtml.includes('web_event_style_error">No request headers sent'), false, 'Informational notice must not have error styling');
+    });
   });
 
   /* -------------------------------------------------------------------------
@@ -728,11 +783,31 @@ describe('Browser WebEvent Playback & Feature Verification Tests', () => {
       detailsView.deleteCookiesForSelectedDomain();
       await new Promise((resolve) => setTimeout(resolve, 20));
 
+      assert.deepEqual(mockBrowser.cookies.lastGetAllDetails, { domain: 'api.github.com', partitionKey: {} });
       assert.equal(mockBrowser.cookies.removed.length, 2);
       assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'session_id'), true);
       assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'pref'), true);
       assert.equal(mockBrowser.cookies.removed.some((c) => c.name === 'unrelated'), false);
       assert.equal(btnEl.textContent, 'Deleted!');
+    });
+
+    it('passes firstPartyDomain: null and omits partitionKey in cookies.getAll when in Firefox mode', async () => {
+      const detailsView = context.httpTrackerDetailsView;
+      const inputEl = globalThis.document.getElementById('delete_cookies');
+      inputEl.value = 'https://example.org/path';
+
+      const prevFF = context.httpTracker.isFF;
+      context.httpTracker.isFF = true;
+      try {
+        detailsView.deleteCookiesForSelectedDomain();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+
+        assert.equal(mockBrowser.cookies.lastGetAllDetails?.domain, 'example.org');
+        assert.equal(mockBrowser.cookies.lastGetAllDetails?.partitionKey, undefined);
+        assert.equal(mockBrowser.cookies.lastGetAllDetails?.firstPartyDomain, null);
+      } finally {
+        context.httpTracker.isFF = prevFF;
+      }
     });
   });
 
