@@ -64,10 +64,12 @@
           <div class="wn_timeline_section_title">Architecture, Security & Standards</div>
           <ul>
             <li><span class="wn_tag wn_tag_sec">Sec</span> <strong>Strict Origin Window Scoping</strong>: Single-instance window and tab deduplication now cryptographically matches only this extension's runtime URL, eliminating false positives from foreign extensions or matching web pages.</li>
+            <li><span class="wn_tag wn_tag_feat">Fix</span> <strong>Redirect Resiliency & DevTools Parity</strong>: Full parity with Chromium navigation-layer upgrades (internal 307 redirects) and eliminated false <code>ERR_ABORTED</code> error highlighting on redirected hops.</li>
+            <li><span class="wn_tag wn_tag_sec">Sec</span> <strong>Cross-Browser Cookie Partitioning</strong>: Support for Chrome CHIPS partitioned cookies (<code>partitionKey</code>) and Firefox Total Cookie Protection (<code>firstPartyDomain: null</code>) ensuring 100% complete domain cookie cleanup.</li>
             <li><span class="wn_tag wn_tag_sec">Sec</span> <strong>Store Security & Privacy Hygiene</strong>: Fully audited and compliant with Chrome Web Store and Mozilla AMO automated security checks with a strict zero-data-collection policy.</li>
             <li><span class="wn_tag wn_tag_perf">Perf</span> <strong>Safe & Responsive Details View</strong>: Eliminated <code>innerHTML</code> across the details inspector in favor of native DOM <code>replaceChildren()</code> and safe template cloning.</li>
             <li><span class="wn_tag wn_tag_build">Build</span> <strong>ES2022 & Manifest V3 Modernization</strong>: Modernized codebase to ES2022 (native <code>async/await</code>, <code>String.prototype.at</code>), and added Chrome 102+ DNR baseline with strict zero-data-collection Mozilla AMO compliance.</li>
-            <li><span class="wn_tag wn_tag_feat">Test</span> <strong>Comprehensive Automated Verification</strong>: 193 native unit and integration tests protecting cURL export, tab deduplication, DNR rules, and cookie isolation with zero runtime dependencies.</li>
+            <li><span class="wn_tag wn_tag_feat">Test</span> <strong>Comprehensive Automated Verification</strong>: 207 native unit and integration tests protecting cURL export, tab deduplication, DNR rules, redirect flows, and cookie isolation with zero runtime dependencies.</li>
           </ul>
         </div>
       </article>
