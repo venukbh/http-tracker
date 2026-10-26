@@ -8,12 +8,13 @@
   "minimum_chrome_version": "102",
   "name": "HTTP-TRACKER",
   "permissions": [
-    "storage",
-    "webRequest",
-    "tabs",
     "cookies",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "webRequest"
   ],
   "host_permissions": [
     "<all_urls>"

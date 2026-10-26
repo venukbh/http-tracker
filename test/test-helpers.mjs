@@ -18,6 +18,14 @@ export function createTestContext(customGlobals = {}) {
         action: { default_title: 'HTTP-TRACKER' },
       }),
       lastError: null,
+      connect: () => ({
+        onDisconnect: { addListener: () => {}, removeListener: () => {} },
+      }),
+    },
+    action: {
+      setTitle: () => {},
+      setIcon: () => {},
+      onClicked: { addListener: () => {}, removeListener: () => {}, hasListener: () => false },
     },
     declarativeNetRequest: {
       updateSessionRules: async ({ removeRuleIds = [], addRules = [] }) => {
@@ -33,6 +41,10 @@ export function createTestContext(customGlobals = {}) {
       getSessionRules: async () => [...sessionRulesStore],
     },
     storage: {
+      onChanged: {
+        addListener: () => {},
+        removeListener: () => {},
+      },
       sync: {
         get: async (keys) => {
           const result = {};
@@ -62,18 +74,44 @@ export function createTestContext(customGlobals = {}) {
     cookies: {
       stored: [],
       removed: [],
+      lastGetAllDetails: null,
       getAll: async (details = {}) => {
+        mockBrowser.cookies.lastGetAllDetails = details;
         if (!details.domain) return [...mockBrowser.cookies.stored];
         const targetDomain = details.domain.toLowerCase().replace(/^\./, '');
         return mockBrowser.cookies.stored.filter((c) => {
           const cookieDomain = (c.domain || '').toLowerCase().replace(/^\./, '');
-          return cookieDomain === targetDomain || cookieDomain.endsWith(`.${targetDomain}`) || targetDomain.endsWith(`.${cookieDomain}`);
+          const domainMatch = cookieDomain === targetDomain || cookieDomain.endsWith(`.${targetDomain}`) || targetDomain.endsWith(`.${cookieDomain}`);
+          if (!domainMatch) return false;
+          if (details.firstPartyDomain !== undefined && details.firstPartyDomain !== null) {
+            return c.firstPartyDomain === details.firstPartyDomain;
+          }
+          return true;
         });
       },
       remove: async (details) => {
         mockBrowser.cookies.removed.push(details);
         return details;
       },
+    },
+    webRequest: {
+      onBeforeRequest: { addListener: () => {} },
+      onBeforeSendHeaders: { addListener: () => {} },
+      onSendHeaders: { addListener: () => {} },
+      onHeadersReceived: { addListener: () => {} },
+      onAuthRequired: { addListener: () => {} },
+      onBeforeRedirect: { addListener: () => {} },
+      onResponseStarted: { addListener: () => {} },
+      onCompleted: { addListener: () => {} },
+      onErrorOccurred: { addListener: () => {} },
+    },
+    webNavigation: {
+      onBeforeNavigate: { addListener: () => {} },
+      onCommitted: { addListener: () => {} },
+    },
+    tabs: {
+      onUpdated: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
     },
   };
 
@@ -119,7 +157,15 @@ export function createTestContext(customGlobals = {}) {
     const classSet = new Set();
     const el = {
       tagName: tag.toUpperCase(),
-      id,
+      _id: id || '',
+      get id() {
+        return this._id;
+      },
+      set id(val) {
+        if (this._id) domElements.delete(this._id);
+        this._id = String(val);
+        if (this._id) domElements.set(this._id, this);
+      },
       className: '',
       colSpan: undefined,
       value: '',
@@ -177,8 +223,21 @@ export function createTestContext(customGlobals = {}) {
         this.children.push(child);
         return child;
       },
+      addEventListener: function(evt, fn) {
+        if (!this._listeners) this._listeners = {};
+        if (!this._listeners[evt]) this._listeners[evt] = [];
+        this._listeners[evt].push(fn);
+      },
+      removeEventListener: function() {},
+      dispatchEvent: function(evt) {
+        const type = typeof evt === 'string' ? evt : evt?.type;
+        (this._listeners?.[type] || []).forEach(fn => fn(evt));
+      },
       remove: () => {},
     };
+    if (id) {
+      domElements.set(id, el);
+    }
     return el;
   };
 
@@ -196,6 +255,8 @@ export function createTestContext(customGlobals = {}) {
     querySelectorAll: (sel) => [],
     createElement: (tag) => createMockElement(tag),
     createTextNode: (text) => ({ nodeType: 3, textContent: String(text) }),
+    addEventListener: () => {},
+    removeEventListener: () => {},
     ...customGlobals.document,
   };
 
@@ -320,7 +381,6 @@ export function runDomEventsInBrowser(isFirefox) {
 
   const fakeHttpTracker = {
     isFF: isFirefox,
-    isFirefox: isFirefox,
     browser: {
       webRequest: mockWebRequest,
     },
@@ -335,4 +395,52 @@ export function runDomEventsInBrowser(isFirefox) {
   runner(fakeHttpTracker, fakeEventTracker);
 
   return registeredListeners;
+}
+
+export function createProcessorContext(customGlobals = {}) {
+  let domLoadedHandler = null;
+  if (!globalThis.addEventListener) {
+    globalThis.addEventListener = () => {};
+    globalThis.removeEventListener = () => {};
+  }
+  const { context, mockBrowser, sessionRulesStore, storageStore, domElements } = createTestContext({
+    document: {
+      addEventListener: (evt, fn) => {
+        if (evt === 'DOMContentLoaded') domLoadedHandler = fn;
+      },
+      removeEventListener: () => {},
+      ...customGlobals.document,
+    },
+    ...customGlobals,
+  });
+
+  const constantsCode = fs.readFileSync(path.join(rootDir, 'src/js/constants.js'), 'utf-8');
+  const utilsCode = fs.readFileSync(path.join(rootDir, 'src/js/utils.js'), 'utf-8');
+  const eventCacheCode = fs.readFileSync(path.join(rootDir, 'src/js/event-cache.js'), 'utf-8');
+  const detailsCode = fs.readFileSync(path.join(rootDir, 'src/js/details-view.js'), 'utf-8');
+  const headerRulesCode = fs.readFileSync(path.join(rootDir, 'src/js/header-rules.js'), 'utf-8');
+  const openCode = fs.readFileSync(path.join(rootDir, 'src/js/open.js'), 'utf-8');
+  const processorCode = fs.readFileSync(path.join(rootDir, 'src/js/processor.js'), 'utf-8');
+  const domEventsCode = fs.readFileSync(path.join(rootDir, 'src/js/dom-events.js'), 'utf-8');
+
+  const fn = new Function('globalThis', 'window', 'document', 'navigator', 'chrome', 'browser', `
+    ${constantsCode}
+    ${utilsCode}
+    ${eventCacheCode}
+    ${detailsCode}
+    ${headerRulesCode}
+    ${openCode}
+    ${processorCode}
+    ${domEventsCode}
+    return { eventTracker, httpTrackerEventCache, httpTrackerDetailsView, domEvents: globalThis.httpTrackerDomEvents };
+  `);
+  const res = fn(globalThis, globalThis, globalThis.document, globalThis.navigator, mockBrowser, mockBrowser);
+  domLoadedHandler?.();
+
+  return {
+    ...res,
+    mockBrowser,
+    domElements,
+    document: globalThis.document,
+  };
 }

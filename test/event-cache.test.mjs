@@ -27,14 +27,82 @@ describe('httpTrackerEventCache Unit Tests', () => {
       assert.equal(event2.requestIdEnhanced, 'req-102_1');
     });
 
-    it('ignores onBeforeRedirect when IP is missing (Firefox bug workaround)', () => {
-      const event = { requestId: 'req-103', requestIdEnhanced: 'req-103' };
-      eventCache.setRedirectCount(event);
-      eventCache.handleRedirect(event); // missing ip
+    it('ignores premature onBeforeRedirect in Firefox when status, headers, and IP are missing', () => {
+      const prevFF = context.httpTracker.isFF;
+      context.httpTracker.isFF = true;
+      try {
+        const event = { requestId: 'req-103', requestIdEnhanced: 'req-103' };
+        eventCache.setRedirectCount(event);
+        eventCache.handleRedirect(event); // missing status, headers, and ip in Firefox
 
-      const nextEvent = { requestId: 'req-103', requestIdEnhanced: 'req-103' };
-      eventCache.setRedirectCount(nextEvent);
-      assert.equal(nextEvent.requestIdEnhanced, 'req-103');
+        const nextEvent = { requestId: 'req-103', requestIdEnhanced: 'req-103' };
+        eventCache.setRedirectCount(nextEvent);
+        assert.equal(nextEvent.requestIdEnhanced, 'req-103');
+      } finally {
+        context.httpTracker.isFF = prevFF;
+      }
+    });
+
+    it('enhances requestId on Firefox internal HSTS redirects where IP and headers are omitted but redirectUrl is present', () => {
+      const prevFF = context.httpTracker.isFF;
+      context.httpTracker.isFF = true;
+      try {
+        const event1 = {
+          requestId: 'req-ff-hsts',
+          requestIdEnhanced: 'req-ff-hsts',
+          url: 'http://mail.google.com/',
+          redirectUrl: 'https://mail.google.com/',
+        }; // Missing ip, statusCode, and responseHeaders in Firefox
+        eventCache.setRedirectCount(event1);
+        eventCache.handleRedirect(event1);
+
+        // Verifies counter was incremented and next hop pre-created
+        const event2 = {
+          requestId: 'req-ff-hsts',
+          requestIdEnhanced: 'req-ff-hsts',
+          url: 'https://mail.google.com/',
+        };
+        eventCache.setRedirectCount(event2);
+        assert.equal(event2.requestIdEnhanced, 'req-ff-hsts_1');
+        assert.equal(eventCache.getRequest('req-ff-hsts_1')?.url, 'https://mail.google.com/');
+      } finally {
+        context.httpTracker.isFF = prevFF;
+      }
+    });
+
+    it('enhances requestId on Chromium HSTS 307 internal redirects where IP is omitted', () => {
+      const event1 = {
+        requestId: 'req-hsts',
+        requestIdEnhanced: 'req-hsts',
+        statusCode: 307,
+        statusLine: 'HTTP/1.1 307 Internal Redirect',
+        redirectUrl: 'https://mail.google.com/mail/u/0/',
+      }; // No IP
+      eventCache.setRedirectCount(event1);
+      eventCache.handleRedirect(event1);
+
+      // Pre-creates next hop record with redirectUrl
+      assert.equal(eventCache.getRequest('req-hsts_1')?.url, 'https://mail.google.com/mail/u/0/');
+
+      const event2 = { requestId: 'req-hsts', requestIdEnhanced: 'req-hsts', url: 'https://mail.google.com/mail/u/0/' };
+      eventCache.setRedirectCount(event2);
+      assert.equal(event2.requestIdEnhanced, 'req-hsts_1');
+    });
+
+    it('enhances requestId on disk-cached 301 redirects where IP is omitted', () => {
+      const event1 = {
+        requestId: 'req-cached',
+        requestIdEnhanced: 'req-cached',
+        statusCode: 301,
+        fromCache: true,
+        redirectUrl: 'https://example.com/target',
+      }; // No IP
+      eventCache.setRedirectCount(event1);
+      eventCache.handleRedirect(event1);
+
+      const event2 = { requestId: 'req-cached', requestIdEnhanced: 'req-cached', url: 'https://example.com/target' };
+      eventCache.setRedirectCount(event2);
+      assert.equal(event2.requestIdEnhanced, 'req-cached_1');
     });
   });
 
@@ -204,6 +272,13 @@ describe('httpTrackerEventCache Unit Tests', () => {
       assert.equal(eventCache.getRequest(baseId)?.url, 'https://site.com/0');
       assert.equal(eventCache.getRequest(`${baseId}_1`)?.url, 'https://site.com/1');
       assert.equal(eventCache.getRequest(`${baseId}_3`)?.url, 'https://site.com/3');
+
+      // Deleting base hop (Hop 0) while other hops exist preserves redirect counter for subsequent events
+      eventCache.removeEntry(baseId, baseId);
+      assert.equal(eventCache.getRequest(baseId), undefined);
+      const e4 = { requestId: baseId, requestIdEnhanced: baseId };
+      eventCache.setRedirectCount(e4);
+      assert.equal(e4.requestIdEnhanced, `${baseId}_3`);
     });
 
     it('safely handles null, undefined, or malformed events without throwing exceptions', () => {

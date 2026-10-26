@@ -25,9 +25,16 @@ const eventTracker = (function() {
   }
 
   function captureAndRecordEvent(webEvent) {
-    if (isCapturingEvents && isEventToCapture(webEvent)) {
+    if (!isCapturingEvents) {
+      return false;
+    }
+    httpTrackerEventCache.setRedirectCount(webEvent);
+    if (isEventToCapture(webEvent)) {
       httpTrackerEventCache.recordEvent(webEvent, isCaptureFormDataEnabled);
       return true;
+    }
+    if (webEvent.callerName === 'onBeforeRedirect') {
+      httpTrackerEventCache.handleRedirect(webEvent);
     }
     return false;
   }
@@ -36,8 +43,9 @@ const eventTracker = (function() {
     if (webEvent.requestIdEnhanced?.includes('fakeRequest')) {
       return false;
     }
-    return matchesIncludePattern(webEvent.url, includeURLsList, globalIncludeURLsList) &&
-      !matchesExcludePattern(webEvent.url, excludeURLsList, globalExcludeURLsList);
+    const targetUrl = webEvent.url || httpTrackerEventCache.getRequest(webEvent.requestIdEnhanced)?.url;
+    return matchesIncludePattern(targetUrl, includeURLsList, globalIncludeURLsList) &&
+      !matchesExcludePattern(targetUrl, excludeURLsList, globalExcludeURLsList);
   }
 
   function addOrUpdateUrlListToPage(webEvent) {
@@ -45,6 +53,20 @@ const eventTracker = (function() {
       addEventRow(webEvent);
     } else {
       updateEventRow(webEvent);
+    }
+    if (webEvent.callerName === 'onBeforeRedirect' && webEvent.redirectUrl) {
+      const redirectCount = httpTrackerEventCache.getRedirectCount(webEvent.requestId);
+      const nextEnhancedId = `${webEvent.requestId}_${redirectCount}`;
+      if (!httpTrackerEventCache.hasEvent(nextEnhancedId)) {
+        addEventRow({
+          requestId: webEvent.requestId,
+          requestIdEnhanced: nextEnhancedId,
+          url: webEvent.redirectUrl,
+          method: webEvent.method || 'GET',
+          timeStamp: webEvent.timeStamp,
+          type: webEvent.type,
+        });
+      }
     }
     filterEventRow(webEvent);
     if (activeColumnFilters) {
@@ -72,19 +94,30 @@ const eventTracker = (function() {
     getById('urls_list')?.appendChild(row);
   }
 
+  function isAbortedNavigation(webEvent) {
+    if (!webEvent?.error?.includes('ERR_ABORTED')) {
+      return false;
+    }
+    const cachedResponse = httpTrackerEventCache.getResponse(webEvent.requestIdEnhanced);
+    return (webEvent.statusCode && Number(webEvent.statusCode) < 400) ||
+      (cachedResponse?.statusCode && Number(cachedResponse.statusCode) < 400);
+  }
+
   function populateUrlRow(row, webEvent) {
     row.id = `web_events_list_${webEvent.requestIdEnhanced}`;
     row.dataset.requestId = webEvent.requestIdEnhanced;
     row.dataset.rawRequestId = webEvent.requestId;
 
     const [urlDiv, methodDiv, statusDiv, timeDiv, cacheDiv] = row.children;
+    const displayUrl = webEvent.url || httpTrackerEventCache.getRequest(webEvent.requestIdEnhanced)?.url || '';
     urlDiv.id = `web_event_url_${webEvent.requestIdEnhanced}`;
     urlDiv.className = 'web_event_list_url';
-    urlDiv.textContent = webEvent.url;
+    urlDiv.textContent = displayUrl;
 
+    const displayMethod = webEvent.method || httpTrackerEventCache.getRequest(webEvent.requestIdEnhanced)?.method || 'GET';
     methodDiv.id = `web_event_method_${webEvent.requestIdEnhanced}`;
     methodDiv.className = 'web_event_list_method';
-    methodDiv.textContent = webEvent.method;
+    methodDiv.textContent = displayMethod;
 
     statusDiv.id = `web_event_status_${webEvent.requestIdEnhanced}`;
     statusDiv.className = 'web_event_list_status';
@@ -98,7 +131,7 @@ const eventTracker = (function() {
     cacheDiv.className = 'web_event_list_cache';
     cacheDiv.textContent = webEvent.fromCache ?? 'N/A';
 
-    if (webEvent.callerName === 'onErrorOccurred' || webEvent.error || (webEvent.statusCode && Number(webEvent.statusCode) >= 400)) {
+    if (!isAbortedNavigation(webEvent) && (webEvent.callerName === 'onErrorOccurred' || webEvent.error || (webEvent.statusCode && Number(webEvent.statusCode) >= 400))) {
       row.classList.add('web_event_style_error');
     }
   }
@@ -107,10 +140,13 @@ const eventTracker = (function() {
     const listEl = getById(`web_events_list_${webEvent.requestIdEnhanced}`);
     const statusEl = getById(`web_event_status_${webEvent.requestIdEnhanced}`);
     const cacheEl = getById(`web_event_cache_${webEvent.requestIdEnhanced}`);
+
     if (webEvent.callerName === 'onErrorOccurred' || webEvent.error) {
-      listEl?.classList.add('web_event_style_error');
-      if (statusEl) {
-        statusEl.textContent = STRING_ERROR;
+      if (!isAbortedNavigation(webEvent)) {
+        listEl?.classList.add('web_event_style_error');
+        if (statusEl) {
+          statusEl.textContent = STRING_ERROR;
+        }
       }
     } else if (webEvent.statusCode) {
       if (Number(webEvent.statusCode) >= 400) {
