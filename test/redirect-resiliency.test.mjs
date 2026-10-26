@@ -253,4 +253,95 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
     assert.equal(proc.document.getElementById('web_event_url_4020')?.textContent, 'https://example.org/s.js');
     assert.equal(proc.document.getElementById('web_event_status_4020')?.textContent, '200');
   });
+
+  it('does NOT synthesize a duplicate HttpsUpgrades redirect for HSTS domains where native 307 already fired (e.g. github.com)', () => {
+    const proc = createProcessorContext();
+    const tabId = 100;
+    const timeStamp = 1000;
+
+    // 1. Navigation starts: user navigates to http://github.com/?ljk
+    proc.domEvents.recordPendingNavigation(tabId, 'http://github.com/?ljk', timeStamp);
+
+    // 2. Native webRequest fires onBeforeRequest for http://github.com/?ljk
+    proc.domEvents.forwardEvent('onBeforeRequest')({
+      callerName: 'onBeforeRequest',
+      requestId: 'hsts-101',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'http://github.com/?ljk',
+      method: 'GET',
+      timeStamp: timeStamp + 10,
+    });
+
+    // 3. Native webRequest fires onBeforeRedirect (307 HSTS)
+    proc.domEvents.forwardEvent('onBeforeRedirect')({
+      callerName: 'onBeforeRedirect',
+      requestId: 'hsts-101',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'http://github.com/?ljk',
+      redirectUrl: 'https://github.com/?ljk',
+      method: 'GET',
+      statusCode: 307,
+      statusLine: 'HTTP/1.1 307 Internal Redirect',
+      responseHeaders: [
+        { name: 'Location', value: 'https://github.com/?ljk' },
+        { name: 'Non-Authoritative-Reason', value: 'HSTS' },
+      ],
+      timeStamp: timeStamp + 20,
+    });
+
+    // 4. Native webRequest fires onBeforeRequest for https://github.com/?ljk
+    proc.domEvents.forwardEvent('onBeforeRequest')({
+      callerName: 'onBeforeRequest',
+      requestId: 'hsts-101',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'https://github.com/?ljk',
+      method: 'GET',
+      timeStamp: timeStamp + 30,
+    });
+
+    // 5. Native webRequest completes with 200 OK
+    proc.domEvents.forwardEvent('onCompleted')({
+      callerName: 'onCompleted',
+      requestId: 'hsts-101',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'https://github.com/?ljk',
+      method: 'GET',
+      statusCode: 200,
+      timeStamp: timeStamp + 50,
+    });
+
+    // VERIFICATION:
+    // Exactly 2 rows must exist in DOM:
+    // Row 0: http://github.com/?ljk (307 HSTS)
+    // Row 1: https://github.com/?ljk (200 OK)
+    // There must NOT be any duplicate Row 2 or synthetic "HttpsUpgrades" redirect!
+    const urlsList = proc.document.getElementById('urls_list');
+    assert.equal(urlsList.children.length, 2, 'Must contain exactly 2 rows in DOM');
+
+    const row0 = urlsList.children.find(c => c.id === 'web_events_list_hsts-101');
+    const row1 = urlsList.children.find(c => c.id === 'web_events_list_hsts-101_1');
+    const row2 = urlsList.children.find(c => c.id === 'web_events_list_hsts-101_2');
+
+    assert.ok(row0, 'Hop 0 row (http://github.com/) must exist in DOM');
+    assert.equal(proc.document.getElementById('web_event_status_hsts-101')?.textContent, '307');
+    assert.equal(proc.httpTrackerEventCache.getResponse('hsts-101')?.responseHeaders?.some(h => h.value === 'HSTS'), true);
+
+    assert.ok(row1, 'Hop 1 row (https://github.com/) must exist in DOM');
+    assert.equal(proc.document.getElementById('web_event_status_hsts-101_1')?.textContent, '200');
+
+    assert.equal(row2, undefined, 'Must NOT create a duplicate 2nd redirect row (hsts-101_2) in DOM!');
+    assert.equal(proc.httpTrackerEventCache.hasEvent('hsts-101_2'), false, 'Must NOT have event hsts-101_2 in cache');
+  });
 });
