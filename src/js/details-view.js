@@ -47,13 +47,17 @@ const httpTrackerDetailsView = (function() {
     return tr;
   }
 
-  function renderNoticeRow(message, key = '') {
+  function renderNoticeRow(message, key = '', isError = true) {
     const tr = document.createElement('tr');
     const tdKey = document.createElement('td');
     tdKey.className = 'web_event_detail_header_key';
     tdKey.textContent = key;
     const tdVal = document.createElement('td');
-    tdVal.className = 'web_event_detail_header_value web_event_style_error';
+    tdVal.className = isError ? 'web_event_detail_header_value web_event_style_error' : 'web_event_detail_header_value';
+    if (!isError) {
+      tdVal.style.color = '#888';
+      tdVal.style.fontStyle = 'italic';
+    }
     tdVal.textContent = message;
     tr.appendChild(tdKey);
     tr.appendChild(tdVal);
@@ -114,8 +118,8 @@ const httpTrackerDetailsView = (function() {
     optimizeResponseCookies,
     compiledFindPattern,
   }) {
-    const requestRows = buildURLDetailsRows(requestEvent, 'requestDetails', maskPatterns, isMaskEnabled, compiledFindPattern, false);
-    const responseRows = buildURLDetailsRows(responseEvent, 'responseDetails', maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies);
+    const requestRows = buildURLDetailsRows(requestEvent, 'requestDetails', maskPatterns, isMaskEnabled, compiledFindPattern, false, responseEvent);
+    const responseRows = buildURLDetailsRows(responseEvent, 'responseDetails', maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies, requestEvent);
     const requestFormRows = buildRequestFormRows(requestBody, maskPatterns, isMaskEnabled, compiledFindPattern);
 
     const reqEl = getById('web_event_details_selected_request');
@@ -209,7 +213,7 @@ const httpTrackerDetailsView = (function() {
     }
   }
 
-  function buildURLDetailsRows(webEventIdDetails, detailsType, maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies) {
+  function buildURLDetailsRows(webEventIdDetails, detailsType, maskPatterns, isMaskEnabled, compiledFindPattern, optimizeResponseCookies, relatedEvent) {
     const rows = [];
     if (webEventIdDetails) {
       rows.push(renderBannerRow('Headers'));
@@ -238,7 +242,14 @@ const httpTrackerDetailsView = (function() {
       rows.push(...headerRows);
 
       if (detailsType === 'requestDetails' && !webEventIdDetails.requestHeaders) {
-        rows.push(renderNoticeRow('Request blocked'));
+        const isRedirect = (relatedEvent?.statusCode && Number(relatedEvent.statusCode) >= 300 && Number(relatedEvent.statusCode) < 400) ||
+          Boolean(relatedEvent?.redirectUrl) ||
+          Boolean(webEventIdDetails.redirectUrl);
+        if (isRedirect) {
+          rows.push(renderNoticeRow('No request headers sent (internal browser redirect)', '', false));
+        } else {
+          rows.push(renderNoticeRow('Request blocked'));
+        }
       }
     } else if (detailsType === 'responseDetails') {
       rows.push(renderNoticeRow('Response not available'));
