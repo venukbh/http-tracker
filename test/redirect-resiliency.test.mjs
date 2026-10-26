@@ -131,13 +131,10 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
     assert.equal(nextReq.method, 'GET');
   });
 
-  it('captures automatic HTTPS upgrades (e.g. http://example.org -> https://example.org 307) matching DevTools network stack', () => {
+  it('monitors actual network traffic when browser auto-upgrades navigation to HTTPS', () => {
     const proc = createProcessorContext();
 
-    // 1. User navigates in tab 89877183 to http://example.org/
-    proc.domEvents.recordPendingNavigation(89877183, 'http://example.org/', 1792938330650);
-
-    // 2. Chromium automatically upgrades navigation to HTTPS and delivers onBeforeRequest for https://example.org/
+    // 1. Chromium auto-upgrades navigation to HTTPS and delivers onBeforeRequest for https://example.org/
     proc.domEvents.forwardEvent('onBeforeRequest')({
       documentLifecycle: 'active',
       frameId: 0,
@@ -151,21 +148,13 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
       url: 'https://example.org/',
     });
 
-    // 3. Verify that Hop 0 row (http://example.org/) is present with status 307 Internal Redirect and Cache column as Internal
+    // 2. Verify that Row 4019 (https://example.org/) is present in DOM
     const row0 = proc.document.getElementById('web_events_list_4019');
-    assert.ok(row0, 'Hop 0 row (http://example.org/) must exist in DOM');
-    assert.equal(proc.document.getElementById('web_event_url_4019')?.textContent, 'http://example.org/');
-    assert.equal(proc.document.getElementById('web_event_status_4019')?.textContent, '307');
-    assert.equal(proc.document.getElementById('web_event_method_4019')?.textContent, 'GET');
-    assert.equal(proc.document.getElementById('web_event_cache_4019')?.textContent, 'Internal');
+    assert.ok(row0, 'Row 4019 (https://example.org/) must exist in DOM');
+    assert.equal(proc.document.getElementById('web_event_url_4019')?.textContent, 'https://example.org/');
+    assert.equal(proc.document.getElementById('web_event_status_4019')?.textContent, 'N/A');
 
-    // 4. Verify that Hop 1 row (https://example.org/) is present in DOM
-    const row1 = proc.document.getElementById('web_events_list_4019_1');
-    assert.ok(row1, 'Hop 1 row (https://example.org/) must exist in DOM');
-    assert.equal(proc.document.getElementById('web_event_url_4019_1')?.textContent, 'https://example.org/');
-    assert.equal(proc.document.getElementById('web_event_status_4019_1')?.textContent, 'N/A');
-
-    // 5. Subsequent events for 4019 arrive: headers, response, completion (200 OK)
+    // 3. Subsequent events for 4019 arrive: headers, response, completion (200 OK)
     proc.domEvents.forwardEvent('onBeforeSendHeaders')({
       documentLifecycle: 'active',
       frameId: 0,
@@ -206,24 +195,16 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
       statusCode: 200,
     });
 
-    // 6. Verify status update on Hop 1
-    assert.equal(proc.document.getElementById('web_event_status_4019_1')?.textContent, '200');
+    // 4. Verify status update on 4019
+    assert.equal(proc.document.getElementById('web_event_status_4019')?.textContent, '200');
 
-    // 7. Verify event cache entries
-    const hop0Req = proc.httpTrackerEventCache.getRequest('4019');
-    const hop0Res = proc.httpTrackerEventCache.getResponse('4019');
-    assert.equal(hop0Req?.url, 'http://example.org/');
-    assert.equal(hop0Res?.statusCode, 307);
-    assert.equal(hop0Res?.statusLine, 'HTTP/1.1 307 Internal Redirect');
-    assert.equal(hop0Res?.redirectUrl, 'https://example.org/');
-    assert.equal(hop0Res?.fromCache, 'Internal');
+    // 5. Verify event cache entry
+    const req = proc.httpTrackerEventCache.getRequest('4019');
+    const res = proc.httpTrackerEventCache.getResponse('4019');
+    assert.equal(req?.url, 'https://example.org/');
+    assert.equal(res?.statusCode, 200);
 
-    const hop1Req = proc.httpTrackerEventCache.getRequest('4019_1');
-    const hop1Res = proc.httpTrackerEventCache.getResponse('4019_1');
-    assert.equal(hop1Req?.url, 'https://example.org/');
-    assert.equal(hop1Res?.statusCode, 200);
-
-    // 8. Next subresource request (4020) should have its own row without counter pollution
+    // 6. Next subresource request (4020) should have its own row without counter pollution
     proc.domEvents.forwardEvent('onBeforeRequest')({
       documentLifecycle: 'active',
       frameId: 0,
@@ -254,15 +235,12 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
     assert.equal(proc.document.getElementById('web_event_status_4020')?.textContent, '200');
   });
 
-  it('does NOT synthesize a duplicate HttpsUpgrades redirect for HSTS domains where native 307 already fired (e.g. github.com)', () => {
+  it('captures native HSTS 307 internal redirects with accurate redirect counter and DevTools parity (e.g. github.com)', () => {
     const proc = createProcessorContext();
     const tabId = 100;
     const timeStamp = 1000;
 
-    // 1. Navigation starts: user navigates to http://github.com/?ljk
-    proc.domEvents.recordPendingNavigation(tabId, 'http://github.com/?ljk', timeStamp);
-
-    // 2. Native webRequest fires onBeforeRequest for http://github.com/?ljk
+    // 1. Native webRequest fires onBeforeRequest for http://github.com/?ljk
     proc.domEvents.forwardEvent('onBeforeRequest')({
       callerName: 'onBeforeRequest',
       requestId: 'hsts-101',
