@@ -767,6 +767,22 @@ label {
   letter-spacing: -0.01em;
 }
 
+.options_info_banner {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #3b82f6;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.options_info_banner strong {
+  color: #1e293b;
+}
+
 .options_footer_row {
   display: flex;
   align-items: center;
