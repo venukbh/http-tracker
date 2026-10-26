@@ -403,9 +403,13 @@ const httpTrackerDetailsView = (function() {
     }
     const domain = rawInput.replace(/^https?:\/\//i, '').split('/')[0];
     const btn = getById('delete_cookies_button');
-    httpTracker.browser.cookies.getAll({
-      domain,
-    }).then((cookies) => {
+    const getAllDetails = { domain };
+    if (httpTracker.isFF) {
+      getAllDetails.firstPartyDomain = null;
+    } else {
+      getAllDetails.partitionKey = {};
+    }
+    httpTracker.browser.cookies.getAll(getAllDetails).then((cookies) => {
       removeCookies(cookies);
       if (btn) {
         const originalText = btn.textContent;

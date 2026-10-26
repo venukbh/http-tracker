@@ -92,6 +92,7 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       assert.equal(manifest.minimum_chrome_version, '102', 'Chrome manifest must specify minimum_chrome_version 102');
       assert.ok(manifest.background.service_worker, 'Chrome manifest must specify service_worker');
       assert.equal(manifest.background.scripts, undefined, 'Chrome manifest must NOT contain background.scripts (causes warning)');
+      assert.equal(manifest.permissions.includes('declarativeNetRequestWithHostAccess'), false, 'Manifest must not include redundant declarativeNetRequestWithHostAccess');
     });
 
     it('verifies that Firefox zip has MV3 background.scripts, official AMO GUID, and NO service_worker', () => {

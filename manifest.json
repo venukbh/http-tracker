@@ -10,7 +10,6 @@
   "permissions": [
     "cookies",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
     "storage",
     "tabs",
     "webNavigation",
