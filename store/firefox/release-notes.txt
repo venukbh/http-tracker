@@ -3,4 +3,4 @@ What's new in v3.2.0:
 • Offline "What's New" Release Hub: Dedicated offline release notes and update hub to explore new features and changelogs anytime.
 • Strict Window & Tab Scoping: Single-instance window deduplication now cryptographically resolves to this specific extension origin, eliminating false matches from foreign extensions or web pages.
 • Preferences Overhaul: Debounced auto-save with saved status badges, beforeunload flush listeners, and modern header navigation.
-• Security & Architecture Modernization: 100% native DOM replaceChildren() hygiene (strictly zero innerHTML), ES2022 modernization, and dual-store Manifest V3 compliance.
+• Security & Architecture Modernization: Strict DOM security hygiene (strictly zero innerHTML), modern engine compatibility, and full dual-store Manifest V3 compliance.

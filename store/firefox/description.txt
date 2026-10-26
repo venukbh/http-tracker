@@ -63,7 +63,7 @@ Designed for frontend engineers, backend developers, QA testers, and security re
 ### 🔒 Security & Privacy Guarantee:
 - **100% Local & In-Memory**: All captured traffic remains strictly in your browser's local memory.
 - **Zero Data Collection**: HTTP-TRACKER does not track, collect, or transmit your browsing history, credentials, or network data to any remote server or third party.
-- **Safe Native DOM**: 100% clean DOM rendering using native browser templates and `replaceChildren()` (strictly zero `innerHTML`).
+- **Safe Native DOM**: 100% clean, high-performance DOM rendering with strict security hygiene (strictly zero `innerHTML`).
 
 ### ⚡ Performance:
 - Near-zero memory footprint with automatic session garbage collection.
