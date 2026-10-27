@@ -100,10 +100,29 @@ function getWhatsNewPage(details, active = true) {
       httpTracker.browser.tabs.reload(match.tab.id, { bypassCache: true });
     }
   } else {
-    httpTracker.browser.tabs.create({
+    const normalWindow = (details || []).find((w) => w.type === 'normal') || details?.[0];
+    const createProps = {
       'url': targetUrl,
       'active': active,
-    });
+    };
+    if (normalWindow?.id) {
+      createProps.windowId = normalWindow.id;
+    }
+    let isBroughtToFront = false;
+    const onTabCreated = (tab) => {
+      if (isBroughtToFront) return;
+      isBroughtToFront = true;
+      const winId = tab?.windowId || normalWindow?.id;
+      if (active && winId) {
+        try {
+          httpTracker.browser.windows.update(winId, bringToFront);
+        } catch (_) {}
+      }
+    };
+    const res = httpTracker.browser.tabs.create(createProps, onTabCreated);
+    if (res && typeof res.then === 'function') {
+      res.then(onTabCreated);
+    }
   }
 }
 
@@ -140,9 +159,28 @@ function openInTab(details) {
   if (match) {
     activateExistingTab(match.window.id, trackerUrl, false, match.tab.id);
   } else {
-    httpTracker.browser.tabs.create({
+    const normalWindow = (details || []).find((w) => w.type === 'normal') || details?.[0];
+    const createProps = {
       'url': trackerUrl,
-    });
+    };
+    if (normalWindow?.id) {
+      createProps.windowId = normalWindow.id;
+    }
+    let isBroughtToFront = false;
+    const onTabCreated = (tab) => {
+      if (isBroughtToFront) return;
+      isBroughtToFront = true;
+      const winId = tab?.windowId || normalWindow?.id;
+      if (winId) {
+        try {
+          httpTracker.browser.windows.update(winId, bringToFront);
+        } catch (_) {}
+      }
+    };
+    const res = httpTracker.browser.tabs.create(createProps, onTabCreated);
+    if (res && typeof res.then === 'function') {
+      res.then(onTabCreated);
+    }
   }
 }
 

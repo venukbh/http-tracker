@@ -71,8 +71,13 @@ describe("What's New Release Notes Page & Update Trigger Tests", () => {
         },
         tabs: {
           query: (filter, callback) => callback(tabsInQuery),
-          create: (props) => {
+          create: (props, callback) => {
             createdTab = props;
+            const tabObj = { id: 101, windowId: props.windowId || 99, ...props };
+            if (typeof callback === 'function') {
+              callback(tabObj);
+            }
+            return Promise.resolve(tabObj);
           },
           update: (tabId, props) => {
             updatedTab = { tabId, props };
@@ -86,7 +91,9 @@ describe("What's New Release Notes Page & Update Trigger Tests", () => {
             updatedWindow = { winId, props };
           },
           getAll: (props, cb) => {
-            const wins = tabsInQuery.length > 0 ? [{ id: tabsInQuery[0].windowId || 99, tabs: tabsInQuery }] : [];
+            const wins = tabsInQuery.length > 0
+              ? [{ id: tabsInQuery[0].windowId || 99, type: 'normal', tabs: tabsInQuery }]
+              : [{ id: 99, type: 'normal', tabs: [] }];
             cb(wins);
           },
         },
@@ -130,13 +137,30 @@ describe("What's New Release Notes Page & Update Trigger Tests", () => {
     }
 
     it("creates a new background tab when no existing What's New tab is open", () => {
-      const { openWhatsNewPage, getCreatedTab } = createOpenSandbox([]);
+      const { openWhatsNewPage, getCreatedTab, getUpdatedWindow } = createOpenSandbox([]);
       openWhatsNewPage(false);
 
       const created = getCreatedTab();
       assert.ok(created, 'Should create a new tab');
       assert.equal(created.url, 'chrome-extension://test-id/src/html/whats-new.html');
       assert.equal(created.active, false, 'Default launch should open in background (active: false)');
+      assert.equal(created.windowId, 99, 'Should target normal browser window');
+      assert.equal(getUpdatedWindow(), null, 'Should NOT bring window to front when active: false');
+    });
+
+    it("focuses target window and brings newly created What's New tab to front immediately on first click (active: true)", () => {
+      const { openWhatsNewPage, getCreatedTab, getUpdatedWindow } = createOpenSandbox([]);
+      openWhatsNewPage(true);
+
+      const created = getCreatedTab();
+      assert.ok(created, 'Should create a new tab');
+      assert.equal(created.url, 'chrome-extension://test-id/src/html/whats-new.html');
+      assert.equal(created.active, true, 'User click should request active tab');
+      assert.equal(created.windowId, 99, 'Should target normal browser window');
+      const updatedWin = getUpdatedWindow();
+      assert.ok(updatedWin, 'Must update window to bring to front immediately on first click');
+      assert.equal(updatedWin.winId, 99);
+      assert.deepEqual(updatedWin.props, { focused: true });
     });
 
     it("activates and hard-refreshes existing tab instead of creating duplicate when already open", () => {
