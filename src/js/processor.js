@@ -28,6 +28,13 @@ const eventTracker = (function() {
     if (!isCapturingEvents) {
       return false;
     }
+    if (webEvent.callerName === 'onBeforeRedirect' && webEvent.redirectUrl && (!webEvent.statusCode || Number(webEvent.statusCode) === 0)) {
+      webEvent.statusCode = 307;
+      webEvent.statusLine = webEvent.statusLine || 'HTTP/1.1 307 Internal Redirect (HSTS)';
+      if (webEvent.fromCache === undefined || webEvent.fromCache === false) {
+        webEvent.fromCache = 'Internal';
+      }
+    }
     httpTrackerEventCache.setRedirectCount(webEvent);
     if (isEventToCapture(webEvent)) {
       httpTrackerEventCache.recordEvent(webEvent, isCaptureFormDataEnabled);
@@ -159,6 +166,11 @@ const eventTracker = (function() {
       }
       if (statusEl) {
         statusEl.textContent = webEvent.statusCode;
+      }
+    } else if (webEvent.callerName === 'onBeforeRedirect' && webEvent.redirectUrl) {
+      listEl?.classList.remove('web_event_style_error');
+      if (statusEl) {
+        statusEl.textContent = '307';
       }
     }
     if (cacheEl) {

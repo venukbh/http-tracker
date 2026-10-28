@@ -322,4 +322,85 @@ describe('Redirect Pipeline Resiliency & Error Handling Tests (Alternative 2)', 
     assert.equal(row2, undefined, 'Must NOT create a duplicate 2nd redirect row (hsts-101_2) in DOM!');
     assert.equal(proc.httpTrackerEventCache.hasEvent('hsts-101_2'), false, 'Must NOT have event hsts-101_2 in cache');
   });
+
+  it('normalizes Firefox native HSTS upgrades (statusCode: 0) to 307 Internal with DevTools parity', () => {
+    const proc = createProcessorContext();
+    const tabId = 202;
+    const timeStamp = 2000;
+
+    // 1. Firefox native webRequest fires onBeforeRequest for http://github.com/
+    proc.domEvents.forwardEvent('onBeforeRequest')({
+      callerName: 'onBeforeRequest',
+      requestId: 'ff-hsts-501',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'http://github.com/',
+      method: 'GET',
+      timeStamp: timeStamp + 10,
+    });
+
+    // 2. Firefox native webRequest fires onBeforeRedirect with statusCode: 0 and statusLine: ""
+    proc.domEvents.forwardEvent('onBeforeRedirect')({
+      callerName: 'onBeforeRedirect',
+      requestId: 'ff-hsts-501',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'http://github.com/',
+      redirectUrl: 'https://github.com/',
+      method: 'GET',
+      statusCode: 0,
+      statusLine: '',
+      fromCache: false,
+      timeStamp: timeStamp + 20,
+    });
+
+    // 3. Firefox native webRequest fires onBeforeRequest for https://github.com/
+    proc.domEvents.forwardEvent('onBeforeRequest')({
+      callerName: 'onBeforeRequest',
+      requestId: 'ff-hsts-501',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'https://github.com/',
+      method: 'GET',
+      timeStamp: timeStamp + 30,
+    });
+
+    // 4. Firefox completes with 200 OK
+    proc.domEvents.forwardEvent('onCompleted')({
+      callerName: 'onCompleted',
+      requestId: 'ff-hsts-501',
+      tabId,
+      frameId: 0,
+      parentFrameId: -1,
+      type: 'main_frame',
+      url: 'https://github.com/',
+      method: 'GET',
+      statusCode: 200,
+      timeStamp: timeStamp + 50,
+    });
+
+    // VERIFICATION:
+    // Hop 0 row (http://github.com/) must display 307 and Cache: Internal (NOT N/A or false)
+    const row0 = proc.document.getElementById('web_events_list_ff-hsts-501');
+    assert.ok(row0, 'Hop 0 row (http://github.com/) must exist in DOM');
+    assert.equal(proc.document.getElementById('web_event_status_ff-hsts-501')?.textContent, '307');
+    assert.equal(proc.document.getElementById('web_event_cache_ff-hsts-501')?.textContent, 'Internal');
+
+    // Cached response must have normalized 307 status
+    const cachedResponse = proc.httpTrackerEventCache.getResponse('ff-hsts-501');
+    assert.equal(cachedResponse?.statusCode, 307);
+    assert.equal(cachedResponse?.statusLine, 'HTTP/1.1 307 Internal Redirect (HSTS)');
+    assert.equal(cachedResponse?.fromCache, 'Internal');
+
+    // Hop 1 row (https://github.com/) must display 200 OK
+    const row1 = proc.document.getElementById('web_events_list_ff-hsts-501_1');
+    assert.ok(row1, 'Hop 1 row (https://github.com/) must exist in DOM');
+    assert.equal(proc.document.getElementById('web_event_status_ff-hsts-501_1')?.textContent, '200');
+  });
 });
