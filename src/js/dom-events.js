@@ -10,6 +10,9 @@ const webRequest = httpTracker.browser.webRequest;
 
 function forwardEvent(eventName) {
   return function(details) {
+    if (details?.url && !details.url.startsWith('http://') && !details.url.startsWith('https://') && !details.url.startsWith('ws://') && !details.url.startsWith('wss://')) {
+      return;
+    }
     details.callerName = eventName;
     details.requestIdEnhanced = details.requestId;
     eventTracker.processWebEvent(details);

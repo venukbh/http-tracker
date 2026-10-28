@@ -245,8 +245,11 @@ const httpTrackerDetailsView = (function() {
         const isRedirect = (relatedEvent?.statusCode && Number(relatedEvent.statusCode) >= 300 && Number(relatedEvent.statusCode) < 400) ||
           Boolean(relatedEvent?.redirectUrl) ||
           Boolean(webEventIdDetails.redirectUrl);
+        const isSuccess = relatedEvent?.statusCode && Number(relatedEvent.statusCode) >= 200 && Number(relatedEvent.statusCode) < 400;
         if (isRedirect) {
           rows.push(renderNoticeRow('No request headers sent (internal browser redirect)', '', false));
+        } else if (isSuccess) {
+          rows.push(renderNoticeRow('No request headers sent (internal / cached resource)', '', false));
         } else {
           rows.push(renderNoticeRow('Request blocked'));
         }

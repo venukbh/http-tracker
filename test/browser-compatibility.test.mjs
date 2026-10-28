@@ -202,5 +202,51 @@ describe('Cross-Browser Compatibility & Packaging Tests (Chrome & Firefox)', () 
       assert.ok(cssContent.includes('.single_header_container .header_input_invalid'));
     });
   });
+
+  describe('Non-Wire Extension Resources Exclusion', () => {
+    it('strictly drops internal browser and extension files (chrome-extension://, moz-extension://) in forwardEvent', () => {
+      let processedEvent = null;
+      globalThis.httpTracker = {
+        browser: {
+          webRequest: {
+            onBeforeRequest: { addListener: () => {} },
+            onBeforeSendHeaders: { addListener: () => {} },
+            onSendHeaders: { addListener: () => {} },
+            onHeadersReceived: { addListener: () => {} },
+            onAuthRequired: { addListener: () => {} },
+            onBeforeRedirect: { addListener: () => {} },
+            onResponseStarted: { addListener: () => {} },
+            onCompleted: { addListener: () => {} },
+            onErrorOccurred: { addListener: () => {} },
+          },
+        },
+        isFF: false,
+      };
+      globalThis.eventTracker = {
+        processWebEvent: (evt) => {
+          processedEvent = evt;
+        },
+      };
+
+      const domEventsCode = readFileSync('src/js/dom-events.js', 'utf8');
+      const fn = new Function('globalThis', 'httpTracker', 'eventTracker', domEventsCode + '\nreturn forwardEvent;');
+      const forwardEvent = fn(globalThis, globalThis.httpTracker, globalThis.eventTracker);
+
+      const handler = forwardEvent('onBeforeRequest');
+
+      // 1. Internal chrome-extension URL -> Must be ignored (never left the wire)
+      handler({ requestId: 'ext-1', url: 'chrome-extension://test-id/src/html/options.html' });
+      assert.equal(processedEvent, null, 'Internal extension options.html must be ignored');
+
+      // 2. Internal moz-extension URL -> Must be ignored
+      handler({ requestId: 'ext-2', url: 'moz-extension://uuid/src/html/whats-new.html' });
+      assert.equal(processedEvent, null, 'Internal Firefox extension files must be ignored');
+
+      // 3. Genuine wire HTTP request -> Must be processed
+      handler({ requestId: 'wire-1', url: 'https://api.github.com/user' });
+      assert.ok(processedEvent, 'Wire HTTPS request must be captured');
+      assert.equal(processedEvent.requestId, 'wire-1');
+    });
+  });
 });
 
