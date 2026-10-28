@@ -32,3 +32,4 @@ const DELIMITER_RESPONSE_COOKIE_KEY_NAME = HEADER_NAME_SET_COOKIE; // Backward c
 const STRING_ERROR = 'ERR';
 const RFC_HEADER_NAME_REGEX = /^[a-zA-Z0-9!#$%&'*+^_`|~.-]+$/;
 const INPUT_BOX_DELAY = 500;
+const WIRE_PROTOCOLS = new Set(['http:', 'https:', 'ws:', 'wss:']);

@@ -312,6 +312,8 @@ export function createTestContext(customGlobals = {}) {
       FORBIDDEN_HEADERS,
       RFC_HEADER_NAME_REGEX,
       INPUT_BOX_DELAY,
+      WIRE_PROTOCOLS,
+      isWireProtocol,
       stringToArray,
       arrayToString,
       normalizePatterns,

@@ -66,6 +66,19 @@ function filterWithLength(array, length = 0) {
   return array?.filter((e) => e.length > length) ?? [];
 }
 
+function isWireProtocol(url) {
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+  const colonIndex = url.indexOf(':');
+  if (colonIndex === -1) {
+    return false;
+  }
+  const protocol = url.slice(0, colonIndex + 1).toLowerCase();
+  const wireSet = typeof WIRE_PROTOCOLS !== 'undefined' ? WIRE_PROTOCOLS : new Set(['http:', 'https:', 'ws:', 'wss:']);
+  return wireSet.has(protocol);
+}
+
 function uniqueArray(arrayWithEntries) {
   return arrayWithEntries?.length ? [...new Set(arrayWithEntries)] : [];
 }
