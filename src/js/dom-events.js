@@ -2,6 +2,22 @@ const trackUrls = {
   urls: ['<all_urls>'],
 };
 
+function checkWireProtocol(url) {
+  if (typeof isWireProtocol === 'function') {
+    return isWireProtocol(url);
+  }
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+  const colonIndex = url.indexOf(':');
+  if (colonIndex === -1) {
+    return false;
+  }
+  const protocol = url.slice(0, colonIndex + 1).toLowerCase();
+  const set = typeof WIRE_PROTOCOLS !== 'undefined' ? WIRE_PROTOCOLS : new Set(['http:', 'https:', 'ws:', 'wss:']);
+  return set.has(protocol);
+}
+
 const reqBodyHeaders = httpTracker.isFF ? ['requestBody'] : ['requestBody', 'extraHeaders'];
 const reqHeaders = httpTracker.isFF ? ['requestHeaders'] : ['requestHeaders', 'extraHeaders'];
 const resHeaders = httpTracker.isFF ? ['responseHeaders'] : ['responseHeaders', 'extraHeaders'];
@@ -10,7 +26,7 @@ const webRequest = httpTracker.browser.webRequest;
 
 function forwardEvent(eventName) {
   return function(details) {
-    if (details?.url && !details.url.startsWith('http://') && !details.url.startsWith('https://') && !details.url.startsWith('ws://') && !details.url.startsWith('wss://')) {
+    if (details?.url && !checkWireProtocol(details.url)) {
       return;
     }
     details.callerName = eventName;
