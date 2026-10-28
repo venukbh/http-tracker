@@ -387,17 +387,17 @@ label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.tracker_brand_group {
+.tracker_header_left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 0 0 auto;
 }
 
 .tracker_brand_icon {
@@ -417,31 +417,46 @@ label {
   line-height: 1;
 }
 
+.tracker_header_center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  text-align: center;
+  min-width: 0;
+}
+
 .tracker_fidelity_badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  gap: 5px;
+  padding: 3px 12px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 12px;
   cursor: pointer;
   user-select: none;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .tracker_fidelity_badge:hover {
-  background-color: #dcfce7;
-  border-color: #86efac;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .tracker_header_actions {
   display: flex;
   gap: 6px;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .web_event_list_url {
