@@ -65,6 +65,8 @@ describe('httpTrackerEventCache Unit Tests', () => {
         eventCache.setRedirectCount(event2);
         assert.equal(event2.requestIdEnhanced, 'req-ff-hsts_1');
         assert.equal(eventCache.getRequest('req-ff-hsts_1')?.url, 'https://mail.google.com/');
+        assert.equal(eventCache.getResponse('req-ff-hsts')?.statusCode, 307);
+        assert.equal(eventCache.getResponse('req-ff-hsts')?.fromCache, 'Internal');
       } finally {
         context.httpTracker.isFF = prevFF;
       }
