@@ -602,7 +602,7 @@ describe("What's New Release Notes Page & Update Trigger Tests", () => {
       assert.ok(html.includes('/src/assets/icon_32px.png'), 'Must reference existing extension icon asset');
       assert.ok(html.includes('HTTP-TRACKER'), 'Must display HTTP-TRACKER title');
       assert.ok(html.includes('id="fidelity_badge"'), 'Must have fidelity badge element');
-      assert.ok(html.includes('genuine network transactions rather than browser-generated internal URL rewrites'), 'Must feature genuine network transactions text');
+      assert.ok(html.includes('Genuine network transactions rather than browser-generated internal URL rewrites'), 'Must feature genuine network transactions text');
     });
   });
 });
