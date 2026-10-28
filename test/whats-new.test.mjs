@@ -595,6 +595,15 @@ describe("What's New Release Notes Page & Update Trigger Tests", () => {
       assert.ok(html.includes('📖 What\'s New'), 'What\'s New button must have book icon');
       assert.ok(html.includes('wn_btn wn_btn_secondary'), 'Buttons must use wn_btn secondary styling');
     });
+
+    it("verifies http-tracker.html features branding logo and pure wire fidelity badge", () => {
+      const html = readFileSync('src/html/http-tracker.html', 'utf8');
+      assert.ok(html.includes('class="tracker_brand_icon"'), 'Must have branding logo icon');
+      assert.ok(html.includes('/src/assets/icon_32px.png'), 'Must reference existing extension icon asset');
+      assert.ok(html.includes('HTTP-TRACKER'), 'Must display HTTP-TRACKER title');
+      assert.ok(html.includes('id="fidelity_badge"'), 'Must have fidelity badge element');
+      assert.ok(html.includes('Pure Wire Fidelity'), 'Must feature Pure Wire Fidelity badge text');
+    });
   });
 });
 
