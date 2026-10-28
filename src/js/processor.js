@@ -44,6 +44,9 @@ const eventTracker = (function() {
       return false;
     }
     const targetUrl = webEvent.url || httpTrackerEventCache.getRequest(webEvent.requestIdEnhanced)?.url;
+    if (!targetUrl || (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('ws://') && !targetUrl.startsWith('wss://'))) {
+      return false;
+    }
     return matchesIncludePattern(targetUrl, includeURLsList, globalIncludeURLsList) &&
       !matchesExcludePattern(targetUrl, excludeURLsList, globalExcludeURLsList);
   }
