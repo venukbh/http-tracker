@@ -38,6 +38,13 @@ const httpTrackerEventCache = (function() {
     if (!webEvent?.requestId) {
       return;
     }
+    if ((!webEvent.statusCode || Number(webEvent.statusCode) === 0) && webEvent.redirectUrl) {
+      webEvent.statusCode = 307;
+      webEvent.statusLine = webEvent.statusLine || 'HTTP/1.1 307 Internal Redirect (HSTS)';
+      if (webEvent.fromCache === undefined || webEvent.fromCache === false) {
+        webEvent.fromCache = 'Internal';
+      }
+    }
     // Firefox legacy defect (tested on 79.0): Firefox emitted a premature
     // onBeforeRedirect without statusCode, statusLine, or responseHeaders.
     // In Chrome and modern Firefox, internal redirects (e.g. HSTS 307) or

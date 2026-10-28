@@ -31,6 +31,13 @@ function forwardEvent(eventName) {
     }
     details.callerName = eventName;
     details.requestIdEnhanced = details.requestId;
+    if (eventName === 'onBeforeRedirect' && details.redirectUrl && (!details.statusCode || Number(details.statusCode) === 0)) {
+      details.statusCode = 307;
+      details.statusLine = details.statusLine || 'HTTP/1.1 307 Internal Redirect (HSTS)';
+      if (details.fromCache === undefined || details.fromCache === false) {
+        details.fromCache = 'Internal';
+      }
+    }
     eventTracker.processWebEvent(details);
   };
 }
