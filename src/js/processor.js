@@ -284,6 +284,7 @@ const eventTracker = (function() {
         openWhatsNewPage(true);
       }
     });
+    bindBtn('fidelity_badge', openAddonOptions);
     bindInputClearButtons();
     bindColumnFilterEvents();
     httpTrackerHeaderRules.init();
