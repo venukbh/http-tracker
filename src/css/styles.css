@@ -429,16 +429,17 @@ label {
 .tracker_fidelity_badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  color: #64748b;
+  gap: 6px;
+  padding: 4px 14px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
   font-size: 11.5px;
-  font-weight: 500;
+  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
   user-select: none;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -446,7 +447,9 @@ label {
 }
 
 .tracker_fidelity_badge:hover {
-  color: #0f172a;
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
 .tracker_header_actions {
