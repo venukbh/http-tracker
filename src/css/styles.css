@@ -70,7 +70,20 @@ label {
 .tracker_input_wrapper input {
   width: 100%;
   height: 24px;
-  padding-right: 26px;
+  padding: 2px 26px 2px 6px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  font-size: 12px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.tracker_input_wrapper input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
 }
 
 .tracker_input_wrapper input#track_urls_pattern,
@@ -176,7 +189,21 @@ label {
   width: 100%;
   min-width: 0;
   height: 20px;
-  padding-right: 18px;
+  padding: 1px 18px 1px 5px;
+  border: 1px solid #94a3b8;
+  border-radius: 3px;
+  font-size: 11px;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.add_header_name input:focus,
+.add_header_value input:focus,
+.add_header_url input:focus {
+  border-color: #3b82f6;
 }
 
 .single_header_container .input_trailing_icons {
@@ -208,6 +235,30 @@ label {
   align-items: center;
   gap: 3px;
   flex-shrink: 0;
+}
+
+.header_buttons_container button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.header_buttons_container button:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .right_pane_top_row {
@@ -247,6 +298,28 @@ label {
   width: 100%;
   height: 24px;
   white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.right_pane_trailing_slot .web_event_button_delete_cookies:not(:disabled):hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.right_pane_trailing_slot .web_event_button_delete_cookies:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f1f5f9;
 }
 
 .action_buttons_row {
@@ -259,6 +332,27 @@ label {
 .action_buttons_row button {
   flex: 1;
   white-space: nowrap;
+  height: 26px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.action_buttons_row button:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.action_buttons_row button:active {
+  background-color: #e2e8f0;
 }
 
 .web_event_list_blank:hover {
@@ -282,6 +376,9 @@ label {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  height: 20px;
+  line-height: 18px;
+  box-sizing: border-box;
 }
 
 .web_event_style_error {
@@ -311,7 +408,8 @@ label {
   overflow-y: auto;
   overflow-x: hidden;
   margin-bottom: 8px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
   outline: none;
 }
 
@@ -514,7 +612,8 @@ label {
 .web_event_details {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
 }
 
 .web_event_detail_request_heading {
