@@ -1171,14 +1171,38 @@ body.wn_body {
 }
 
 .wn_timeline_section_title {
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #64748b;
-  margin: 14px 0 8px;
-  border-bottom: 1px dashed #e2e8f0;
-  padding-bottom: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin: 20px 0 10px;
+}
+
+.wn_timeline_section_title:first-of-type {
+  margin-top: 6px;
+}
+
+.wn_sec_features {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+.wn_sec_ui {
+  background-color: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
+}
+
+.wn_sec_perf {
+  background-color: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #6d28d9;
 }
 
 .wn_timeline_card ul {
