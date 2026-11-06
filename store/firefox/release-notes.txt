@@ -1,6 +1,7 @@
 What's new in v3.2.0:
-• One-Click "Copy as cURL": Instantly export any captured network request as a POSIX-compliant terminal cURL command with automatic method detection, single-quote escaping, and serialized request bodies.
-• Offline "What's New" Release Hub: Dedicated offline release notes and update hub to explore new features and changelogs anytime.
-• Strict Window & Tab Scoping: Single-instance window deduplication now cryptographically resolves to this specific extension origin, eliminating false matches from foreign extensions or web pages.
-• Preferences Overhaul: Debounced auto-save with saved status badges, beforeunload flush listeners, and modern header navigation.
-• Security & Architecture Modernization: Strict DOM security hygiene (strictly zero innerHTML), modern engine compatibility, and full dual-store Manifest V3 compliance.
+• One-Click "Copy as cURL": Instantly export any captured network request as a POSIX-compliant terminal cURL command with automatically serialized payloads and headers.
+• Interactive Column Header Filters: Direct filter boxes inside table headers to filter traffic by URL, Method, Status, or Cache in real time.
+• Inline Input Clear Buttons (✕): Instant one-click clear buttons in all filter and rule inputs with Escape key shortcut support.
+• Offline "What's New" Release Hub: Integrated offline release notes hub to explore new features and changelogs anytime.
+• Preferences Auto-Save: Debounced instant saving of pattern rules and settings with visual confirmation badges.
+• Security & Architecture Modernization: Strict DOM security hygiene (strictly zero innerHTML), 100% in-memory data processing, and full Manifest V3 dual-store compliance.
